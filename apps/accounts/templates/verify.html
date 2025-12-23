@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RENOCORP | Verify Account</title>
+
+    <style>
+        :root {
+            --primary-color: #0f172a;
+            --accent-color: #2563eb;
+            --text-color: #f8fafc;
+            --card-bg: #1e293b;
+            --copper: #b87333;
+        }
+
+        body {
+            margin: 0;
+            font-family: 'Poppins', sans-serif;
+            background: linear-gradient(145deg, var(--primary-color), #1e3a8a);
+            color: var(--text-color);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .verify-container {
+            background: var(--card-bg);
+            padding: 2rem;
+            border-radius: 22px;
+            width: 90%;
+            max-width: 420px;
+            box-shadow: 0 12px 30px rgba(0, 0, 0, 0.35);
+            animation: fadeUp 0.7s ease-out;
+        }
+
+        @keyframes fadeUp {
+            from {opacity: 0; transform: translateY(35px);}
+            to {opacity: 1; transform: translateY(0);}
+        }
+
+        h1 {
+            text-align: center;
+            color: var(--copper);
+            margin-bottom: 0.3rem;
+            letter-spacing: 2px;
+            font-weight: 600;
+        }
+
+        h2 {
+            text-align: center;
+            font-weight: normal;
+            font-size: 1rem;
+            margin-bottom: 1.5rem;
+            color: #cbd5e1;
+        }
+
+        .form-group {
+            margin-bottom: 1rem;
+        }
+
+        input[type="text"] {
+            width: 100%;
+            padding: 1rem;
+            border: none;
+            border-radius: 12px;
+            background: #334155;
+            color: white;
+            font-size: 1.1rem;
+            letter-spacing: 4px;
+            text-align: center;
+            font-weight: 600;
+            transition: all 0.25s;
+        }
+
+        input::placeholder {
+            opacity: 0.4;
+        }
+
+        input:focus {
+            outline: 2px solid var(--accent-color);
+            background: #475569;
+            transform: scale(1.03);
+            box-shadow: 0 0 14px rgba(37, 99, 235, 0.55);
+        }
+
+        .btn {
+            width: 100%;
+            background: var(--accent-color);
+            border: none;
+            color: white;
+            padding: 0.9rem;
+            font-size: 1.05rem;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: 0.3s;
+            margin-top: 0.4rem;
+            font-weight: 500;
+        }
+
+        .btn:hover {
+            background: #1d4ed8;
+            transform: translateY(-3px);
+        }
+
+        .resend {
+            text-align: center;
+            margin-top: 1rem;
+            font-size: 0.9rem;
+        }
+
+        .resend a {
+            color: var(--accent-color);
+            text-decoration: none;
+        }
+
+        .resend a:hover {
+            text-decoration: underline;
+        }
+
+        .error {
+            color: #f87171;
+            background: #7f1d1d;
+            padding: 0.6rem;
+            border-radius: 10px;
+            text-align: center;
+            margin-bottom: 1rem;
+            font-size: 0.9rem;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="verify-container">
+        <h1>RENOCORP</h1>
+        <h2>Enter the 6-digit code sent to your email</h2>
+
+        {% if messages %}
+            {% for message in messages %}
+                <div class="error">{{ message }}</div>
+            {% endfor %}
+        {% endif %}
+
+        <form method="POST">
+            {% csrf_token %}
+
+            <div class="form-group">
+                {{ form.otp.label_tag }}
+                {{ form.otp }}
+            </div>
+
+            <input type="hidden" name="email" value="{{ email }}">
+
+            <button type="submit" class="btn">Verify & Continue</button>
+
+            <div class="resend">
+                Didn't receive a code?
+                <a href="{% url 'accounts:signup' %}">Resend OTP</a>
+            </div>
+        </form>
+    </div>
+
+    <script>
+        const otpField = document.querySelector('input[type="text"]');
+        otpField.addEventListener('focus', () => {
+            otpField.style.boxShadow = '0 0 14px rgba(37,99,235,0.65)';
+        });
+        otpField.addEventListener('blur', () => {
+            otpField.style.boxShadow = 'none';
+        });
+    </script>
+</body>
+</html>

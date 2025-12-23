@@ -1,0 +1,110 @@
+<!-- templates/admin/verify_otp.html -->
+{% extends "admin/base_site.html" %}
+{% block title %}Verify OTP{% endblock %}
+
+{% block content %}
+<style>
+  body {
+    background-color: #111827;
+    color: #e5e7eb;
+    font-family: "Inter", sans-serif;
+  }
+
+  h1 {
+    color: #60a5fa;
+    font-size: 1.8rem;
+    text-align: center;
+    margin-bottom: 1.5rem;
+    font-weight: 600;
+  }
+
+  .otp-card {
+    background: #1f2937;
+    border: 1px solid #374151;
+    border-radius: 12px;
+    max-width: 500px;
+    margin: 0 auto;
+    padding: 2rem;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.4);
+  }
+
+  .otp-card p {
+    color: #9ca3af;
+    margin-bottom: 1rem;
+    font-size: 0.95rem;
+  }
+
+  form label {
+    display: block;
+    margin-bottom: 0.5rem;
+    color: #d1d5db;
+    font-weight: 500;
+  }
+
+  form input[type="text"],
+  form input[type="number"],
+  form input[type="email"],
+  form input[type="password"] {
+    width: 100%;
+    padding: 0.7rem;
+    background: #111827;
+    border: 1px solid #374151;
+    border-radius: 8px;
+    color: #f3f4f6;
+    font-size: 1rem;
+  }
+
+  form input:focus {
+    outline: none;
+    border-color: #60a5fa;
+    box-shadow: 0 0 0 1px #60a5fa;
+  }
+
+  .btn-verify {
+    background: linear-gradient(90deg, #2563eb, #1e3a8a);
+    border: none;
+    color: #f9fafb;
+    font-weight: 600;
+    padding: 0.75rem 1.5rem;
+    border-radius: 8px;
+    margin-top: 1rem;
+    cursor: pointer;
+    width: 100%;
+    transition: all 0.2s ease-in-out;
+  }
+
+  .btn-verify:hover {
+    background: linear-gradient(90deg, #3b82f6, #1d4ed8);
+    transform: translateY(-1px);
+  }
+
+  .info-text {
+    margin-top: 1.5rem;
+    color: #6b7280;
+    font-size: 0.9rem;
+    text-align: center;
+  }
+
+  @media (max-width: 600px) {
+    .otp-card {
+      padding: 1.5rem;
+      margin: 1rem;
+    }
+  }
+</style>
+
+<h1>Verify OTP</h1>
+
+<div class="otp-card">
+  <p>Verifying for: <strong style="color:#93c5fd;">{{ pending.email }}</strong></p>
+
+  <form method="post">
+    {% csrf_token %}
+    {{ form.otp_code.label_tag }}
+    {{ form.otp_code }}
+    <button type="submit" class="btn-verify">Verify</button>
+  </form>
+
+  <p class="info-text">OTP has been sent to the provided email address.</p>
+</div>
+{% endblock %}

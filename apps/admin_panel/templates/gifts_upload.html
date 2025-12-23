@@ -1,0 +1,238 @@
+{% extends "admin_panel/base.html" %}
+{% load static %}
+{% block title %}Gifts Upload | Renocorp Admin{% endblock %}
+
+{% block content %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Gifts Upload | Renocorp Admin</title>
+
+  <style>
+    body {
+      background-color: #0d1117;
+      color: #e6edf3;
+      font-family: "Inter", sans-serif;
+      margin: 0;
+      padding: 0;
+    }
+
+    .container {
+      max-width: 900px;
+      margin: 1.5rem auto;
+      padding: 1.5rem;
+    }
+
+    h2 {
+      color: #58a6ff;
+      text-align: center;
+      font-size: 1.8rem;
+      margin-bottom: 1.2rem;
+    }
+
+    .card {
+      background-color: #161b22;
+      border: 1px solid #30363d;
+      border-radius: 12px;
+      padding: 1rem 1.5rem;
+      margin-bottom: 2rem;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.3);
+    }
+
+    .card h3 {
+      color: #58a6ff;
+      border-bottom: 1px solid #30363d;
+      padding-bottom: 0.5rem;
+      margin-bottom: 1rem;
+    }
+
+    label {
+      display: block;
+      font-weight: 600;
+      margin: 0.6rem 0 0.2rem;
+    }
+
+    input, select, textarea {
+      width: 100%;
+      padding: 0.6rem;
+      border-radius: 6px;
+      border: 1px solid #30363d;
+      background-color: #0d1117;
+      color: #e6edf3;
+      font-size: 1rem;
+      outline: none;
+    }
+
+    textarea {
+      resize: none;
+      min-height: 100px;
+    }
+
+    input[type="number"] {
+      -moz-appearance: textfield;
+    }
+
+    .btn-upload {
+      display: block;
+      width: 100%;
+      background-color: #238636;
+      color: white;
+      border: none;
+      padding: 0.8rem;
+      font-size: 1.1rem;
+      border-radius: 8px;
+      margin-top: 1rem;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+
+    .btn-upload:hover {
+      background-color: #2ea043;
+    }
+
+    /* Scrollable Bottom Nav */
+    .bottom-nav {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      width: 100%;
+      background-color: #161b22;
+      border-top: 1px solid #30363d;
+      display: flex;
+      overflow-x: auto;
+      white-space: nowrap;
+      -webkit-overflow-scrolling: touch;
+      scrollbar-width: thin;
+      scrollbar-color: #58a6ff #161b22;
+    }
+
+    .bottom-nav::-webkit-scrollbar {
+      height: 6px;
+    }
+
+    .bottom-nav::-webkit-scrollbar-thumb {
+      background-color: #58a6ff;
+      border-radius: 3px;
+    }
+
+    .bottom-nav::-webkit-scrollbar-track {
+      background: #161b22;
+    }
+
+    .bottom-nav a {
+      display: inline-block;
+      flex: 0 0 auto;
+      padding: 0.6rem 1rem;
+      color: #8b949e;
+      text-decoration: none;
+      font-size: 0.85rem;
+      text-align: center;
+      transition: color 0.2s;
+    }
+
+    .bottom-nav a.active {
+      color: #58a6ff;
+      font-weight: 600;
+    }
+
+    .bottom-nav i {
+      font-size: 1.2rem;
+      display: block;
+      margin-bottom: 0.2rem;
+    }
+
+    @media (max-width: 600px) {
+      .container { padding: 1rem; }
+      h2 { font-size: 1.5rem; }
+    }
+  </style>
+</head>
+
+<body>
+  <div class="container">
+    <h2>Gifts Upload</h2>
+
+    <!-- Gift Upload Form -->
+    <form method="POST" action="{% url 'admin_panel:gift_upload' %}">
+      {% csrf_token %}
+
+      <div class="card">
+        <h3>Gift Upload</h3>
+
+        <label for="description">Gift Description</label>
+        <textarea name="description" id="description" required></textarea>
+
+        <label for="invites_required">Required Number of Invites</label>
+        <input type="number" name="invites_required" id="invites_required" min="1" required>
+
+        <label for="reward">Reward Amount (UGX)</label>
+        <input type="number" name="reward" id="reward" min="0" required>
+
+        <label for="extra_videos">Extra Videos (optional)</label>
+        <select name="extra_videos" id="extra_videos">
+          <option value="0">None</option>
+          {% for i in 5|make_list %}
+          <option value="{{ forloop.counter }}">{{ forloop.counter }}</option>
+          {% endfor %}
+        </select>
+
+        <label for="earning_per_video">Earning per Extra Video (UGX)</label>
+        <input type="number" name="earning_per_video" id="earning_per_video" min="0" value="0">
+
+      </div>
+
+      <!-- Control Tasks Card -->
+      <div class="card">
+        <h3>Task Control</h3>
+
+        <label for="videos_number">Videos to Display</label>
+        <input type="number" name="videos_number" id="videos_number" min="0" value="0">
+
+        <label for="video_earning">Earning per Video (UGX)</label>
+        <input type="number" name="video_earning" id="video_earning" min="0" value="0">
+
+        <label for="surveys_number">Surveys to Display</label>
+        <input type="number" name="surveys_number" id="surveys_number" min="0" value="0">
+
+        <label for="survey_earning">Earning per Survey (UGX)</label>
+        <input type="number" name="survey_earning" id="survey_earning" min="0" value="0">
+
+        <label for="app_tests_number">App Tests to Display</label>
+        <input type="number" name="app_tests_number" id="app_tests_number" min="0" value="0">
+
+        <label for="app_test_earning">Earning per App Test (UGX)</label>
+        <input type="number" name="app_test_earning" id="app_test_earning" min="0" value="0">
+
+        <label for="invite_reward">Invite Reward (UGX)</label>
+        <input type="number" name="invite_reward" id="invite_reward" min="0" value="0">
+
+        <button type="submit" class="btn-upload">Upload Settings</button>
+      </div>
+    </form>
+  </div>
+
+  <!-- Bottom Navigation -->
+  <nav class="bottom-nav">
+    <a href="{% url 'admin_panel:users' %}"><i class="bi bi-people"></i>Users</a>
+    <a href="{% url 'admin_panel:graphs' %}"><i class="bi bi-graph-up"></i>Graphs</a>
+    <a href="{% url 'admin_panel:manual_login' %}"><i class="bi bi-person-plus"></i>Login</a>
+    <a href="{% url 'admin_panel:gift_upload' %}" class="active"><i class="bi bi-gift"></i>Gifts</a>
+    <a href="{% url 'admin_panel:settings' %}"><i class="bi bi-gear"></i>Settings</a>
+    <a href="{% url 'admin_panel:transactions' %}"><i class="bi bi-cash-stack"></i>Trans</a>
+  </nav>
+
+  <script>
+    document.querySelector("form").addEventListener("submit", function(e) {
+      const description = document.getElementById("description").value.trim();
+      const reward = parseInt(document.getElementById("reward").value);
+      if (!description || reward < 0) {
+        e.preventDefault();
+        alert("Please fill in all required fields correctly.");
+      }
+    });
+  </script>
+</body>
+</html>
+{% endblock %}

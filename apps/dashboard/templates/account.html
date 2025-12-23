@@ -1,0 +1,163 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>RENOCORP Account — Dark</title>
+<link rel="stylesheet" href="{% static 'css/inter.css' %}">
+<style>
+  :root{
+    --bg:#0b0f13; --card:#0f161b; --muted:#9aa6b2; --accent:#1db954;
+    --glass: rgba(255,255,255,0.03); --outline: rgba(255,255,255,0.06);
+    --danger: #ff6b6b; --white: #e6eef3;
+  }
+  *{box-sizing:border-box}
+  body{margin:0; font-family: Inter, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial; background:var(--bg); color:var(--white); -webkit-font-smoothing:antialiased; -moz-osx-font-smoothing:grayscale; display:flex; flex-direction:column; min-height:100vh;}
+  .app{padding:14px; padding-bottom:80px; max-width:720px; margin:0 auto; width:100%; flex:1 1 auto;}
+  .header{display:flex; flex-direction:column; gap:10px; margin-bottom:12px;}
+  .title-row{display:flex; justify-content:space-between; align-items:center;}
+  .title-row h1{margin:0; font-size:18px; letter-spacing:0.6px;}
+  
+  /* Profile */
+  .profile-section{display:flex; align-items:center; gap:14px; margin-bottom:16px;}
+  .profile-photo{width:80px; height:80px; border-radius:50%; object-fit:cover; border:2px solid var(--outline); cursor:pointer;}
+  .profile-name{font-weight:700; font-size:16px; color:var(--white);}
+  
+  /* Stats card */
+  .card{background:linear-gradient(180deg, rgba(255,255,255,0.015), transparent); border:1px solid var(--outline); border-radius:12px; overflow:hidden; display:flex; flex-direction:column; padding:16px; gap:12px;}
+  .stats-vertical{display:flex; flex-direction:column; gap:12px;}
+  .stat-box{background:var(--glass); padding:12px; border-radius:10px; text-align:center;}
+  .stat-box h3{margin:0; font-size:14px; color:var(--muted);}
+  .stat-box p{margin:4px 0 0; font-weight:700; color:var(--white);}
+  
+  /* Buttons */
+  .btn-block{width:100%; background:var(--card); padding:14px; margin-top:12px; border-radius:12px; text-align:center; font-size:16px; cursor:pointer; border:1px solid var(--outline);}
+  .btn-block:hover:not(.disabled){background:rgba(255,255,255,0.02);}
+  .btn-block.disabled{opacity:0.4; cursor:not-allowed;}
+  .logout-btn{background:var(--danger); border-color:#ff4d4d; color:#fff; font-weight:700;}
+  .logout-btn:hover{background:#b42222;}
+  
+  /* Popups */
+  .popup{position:fixed; top:0; left:0; width:100%; height:100%; background: rgba(0,0,0,0.85); display:none; justify-content:center; align-items:center; padding:20px; z-index:999;}
+  .popup-box{background:var(--card); width:100%; max-width:350px; padding:20px; border-radius:15px; display:flex; flex-direction:column; gap:12px;}
+  .popup-box input{width:100%; padding:12px; border-radius:8px; background: #0f161b; border:1px solid var(--outline); color:var(--white);}
+  .popup-box button{width:100%; padding:12px; border-radius:10px; background:var(--accent); border:none; color:#02120a; font-weight:700; cursor:pointer;}
+  .close-btn{background:var(--danger) !important; color:#fff;}
+  
+  /* Bottom Navbar */
+  .navbar{position:fixed; bottom:0; left:0; right:0; height:62px; display:flex; justify-content:space-around; align-items:center; background:linear-gradient(180deg, rgba(7,10,12,0.98), rgba(7,10,12,0.96)); border-top:1px solid rgba(255,255,255,0.03); z-index:70;}
+  .nav-item{color:var(--muted); text-decoration:none; font-size:14px; text-align:center;}
+  .nav-item.active{color:var(--white); font-weight:700;}
+</style>
+</head>
+<body>
+<div class="app">
+
+  <!-- HEADER -->
+  <div class="header">
+    <div class="title-row">
+      <h1>Account</h1>
+      <div style="color:var(--muted); font-size:13px;">Profile</div>
+    </div>
+  </div>
+
+  <!-- PROFILE -->
+  <div class="profile-section">
+    <form id="photoForm" method="POST" enctype="multipart/form-data" style="display:none;">
+      {% csrf_token %}
+      <input type="file" id="photoInput" name="profile_picture" accept="image/*">
+    </form>
+    <img src="{{ profile.profile_picture.url }}" class="profile-photo" id="profilePhoto">
+    <div class="profile-name">Welcome {{ user.username }}</div>
+  </div>
+
+  <!-- ACCOUNT STATS -->
+  <div class="card stats-vertical">
+    <div class="stat-box">
+      <h3>Balance</h3>
+      <p>UGX {{ user_profile.balance }}</p>
+    </div>
+    <div class="stat-box">
+      <h3>Today's Earnings</h3>
+      <p>UGX {{ today_earnings|default:"0" }}</p>
+    </div>
+    <div class="stat-box">
+      <h3>Commission</h3>
+      <p>UGX {{ user_profile.commission|default:"0" }}</p>
+    </div>
+    <div class="stat-box">
+      <h3>Invites</h3>
+      <p>{{ user_profile.invites_done|default:"0" }} / {{ user_profile.invites_required|default:"0" }}</p>
+    </div>
+  </div>
+
+  <!-- ACTION BUTTONS -->
+  <div class="btn-block" onclick="window.location.href='{% url 'invite_page' %}'">Invite</div>
+  <div class="btn-block">
+    {% if subscription_active %}
+      Time remaining: {{ subscription_remaining }}
+    {% else %}
+      Subscribe
+    {% endif %}
+  </div>
+  <div class="btn-block {% if not withdraw_enabled %}disabled{% endif %}" {% if withdraw_enabled %}onclick="openWithdraw()"{% endif %}>Withdraw</div>
+  <div class="btn-block" onclick="openPassword()">Change Password</div>
+  <div class="btn-block logout-btn" onclick="window.location.href='{% url 'logout' %}'">Log Out</div>
+
+</div>
+
+<!-- WITHDRAW POPUP -->
+<div class="popup" id="withdrawPopup">
+  <div class="popup-box">
+    <h3>Withdraw</h3>
+    <form method="POST" action="{% url 'withdraw' %}">
+      {% csrf_token %}
+      <input type="number" name="amount" placeholder="Amount" required>
+      <input type="password" name="password" placeholder="Password" required>
+      <button type="submit">Confirm</button>
+    </form>
+    <button class="close-btn" onclick="closeWithdraw()">Close</button>
+  </div>
+</div>
+
+<!-- PASSWORD POPUP -->
+<div class="popup" id="passwordPopup">
+  <div class="popup-box">
+    <h3>Change Password</h3>
+    <form method="POST" action="{% url 'change_password' %}">
+      {% csrf_token %}
+      <input type="password" name="old_password" placeholder="Old password" required>
+      <input type="password" name="new_password" placeholder="New password" required>
+      <input type="password" name="confirm_password" placeholder="Confirm new password" required>
+      <button type="submit">Confirm</button>
+    </form>
+    <button class="close-btn" onclick="closePassword()">Close</button>
+  </div>
+</div>
+
+<!-- BOTTOM NAVIGATION -->
+<div class="navbar">
+  <a href="{% url 'dashboard:home' %}" class="nav-item">Home</a>
+  <a href="{% url 'dashboard:tasks' %}" class="nav-item">Tasks</a>
+  <a href="{% url 'dashboard:gifts' %}" class="nav-item">Gifts</a>
+  <a href="{% url 'dashboard:account' %}" class="nav-item active">Account</a>
+</div>
+
+<script>
+  /* PROFILE PHOTO UPLOAD */
+  const profilePhoto = document.getElementById("profilePhoto");
+  const photoInput = document.getElementById("photoInput");
+  profilePhoto.onclick = () => photoInput.click();
+  photoInput.onchange = () => document.getElementById("photoForm").submit();
+
+  /* WITHDRAW POPUP */
+  function openWithdraw(){document.getElementById("withdrawPopup").style.display="flex";}
+  function closeWithdraw(){document.getElementById("withdrawPopup").style.display="none";}
+
+  /* PASSWORD POPUP */
+  function openPassword(){document.getElementById("passwordPopup").style.display="flex";}
+  function closePassword(){document.getElementById("passwordPopup").style.display="none";}
+</script>
+</body>
+</html>

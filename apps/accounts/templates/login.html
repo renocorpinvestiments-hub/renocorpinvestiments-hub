@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RENOCORP | Login</title>
+
+    <style>
+        :root {
+            --primary-color: #0f0f0f; /* Dark mode background */
+            --accent-color: #2563eb;  /* Buttons and focus */
+            --text-color: #f8fafc;    /* Main text color */
+            --card-bg: #1e293b;       /* Card background remains */
+            --heading-color: #d2a679; /* Desert copper for RENOCORP heading */
+        }
+
+        body {
+            margin: 0;
+            font-family: 'Poppins', sans-serif;
+            background: var(--primary-color);
+            color: var(--text-color);
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .login-container {
+            background: var(--card-bg);
+            padding: 2rem;
+            border-radius: 20px;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.5);
+            width: 90%;
+            max-width: 400px;
+            animation: slideIn 0.7s ease;
+        }
+
+        @keyframes slideIn {
+            from {opacity: 0; transform: translateY(-30px);}
+            to {opacity: 1; transform: translateY(0);}
+        }
+
+        h1 {
+            text-align: center;
+            color: var(--heading-color);
+            letter-spacing: 2px;
+            margin-bottom: 1.5rem;
+        }
+
+        .form-group {
+            margin-bottom: 1rem;
+        }
+
+        label {
+            display: block;
+            font-size: 0.9rem;
+            margin-bottom: 0.4rem;
+        }
+
+        input[type="text"], input[type="password"] {
+            width: 100%;
+            padding: 0.8rem;
+            border: none;
+            border-radius: 8px;
+            background: #2c3e50; /* Darker input background for dark mode */
+            color: var(--text-color);
+            font-size: 0.95rem;
+            transition: all 0.3s;
+        }
+
+        input:focus {
+            outline: 2px solid var(--accent-color);
+            background: #34495e;
+        }
+
+        .btn {
+            width: 100%;
+            background: var(--accent-color);
+            border: none;
+            color: white;
+            padding: 0.9rem;
+            font-size: 1rem;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: 0.3s;
+        }
+
+        .btn:hover {
+            background: #1d4ed8;
+            transform: translateY(-2px);
+        }
+
+        .signup-link {
+            display: block;
+            text-align: center;
+            margin-top: 1.2rem;
+            font-size: 0.9rem;
+        }
+
+        .signup-link a {
+            color: var(--accent-color);
+            text-decoration: none;
+            transition: 0.2s;
+        }
+
+        .signup-link a:hover {
+            text-decoration: underline;
+        }
+
+        .error {
+            color: #f87171;
+            background: #7f1d1d;
+            padding: 0.5rem;
+            border-radius: 8px;
+            text-align: center;
+            margin-bottom: 1rem;
+        }
+
+        .fade-in {
+            animation: fade 0.4s ease-in-out;
+        }
+
+        @keyframes fade {
+            from {opacity: 0;}
+            to {opacity: 1;}
+        }
+    </style>
+</head>
+<body>
+
+    <div class="login-container fade-in">
+        <h1>RENOCORP</h1>
+
+        {% if messages %}
+            {% for message in messages %}
+                <div class="error">{{ message }}</div>
+            {% endfor %}
+        {% endif %}
+
+        <form method="POST">
+            {% csrf_token %}
+            <div class="form-group">
+                {{ form.username.label_tag }}
+                {{ form.username }}
+            </div>
+
+            <div class="form-group">
+                {{ form.password.label_tag }}
+                {{ form.password }}
+            </div>
+
+            <button type="submit" class="btn">Sign In</button>
+
+            <div class="signup-link">
+                Don’t have an account? <a href="{% url 'accounts:signup' %}">Sign Up</a>
+            </div>
+        </form>
+    </div>
+
+    <script>
+        // Smooth focus effect
+        document.querySelectorAll('input').forEach((input) => {
+            input.addEventListener('focus', () => {
+                input.style.boxShadow = '0 0 10px rgba(37,99,235,0.6)';
+            });
+            input.addEventListener('blur', () => {
+                input.style.boxShadow = 'none';
+            });
+        });
+    </script>
+</body>
+</html>

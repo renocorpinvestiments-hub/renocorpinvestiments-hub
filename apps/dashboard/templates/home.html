@@ -1,0 +1,83 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Renocorp Home — Dark</title>
+<link rel="stylesheet" href="{% static 'css/inter.css' %}">
+<style>
+  :root{
+    --bg:#0b0f13; --card:#0f161b; --muted:#9aa6b2; --accent:#1db954;
+    --glass: rgba(255,255,255,0.03); --outline: rgba(255,255,255,0.06);
+    --danger: #ff6b6b; --white: #e6eef3;
+  }
+  *{box-sizing:border-box}
+  body{margin:0; font-family: Inter, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial; background:var(--bg); color:var(--white); -webkit-font-smoothing:antialiased; -moz-osx-font-smoothing:grayscale; height:100vh; display:flex; flex-direction:column;}
+  .app{padding:14px; padding-bottom:80px; max-width:720px; margin:0 auto; width:100%; flex:1 1 auto;}
+  .header{display:flex; flex-direction:column; gap:10px; margin-bottom:12px;}
+  .title-row{display:flex; justify-content:space-between; align-items:center;}
+  .title-row h1{margin:0; font-size:18px; letter-spacing:0.6px;}
+  .card{background:linear-gradient(180deg, rgba(255,255,255,0.015), transparent); border:1px solid var(--outline); border-radius:12px; overflow:hidden; position:relative; display:flex; flex-direction:column; padding:16px; gap:12px;}
+  .stats-vertical{display:flex; flex-direction:column; gap:12px;}
+  .stat-box{background:var(--glass); padding:12px; border-radius:10px; text-align:center;}
+  .stat-box h3{margin:0; font-size:14px; color:var(--muted);}
+  .stat-box p{margin:4px 0 0; font-weight:700; color:var(--white);}
+  .notifications{margin-top:16px; display:flex; flex-direction:column; gap:8px;}
+  .notif-card{background:var(--card); padding:12px; border-radius:10px; border:1px solid var(--outline); color:var(--muted); font-size:13px;}
+  .navbar{position:fixed; bottom:0; left:0; right:0; height:62px; display:flex; justify-content:space-around; align-items:center; background:linear-gradient(180deg, rgba(7,10,12,0.98), rgba(7,10,12,0.96)); border-top:1px solid rgba(255,255,255,0.03); z-index:70;}
+  .nav-item{color:var(--muted); text-decoration:none; font-size:14px; text-align:center;}
+  .nav-item.active{color:var(--white); font-weight:700;}
+</style>
+</head>
+<body>
+<div class="app" id="app">
+  <!-- HEADER -->
+  <div class="header">
+    <div class="title-row">
+      <h1>RENOCORP</h1>
+      <div style="color:var(--muted); font-size:13px;">Home</div>
+    </div>
+  </div>
+
+  <!-- DASHBOARD CARD -->
+  <div class="card">
+    <div class="stats-vertical">
+      <div class="stat-box">
+        <h3>Today's Earnings</h3>
+        <p>UGX {{ today_earnings|default:"0" }}</p>
+      </div>
+      <div class="stat-box">
+        <h3>Balance</h3>
+        <p>UGX {{ balance|default:"0" }}</p>
+      </div>
+      <div class="stat-box">
+        <h3>Commission</h3>
+        <p>UGX {{ commission|default:"0" }}</p>
+      </div>
+      <div class="stat-box">
+        <h3>Invites</h3>
+        <p>{{ invites|default:"0" }}</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- NOTIFICATIONS -->
+  <div class="notifications">
+    {% for note in notifications %}
+      <div class="notif-card">{{ note }}</div>
+    {% empty %}
+      <div class="notif-card">No new notifications.</div>
+    {% endfor %}
+  </div>
+</div>
+
+<!-- NAVIGATION -->
+<div class="navbar">
+  <a class="nav-item active" href="{% url 'dashboard:home' %}">Home</a>
+  <a class="nav-item" href="{% url 'dashboard:tasks' %}">Tasks</a>
+  <a class="nav-item" href="{% url 'dashboard:gifts' %}">Gifts</a>
+  <a class="nav-item" href="{% url 'dashboard:account' %}">Account</a>
+</div>
+</body>
+</html>

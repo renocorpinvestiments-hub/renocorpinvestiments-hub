@@ -1,0 +1,154 @@
+{% extends "admin_panel/base.html" %}
+{% load static %}
+{% block title %}Settings | Renocorp Admin{% endblock %}
+
+{% block content %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Admin Settings | Renocorp</title>
+
+  <style>
+    body { background-color: #0d1117; color: #e6edf3; font-family: 'Inter', sans-serif; margin: 0; padding: 0; }
+    .container { max-width: 900px; margin: 2rem auto; padding: 1.5rem; }
+    h3 { text-align: center; margin-bottom: 2rem; font-size: 1.8rem; color: #58a6ff; }
+    .card { background-color: #161b22; border: 1px solid #30363d; border-radius: 10px; margin-bottom: 1.8rem; box-shadow: 0 2px 10px rgba(0,0,0,0.3); }
+    .card-header { background-color: #21262d; border-bottom: 1px solid #30363d; padding: 0.8rem 1.2rem; font-weight: 600; color: #58a6ff; }
+    .card-body { padding: 1.2rem 1.5rem; }
+    label { font-weight: 500; margin-bottom: 0.3rem; display: block; color: #c9d1d9; }
+    input[type="text"], input[type="password"], input[type="url"], input[type="email"] {
+      width: 100%; padding: 0.7rem; border: 1px solid #30363d; border-radius: 6px;
+      background-color: #0d1117; color: #e6edf3; margin-bottom: 1rem;
+    }
+    input:focus { outline: none; border-color: #58a6ff; box-shadow: 0 0 0 1px #58a6ff; }
+    .btn { display: inline-block; border: none; border-radius: 6px; padding: 0.7rem 1.2rem;
+      cursor: pointer; font-weight: 600; text-align: center; transition: all 0.2s ease; }
+    .btn-primary { background-color: #238636; color: white; } .btn-primary:hover { background-color: #2ea043; }
+    .btn-danger { background-color: #da3633; color: white; } .btn-danger:hover { background-color: #f85149; }
+
+    /* Scrollable Bottom Nav */
+    .bottom-nav {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      width: 100%;
+      background-color: #161b22;
+      border-top: 1px solid #30363d;
+      display: flex;
+      overflow-x: auto;
+      white-space: nowrap;
+      -webkit-overflow-scrolling: touch;
+      scrollbar-width: thin;
+      scrollbar-color: #58a6ff #161b22;
+      padding: 0.5rem 0;
+    }
+    .bottom-nav::-webkit-scrollbar { height: 6px; }
+    .bottom-nav::-webkit-scrollbar-thumb { background-color: #58a6ff; border-radius: 3px; }
+    .bottom-nav::-webkit-scrollbar-track { background: #161b22; }
+    .bottom-nav a {
+      display: inline-block;
+      flex: 0 0 auto;
+      padding: 0.6rem 1rem;
+      color: #8b949e;
+      text-decoration: none;
+      font-size: 0.85rem;
+      text-align: center;
+      transition: color 0.2s;
+    }
+    .bottom-nav a.active { color: #58a6ff; font-weight: 600; }
+    .bottom-nav i { font-size: 1.2rem; display: block; margin-bottom: 0.2rem; }
+  </style>
+</head>
+
+<body>
+  <div class="container">
+    <h3>Settings</h3>
+    <p style="font-size: 0.9rem; color:#8b949e; text-align:center;">
+      These settings are securely stored in your database. API credentials are handled in the server environment (.env).
+    </p>
+
+    <form method="POST" action="">
+      {% csrf_token %}
+
+      <!-- Theme -->
+      <div class="card">
+        <div class="card-header">Website Theme</div>
+        <div class="card-body">
+          <label>Choose Theme:</label>
+          <input type="radio" name="site_theme" value="light" {% if form.site_theme.value == "light" %}checked{% endif %}> Light
+          <input type="radio" name="site_theme" value="dark" {% if form.site_theme.value == "dark" %}checked{% endif %}> Dark
+        </div>
+      </div>
+
+      <!-- Security -->
+      <div class="card">
+        <div class="card-header">Admin Security</div>
+        <div class="card-body">
+          <label>Admin Username</label>
+          <input type="text" value="{{ request.user.username }}" readonly>
+
+          <label>New Password</label>
+          <input type="password" name="new_password">
+
+          <label>Confirm Password</label>
+          <input type="password" name="confirm_password">
+        </div>
+      </div>
+
+      <!-- Email Settings -->
+      <div class="card">
+        <div class="card-header">Email & Support</div>
+        <div class="card-body">
+          <label>Support WhatsApp Number</label>
+          {{ form.help_whatsapp_number }}
+
+          <label>Support Email</label>
+          {{ form.support_email }}
+
+          <label>Email Host (e.g., smtp.gmail.com)</label>
+          {{ form.email_host }}
+
+          <label>Email Port (e.g., 587)</label>
+          {{ form.email_port }}
+
+          <label>Email Username</label>
+          {{ form.email_host_user }}
+
+          <label>Email Password</label>
+          {{ form.email_host_password }}
+        </div>
+      </div>
+
+      <button type="submit" class="btn btn-primary w-100">💾 Save Settings</button>
+    </form>
+
+    <div class="text-center mt-3">
+      <a href="{% url 'admin_panel:logout' %}" class="btn btn-danger">Logout</a>
+    </div>
+  </div>
+
+  <!-- Navigation -->
+  <nav class="bottom-nav">
+    <a href="{% url 'admin_panel:users' %}"><i class="bi bi-people"></i>Users</a>
+    <a href="{% url 'admin_panel:graphs' %}"><i class="bi bi-graph-up"></i>Graphs</a>
+    <a href="{% url 'admin_panel:manual_login' %}"><i class="bi bi-person-plus"></i>Login</a>
+    <a href="{% url 'admin_panel:gift_upload' %}"><i class="bi bi-gift"></i>Gifts</a>
+    <a href="{% url 'admin_panel:settings' %}" class="active"><i class="bi bi-gear"></i>Settings</a>
+    <a href="{% url 'admin_panel:transactions' %}"><i class="bi bi-cash-stack"></i>Trans</a>
+  </nav>
+
+  <script>
+    document.querySelector('form').addEventListener('submit', function (e) {
+      const pwd = document.querySelector('input[name="new_password"]').value;
+      const confirm = document.querySelector('input[name="confirm_password"]').value;
+      if (pwd !== confirm) {
+        e.preventDefault();
+        alert('Passwords do not match. Please try again.');
+      }
+    });
+  </script>
+</body>
+</html>
+{% endblock %}

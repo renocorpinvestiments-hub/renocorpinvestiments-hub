@@ -1,0 +1,246 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>RENOCORP GIFTS</title>
+<link rel="stylesheet" href="{% static 'css/inter.css' %}">
+<style>
+  :root{
+    --bg:#0b0f13; 
+    --card:#0f161b; 
+    --muted:#9aa6b2; 
+    --accent:#1db954;
+    --glass: rgba(255,255,255,0.03); 
+    --outline: rgba(255,255,255,0.06);
+    --danger: #ff6b6b; 
+    --white: #e6eef3;
+  }
+  *{box-sizing:border-box}
+  body{
+    margin:0; 
+    font-family: Inter, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial; 
+    background:var(--bg); 
+    color:var(--white); 
+    -webkit-font-smoothing:antialiased; 
+    -moz-osx-font-smoothing:grayscale; 
+    display:flex; 
+    flex-direction:column; 
+    min-height:100vh;
+  }
+  .screen{
+    padding:14px; 
+    flex:1 1 auto; 
+    max-width:720px; 
+    margin:0 auto; 
+    display:flex; 
+    flex-direction:column; 
+    gap:14px;
+  }
+  .offer{
+    background:linear-gradient(180deg, rgba(255,255,255,0.015), transparent);
+    border-radius:12px;
+    padding:14px;
+    border:1px solid var(--outline);
+  }
+  .offer h2{margin:0; font-size:18px; letter-spacing:0.6px;}
+  .offer .meta{font-size:13px; color:var(--muted); margin-top:6px;}
+  .offer .stats{display:flex; justify-content:space-between; margin-top:10px; font-size:13px; color:var(--muted);}
+  .invite-btn{
+    margin-top:12px; 
+    padding:10px 16px; 
+    border-radius:999px; 
+    background:var(--accent); 
+    border:none; 
+    color:#02120a; 
+    font-weight:700; 
+    cursor:pointer;
+  }
+
+  /* Video grid */
+  .videos-section{display:flex; flex-direction:column; gap:10px;}
+  .videos-grid{
+    display:grid; 
+    grid-template-columns:repeat(2,1fr); 
+    gap:12px;
+  }
+  .card{
+    background:linear-gradient(180deg, rgba(255,255,255,0.015), transparent); 
+    border-radius:12px; 
+    overflow:hidden; 
+    min-height:160px; 
+    border:1px solid var(--outline); 
+    display:flex; 
+    flex-direction:column; 
+    position:relative; 
+    cursor:pointer;
+  }
+  .thumb{
+    position:relative; 
+    height:120px; 
+    background-size:cover; 
+    background-position:center;
+  }
+  .play-small{
+    position:absolute; 
+    width:36px; 
+    height:36px; 
+    border-radius:8px; 
+    right:10px; 
+    bottom:8px; 
+    display:flex; 
+    align-items:center; 
+    justify-content:center; 
+    background:linear-gradient(180deg, var(--accent), #22c1c3); 
+    border:1px solid rgba(255,255,255,0.06);
+  }
+  .play-small svg{width:14px; height:14px; fill:#fff; transform:translateX(1px);}
+  .card-body{padding:10px; display:flex; flex-direction:column; gap:6px;}
+  .video-desc{font-size:13px; color:var(--muted); min-height:34px;}
+  .reward{font-size:12px; color:var(--muted); text-align:right;}
+  .completed-overlay{
+    position:absolute; left:8px; right:8px; top:8px; 
+    background: rgba(0,0,0,0.5); 
+    border-radius:10px; 
+    padding:8px; 
+    display:flex; 
+    justify-content:center; 
+    align-items:center; 
+    color:var(--accent); 
+    font-weight:800; 
+    letter-spacing:0.6px; 
+    font-size:13px; 
+    opacity:0; 
+    transform:translateY(-6px); 
+    transition: all 220ms ease; 
+    pointer-events:none;
+  }
+  .card.completed .completed-overlay{opacity:1; transform:translateY(0);}
+
+  /* Fullscreen modal */
+  .player-modal{position:fixed; inset:0; display:none; background:linear-gradient(180deg, rgba(0,0,0,0.95), rgba(0,0,0,0.98)); align-items:center; justify-content:center; padding:18px; z-index:9999;}
+  .player-modal.open{display:flex;}
+  .player-frame{width:100%; max-width:720px; border-radius:12px; overflow:hidden; background:#000; position:relative; display:flex; flex-direction:column; align-items:stretch; height:78vh;}
+  .player-top{display:flex; align-items:center; justify-content:flex-start; padding:12px;}
+  .back-btn{color:var(--white); background:transparent; border-radius:10px; width:36px; height:36px; display:flex; align-items:center; justify-content:center; font-weight:700; font-size:22px; border:1px solid rgba(255,255,255,0.06); cursor:pointer;}
+  .player-content{flex:1 1 auto; display:flex; align-items:center; justify-content:center; position:relative; background:#000;}
+  .center-play{width:88px; height:88px; border-radius:999px; background:rgba(255,255,255,0.04); display:flex; align-items:center; justify-content:center; border:1px solid rgba(255,255,255,0.03); cursor:pointer;}
+  .center-play svg{width:36px;height:36px; fill:var(--white); margin-left:4px;}
+  .swipe-up-hint{position:absolute; bottom:80px; left:50%; transform:translateX(-50%); color:var(--muted); font-size:13px; display:flex; flex-direction:column; align-items:center; gap:6px;}
+  .swipe-arrows{display:flex; flex-direction:column; gap:4px; align-items:center;}
+  .swipe-arrows div{width:14px; height:6px; border-left:8px solid transparent; border-right:8px solid transparent; border-bottom:8px solid var(--muted); opacity:0.9;}
+  .player-comment{position:absolute; right:12px; bottom:12px; z-index:40; background:var(--accent); padding:10px 14px; border-radius:12px; font-weight:700; border:1px solid rgba(255,255,255,0.04); cursor:pointer;}
+  .player-title{padding:10px 14px; font-size:13px; color:var(--muted);}
+
+  /* Bottom navbar */
+  .navbar{position:fixed; bottom:0; left:0; right:0; height:62px; display:flex; justify-content:space-around; align-items:center; background:linear-gradient(180deg, rgba(7,10,12,0.98), rgba(7,10,12,0.96)); border-top:1px solid rgba(255,255,255,0.03); z-index:70;}
+  .nav-item{color:var(--muted); text-decoration:none; font-size:14px; text-align:center;}
+  .nav-item.active{color:var(--white); font-weight:700;}
+
+  /* Responsive adjustments */
+  @media(max-width:480px){
+    .screen{padding:10px;}
+    .offer h2{font-size:16px;}
+    .offer .stats{flex-direction:column; gap:4px;}
+    .invite-btn{width:100%; padding:12px; font-size:14px;}
+    .videos-grid{grid-template-columns:1fr;}
+    .thumb{height:140px;}
+  }
+  @media(min-width:700px){
+    .videos-grid{grid-template-columns:repeat(3,1fr);}
+    .thumb{height:140px;}
+  }
+  @media(min-width:1024px){
+    .screen{max-width:960px;}
+    .thumb{height:180px;}
+  }
+</style>
+</head>
+<body>
+<div class="screen" id="screen">
+  <!-- Gifts offer header -->
+  <div class="offer">
+    <h2>RENOCORP GIFTS</h2>
+    <div class="meta">[Gift acquisition transmission]</div>
+    <div class="stats">
+      <div>Total invites required: {{ current_offer.invites_required|default:'----' }}</div>
+      <div>Invites done: {{ current_offer.invites_done|default:'----' }}</div>
+    </div>
+    <button id="inviteBtn" class="invite-btn">Invite</button>
+  </div>
+
+  <!-- Extra videos / gifts -->
+  <div class="videos-section">
+    <div style="display:flex; justify-content:space-between; align-items:center;">
+      <div style="font-weight:800">Extra videos</div>
+      <div style="font-size:12px; color:var(--muted)">scroll to view more</div>
+    </div>
+    <div class="videos-grid" id="videosGrid">
+      {% for v in extra_videos %}
+      <article class="card" data-id="{{ v.id }}" data-url="{{ v.url }}" data-title="{{ v.title|escapejs }}" data-reward="{{ v.reward }}">
+        <div class="completed-overlay">TASK COMPLETED</div>
+        <div class="thumb" style="background-image:url('{{ v.thumbnail }}')">
+          <div class="play-small" aria-hidden>
+            <svg viewBox="0 0 24 24" focusable="false"><path d="M5 3v18l15-9z"></path></svg>
+          </div>
+        </div>
+        <div class="card-body">
+          <div class="video-desc">{{ v.title }}</div>
+          <div class="reward">+{{ v.reward }} UGX</div>
+        </div>
+      </article>
+      {% empty %}
+      <div style="grid-column:1/-1; padding:12px; color:var(--muted);">No extra videos</div>
+      {% endfor %}
+    </div>
+  </div>
+</div>
+
+<!-- Fullscreen player modal -->
+<div id="playerModal" class="player-modal" aria-hidden="true" role="dialog">
+  <div class="player-frame" id="playerFrame">
+    <div class="player-top">
+      <button id="playerBack" class="back-btn">←</button>
+    </div>
+    <div class="player-content" id="playerContent">
+      <div class="center-play" id="centerPlay" role="button">
+        <svg viewBox="0 0 24 24" focusable="false"><path d="M5 3v18l15-9z"></path></svg>
+      </div>
+      <div class="swipe-up-hint" aria-hidden>
+        <div class="swipe-arrows"><div></div><div></div><div></div></div>
+        <div style="font-size:12px; color:var(--muted);">swipe up for next</div>
+      </div>
+      <button id="playerComment" class="player-comment">Comment</button>
+    </div>
+    <div class="player-title" id="playerTitle"></div>
+  </div>
+</div>
+
+<!-- Bottom navbar -->
+<div class="navbar">
+  <a href="{% url 'dashboard:home' %}" class="nav-item {% if current_page=='home' %}active{% endif %}">Home</a>
+  <a href="{% url 'dashboard:gifts' %}" class="nav-item {% if current_page=='gifts' %}active{% endif %}">Gifts</a>
+  <a href="{% url 'dashboard:tasks' %}" class="nav-item {% if current_page=='tasks' %}active{% endif %}">Tasks</a>
+  <a href="{% url 'dashboard:account' %}" class="nav-item {% if current_page=='account' %}active{% endif %}">Account</a>
+</div>
+
+<script src="{% static 'js/gifts_player.js' %}"></script>
+<script>
+  // Invite button logic
+  const inviteBtn = document.getElementById('inviteBtn');
+  inviteBtn.addEventListener('click', () => {
+    const code = "{{ request.user.invitation_code }}";
+    const signupPath = "{% url 'accounts:signup' %}";
+    const url = window.location.origin + signupPath + '?invite=' + encodeURIComponent(code);
+    const text = `Join Renocorp using my invite code ${code}: ${url}`;
+    if(navigator.share){
+      navigator.share({title:'Join Renocorp', text, url}).catch(()=>navigator.clipboard.writeText(text));
+    } else {
+      navigator.clipboard.writeText(text); 
+      alert('Invite link copied to clipboard');
+    }
+  });
+</script>
+</body>
+</html>

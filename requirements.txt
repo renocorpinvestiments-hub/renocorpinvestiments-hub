@@ -1,0 +1,39 @@
+# --- Core Django Framework ---
+Django==5.1.2
+
+# --- API & HTTP Integrations ---
+cryptography==43.0.3              # For signing and verifying webhooks
+django-rest-framework==3.15.2     # For building API endpoints
+drf-yasg==1.21.7                  # Swagger API documentation
+httpx==0.27.2                     # Modern async HTTP client
+python-dotenv==1.0.1              # Load environment variables from .env
+requests==2.32.3                  # For Flutterwave API and external providers
+
+# --- Database & ORM ---
+django-environ==0.11.2            # Environment variable management
+psycopg2-binary==2.9.9            # PostgreSQL adapter
+
+# --- Frontend Support ---
+django-compressor==4.5            # Minify and bundle CSS/JS
+Pillow==11.0.0                    # Image processing (for uploaded images, thumbnails, etc.)
+
+# --- Monitoring & Debugging ---
+django-debug-toolbar==4.3.0       # Developer debugging
+django-extensions==3.2.3          # Useful for debugging and shell_plus
+sentry-sdk==2.19.0                # Error tracking for production
+
+# --- Security & Performance ---
+gunicorn==23.0.0                  # WSGI HTTP server for cloud deployment
+whitenoise==6.7.0                 # Serves static files efficiently
+
+# --- Task Queue & Scheduling ---
+celery==5.4.0                     # Distributed task queue
+django-celery-beat==2.7.0         # Periodic task scheduler for Celery
+django-celery-results==2.6.0      # Stores Celery task results in DB
+redis==5.0.1                      # Broker for Celery and cache backend
+gunicorn
+whitenoise
+dj-database-url
+psycopg2-binary
+celery
+redis

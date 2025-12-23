@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RENOCORP | Welcome</title>
+
+    <style>
+        :root {
+            --bg-dark: #0a0f1f;
+            --neon-blue: #3b82f6;
+            --neon-cyan: #06b6d4;
+            --text-light: #e2e8f0;
+        }
+
+        body {
+            margin: 0;
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background: radial-gradient(circle, #0f172a, #020617);
+            font-family: 'Poppins', sans-serif;
+            overflow: hidden;
+            color: var(--text-light);
+        }
+
+        .container {
+            text-align: center;
+            animation: fadeIn 1.5s ease forwards;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(40px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .checkmark {
+            font-size: 80px;
+            color: var(--neon-cyan);
+            text-shadow: 0 0 15px var(--neon-cyan), 0 0 30px var(--neon-cyan);
+            animation: glowPulse 2s infinite ease-in-out;
+        }
+
+        @keyframes glowPulse {
+            0% { text-shadow: 0 0 10px var(--neon-cyan); }
+            50% { text-shadow: 0 0 25px var(--neon-cyan); }
+            100% { text-shadow: 0 0 10px var(--neon-cyan); }
+        }
+
+        h1 {
+            font-size: 2rem;
+            margin-top: 1rem;
+            color: var(--neon-blue);
+            text-shadow: 0 0 15px var(--neon-blue), 0 0 30px var(--neon-blue);
+            letter-spacing: 1px;
+        }
+
+        p {
+            font-size: 1rem;
+            margin-top: 0.5rem;
+            opacity: 0.8;
+        }
+
+        .redirect {
+            margin-top: 2rem;
+            font-size: 0.9rem;
+            opacity: 0.6;
+        }
+    </style>
+
+    <script>
+        // Auto redirect after 3 seconds
+        setTimeout(() => {
+            window.location.href = "{% url 'accounts:login' %}";
+        }, 6000);
+    </script>
+</head>
+
+<body>
+
+    <div class="container">
+        <div class="checkmark">✔</div>
+
+        <h1>Welcome to <span style="color:#3b82f6;">RENOCORP</span></h1>
+
+        <p>
+            Where your digital investment journey begins.<br>
+            Empowering your financial future with innovation and energy.
+        </p>
+
+        <div class="redirect">
+            Redirecting you to your account...
+        </div>
+    </div>
+
+</body>
+</html>
