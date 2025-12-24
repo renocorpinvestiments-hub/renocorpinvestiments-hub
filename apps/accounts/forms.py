@@ -4,14 +4,12 @@ from .models import User
 import random
 import string
 
-
 # ------------------------------
 # Helper: OTP generator
 # ------------------------------
 def generate_otp(length=6):
     """Generate a 6-digit OTP code."""
     return ''.join(random.choices(string.digits, k=length))
-
 
 # ------------------------------
 # LOGIN FORM (for both admin & users)
@@ -24,7 +22,6 @@ class LoginForm(AuthenticationForm):
             "placeholder": "Enter username",
         })
     )
-
     password = forms.CharField(
         label="Password",
         widget=forms.PasswordInput(attrs={
@@ -33,13 +30,10 @@ class LoginForm(AuthenticationForm):
         })
     )
 
-
 # ------------------------------
 # USER SIGNUP FORM
 # ------------------------------
 class SignupForm(forms.ModelForm):
-
-    # Custom password inputs (not part of ModelForm fields)
     password = forms.CharField(
         widget=forms.PasswordInput(attrs={
             "class": "form-control",
@@ -47,7 +41,6 @@ class SignupForm(forms.ModelForm):
         }),
         required=True
     )
-
     confirm_password = forms.CharField(
         widget=forms.PasswordInput(attrs={
             "class": "form-control",
@@ -64,37 +57,16 @@ class SignupForm(forms.ModelForm):
             "age",
             "account_number",
             "email",
-            "invitation_code",  # This is the inviter's code (required)
+            "invitation_code",
         ]
         widgets = {
-            "username": forms.TextInput(attrs={
-                "class": "form-control",
-                "placeholder": "Full name",
-            }),
-            "gender": forms.Select(attrs={
-                "class": "form-control",
-            }),
-            "age": forms.NumberInput(attrs={
-                "class": "form-control",
-                "placeholder": "Age",
-            }),
-            "account_number": forms.TextInput(attrs={
-                "class": "form-control",
-                "placeholder": "Account number",
-            }),
-            "email": forms.EmailInput(attrs={
-                "class": "form-control",
-                "placeholder": "Email address",
-            }),
-            "invitation_code": forms.TextInput(attrs={
-                "class": "form-control",
-                "placeholder": "Invitation code (required)",
-            }),
+            "username": forms.TextInput(attrs={"class": "form-control", "placeholder": "Full name"}),
+            "gender": forms.Select(attrs={"class": "form-control"}),
+            "age": forms.NumberInput(attrs={"class": "form-control", "placeholder": "Age"}),
+            "account_number": forms.TextInput(attrs={"class": "form-control", "placeholder": "Account number"}),
+            "email": forms.EmailInput(attrs={"class": "form-control", "placeholder": "Email address"}),
+            "invitation_code": forms.TextInput(attrs={"class": "form-control", "placeholder": "Invitation code (required)"}),
         }
-
-    # ------------------------------
-    # FIELD VALIDATIONS
-    # ------------------------------
 
     def clean_email(self):
         email = self.cleaned_data.get("email")
@@ -116,21 +88,28 @@ class SignupForm(forms.ModelForm):
         code = self.cleaned_data.get("invitation_code")
         if not code:
             raise forms.ValidationError("Invitation code is required.")
-
-        # Check if inviter exists
         inviter = User.objects.filter(invitation_code=code).first()
         if inviter is None:
             raise forms.ValidationError("Invalid invitation code.")
-
         return code
 
     def clean(self):
         cleaned_data = super().clean()
-
         password = cleaned_data.get("password")
         confirm = cleaned_data.get("confirm_password")
-
         if password and confirm and password != confirm:
             raise forms.ValidationError("Passwords do not match.")
-
         return cleaned_data
+
+# ------------------------------
+# OTP VERIFICATION FORM
+# ------------------------------
+class OTPVerificationForm(forms.Form):
+    otp = forms.CharField(
+        max_length=6,
+        label="OTP",
+        widget=forms.TextInput(attrs={
+            "class": "form-control",
+            "placeholder": "Enter OTP",
+        })
+    )
