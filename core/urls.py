@@ -5,10 +5,10 @@ from django.conf import settings
 from django.conf.urls.static import static
 
 # -------------------------------
-# Root redirect ("/" → "/account/")
+# Root redirect ("/" → "/accounts/")
 # -------------------------------
 def root_redirect(request):
-    return redirect("/account/")
+    return redirect("/accounts/")
 
 # Optional import for AI app views
 try:
@@ -18,7 +18,7 @@ except ImportError:
 
 urlpatterns = [
     # -------------------------------
-    # ROOT (IMPORTANT: must be first)
+    # ROOT (must be first)
     # -------------------------------
     path("", root_redirect),
 
@@ -28,21 +28,19 @@ urlpatterns = [
     path("admin/", admin.site.urls),
 
     # -------------------------------
-    # Main Admin Panel
+    # Main Admin Panel (includes manual login/OTP)
     # -------------------------------
     path(
         "admin-panel/",
         include(("apps.admin_panel.urls", "admin_panel"), namespace="admin_panel"),
     ),
 
-    
-
     # -------------------------------
     # User Accounts
     # -------------------------------
     path(
         "accounts/",
-        include(("accounts.urls", "accounts"), namespace="accounts"),
+        include(("apps.accounts.urls", "accounts"), namespace="accounts"),
     ),
 
     # -------------------------------
@@ -54,12 +52,16 @@ urlpatterns = [
     ),
 
     # -------------------------------
-    # AI Apps
+    # AI Core
     # -------------------------------
     path(
         "ai_core/",
-        include(("ai_core.urls", "ai_core"), namespace="ai_core"),
+        include(("apps.ai_core.urls", "ai_core"), namespace="ai_core"),
     ),
+
+    # -------------------------------
+    # AI App
+    # -------------------------------
     path(
         "ai/",
         include(("apps.ai_app.urls", "ai_app"), namespace="ai_app"),
