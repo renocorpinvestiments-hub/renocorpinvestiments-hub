@@ -27,7 +27,7 @@ from .models import PendingManualUser, ManualUserOTP, GiftOffer, TaskControl, Pa
 from .utils import generate_otp, generate_invitation_code, generate_temporary_password, send_otp_email, send_account_created_email
 
 # Use your project's custom user model
-from accounts.models import CustomUser
+from accounts.models import User
 
 # Optional external transactions app
 try:
