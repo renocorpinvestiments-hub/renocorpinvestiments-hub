@@ -111,15 +111,11 @@ class PendingManualUserForm(forms.ModelForm):
             'temporary_password': forms.PasswordInput(attrs={'class': 'form-control'}),
             'verified': forms.CheckboxInput(attrs={'class': 'form-check-input'}),
         }
-# ============================================================
-# MANUAL USER OTP FORM
-# ============================================================
 class ManualUserOTPForm(forms.ModelForm):
     class Meta:
         model = ManualUserOTP
-        fields = ['pending', 'otp_code', 'expires_at']
+        fields = ['otp_code', 'expires_at']  # removed 'pending'
         widgets = {
-            'pending': forms.Select(attrs={'class': 'form-select'}),
             'otp_code': forms.TextInput(attrs={'class': 'form-control'}),
             'expires_at': forms.DateTimeInput(attrs={'class': 'form-control', 'type': 'datetime-local'}),
         }
