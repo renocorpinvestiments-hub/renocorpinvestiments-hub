@@ -160,7 +160,7 @@ CELERY_BEAT_SCHEDULE = {
 # -----------------------------------------------------------------------------
 # FLUTTERWAVE (SAFE)
 # -----------------------------------------------------------------------------
-FLUTTERWAVE_PUBLIC_KEY = env('FLUTTERWAVE_PUBLIC_KEY', default='')
+FLUTTERWAVE_PUBLIC_KEY = env('FLUTTERWAVE_PUBLIC_KEY1', default='')
 FLUTTERWAVE_SECRET_KEY = env('FLUTTERWAVE_SECRET_KEY', default='')
 FLUTTERWAVE_ENCRYPTION_KEY = env('FLUTTERWAVE_ENCRYPTION_KEY', default='')
 
