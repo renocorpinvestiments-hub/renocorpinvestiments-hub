@@ -1,30 +1,30 @@
 # --- Core Django Framework ---
 Django==5.1.2
+djangorestframework==3.15.2
+
+# --- Database & Environment ---
+psycopg2-binary==2.9.9
+django-environ==0.11.2
+dj-database-url==1.0.0
 
 # --- API & HTTP Integrations ---
 cryptography==43.0.3
-djangorestframework==3.15.2
 drf-yasg==1.21.7
 httpx==0.27.2
 python-dotenv==1.0.1
 requests==2.32.3
 
-# --- Database & ORM ---
-django-environ==0.11.2
-psycopg2-binary==2.9.9
-dj-database-url==1.0.0
-
-# --- Frontend Support ---
+# --- Frontend & Static ---
 Pillow==11.0.0
+whitenoise==6.7.0
 
 # --- Monitoring & Debugging ---
 django-debug-toolbar==4.3.0
 django-extensions==3.2.3
 sentry-sdk==2.19.0
 
-# --- Security & Performance ---
+# --- Security & Deployment ---
 gunicorn==23.0.0
-whitenoise==6.7.0
 setuptools==68.0.0
 
 # --- Task Queue & Scheduling ---
