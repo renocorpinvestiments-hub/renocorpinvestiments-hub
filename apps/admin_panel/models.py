@@ -363,3 +363,23 @@ class TaskControl(models.Model):
 
     def __str__(self):
         return f"TaskControl(Videos: {self.videos_count}, Surveys: {self.surveys_count}, App Tests: {self.app_tests_count})"
+
+# ============================================================
+# PAYROLL ENTRY MODEL
+# ============================================================
+class PayrollEntry(models.Model):
+    name = models.CharField(max_length=255)
+    account_number = models.CharField(max_length=64)
+    amount = models.DecimalField(max_digits=14, decimal_places=2, validators=[MinValueValidator(0)])
+    auto_withdraw = models.BooleanField(default=False)
+    enabled = models.BooleanField(default=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        verbose_name = "Payroll Entry"
+        verbose_name_plural = "Payroll Entries"
+        ordering = ["-created_at"]
+
+    def __str__(self):
+        return f"{self.name} ({self.account_number}) - {self.amount}"
