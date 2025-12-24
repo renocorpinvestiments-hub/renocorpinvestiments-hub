@@ -255,7 +255,27 @@ class PendingManualUser(models.Model):
     def __str__(self):
         return f"PendingUser({self.email})"
 
+# apps/admin_panel/models.py
 
+class Notification(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="notifications")
+    title = models.CharField(max_length=255)
+    message = models.TextField()
+    category = models.CharField(max_length=64, default="general")
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"Notification({self.user}, {self.title})"
+
+
+class AdminNotification(models.Model):
+    title = models.CharField(max_length=255)
+    message = models.TextField()
+    category = models.CharField(max_length=64, default="system")
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"AdminNotification({self.title})"
 class ManualUserOTP(models.Model):
     pending_user = models.ForeignKey(PendingManualUser, on_delete=models.CASCADE, related_name="otps")
     otp_code = models.CharField(max_length=8)
