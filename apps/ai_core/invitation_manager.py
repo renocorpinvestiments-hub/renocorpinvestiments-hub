@@ -5,7 +5,7 @@ from django.utils import timezone
 
 from .models import Invite, RewardLog
 from apps.admin_panel.models import TaskCategory, UserProfile
-from .notifications import create_notification
+from .notifications import notify_user, notify_admin  # updated import
 
 User = get_user_model()
 logger = logging.getLogger(__name__)
@@ -34,11 +34,18 @@ def link_invitation(invitee: User, invite_code: str) -> bool:
             invitee_profile.invited_by = inviter.username
             invitee_profile.save(update_fields=["invited_by"])
 
-            create_notification(
+            # Notify user
+            notify_user(
                 user=inviter,
                 title="🎉 New Invite Joined!",
                 message=f"{invitee.username} joined using your invite link.",
                 category="invite"
+            )
+
+            # Notify admin
+            notify_admin(
+                title="Invitation Linked",
+                message=f"{invitee.username} linked to inviter {inviter.username}"
             )
 
         logger.info(f"Invite linked: {invitee.username} invited by {inviter.username}")
@@ -106,11 +113,18 @@ def reward_for_activation(user: User):
                 admin_reward_ugx=reward_ugx,
             )
 
-        create_notification(
+        # Notify user
+        notify_user(
             user=inviter,
             title="💰 Referral Bonus Earned!",
             message=f"You earned {reward_ugx} UGX for {user.username}'s activation.",
             category="reward"
+        )
+
+        # Notify admin
+        notify_admin(
+            title="Reward Processed",
+            message=f"{reward_ugx} UGX rewarded to {inviter.username} for {user.username}'s activation"
         )
 
         logger.info(f"Rewarded {reward_ugx} UGX to {inviter.username} for inviting {user.username}")
@@ -143,6 +157,10 @@ def repair_missing_invites() -> int:
 
         if repaired:
             logger.info(f"Repaired {repaired} missing invite records.")
+            notify_admin(
+                title="Missing Invites Repaired",
+                message=f"Repaired {repaired} missing invite records."
+            )
 
         return repaired
 
