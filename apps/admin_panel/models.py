@@ -292,3 +292,45 @@ class AdminNotification(models.Model):
 
     def __str__(self):
         return f"AdminNotification({self.title})"
+
+# ============================================================
+# GIFT OFFER MODEL
+# ============================================================
+class GiftOffer(models.Model):
+    title = models.CharField(max_length=255)
+    description = models.TextField(blank=True, null=True)
+    reward_amount = models.DecimalField(
+        max_digits=12,
+        decimal_places=2,
+        validators=[MinValueValidator(0)]
+    )
+    required_invites = models.PositiveIntegerField(
+        default=0,
+        help_text="Number of invites required to unlock this gift offer"
+    )
+    time_limit_hours = models.PositiveIntegerField(
+        default=0,
+        help_text="Time limit in hours to complete the offer (0 = no limit)"
+    )
+    extra_video_count = models.PositiveIntegerField(
+        default=0,
+        help_text="Extra videos the user can watch to earn additional rewards"
+    )
+    earning_per_extra_video = models.DecimalField(
+        max_digits=12,
+        decimal_places=2,
+        default=0,
+        validators=[MinValueValidator(0)],
+        help_text="Reward for each extra video"
+    )
+    active = models.BooleanField(default=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        verbose_name = "Gift Offer"
+        verbose_name_plural = "Gift Offers"
+        ordering = ["-created_at"]
+
+    def __str__(self):
+        return f"GiftOffer({self.title}, Reward: {self.reward_amount})"
