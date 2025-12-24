@@ -5,7 +5,7 @@ from django.db.models.signals import post_save, pre_save
 from django.dispatch import receiver
 from django.contrib.auth import get_user_model
 from .models import Task, RewardLog, Transaction, IdempotencyKey
-from .invitation_manager import InvitationManager
+from .invitation_manager import reward_for_activation
 
 logger = logging.getLogger("ai_core.signals")
 User = get_user_model()
