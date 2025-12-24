@@ -1,5 +1,5 @@
 """
-views.py — AI Core (FINAL, CANONICAL)
+views.py — AI Core (FINAL, CANONICAL, PRODUCTION-READY)
 """
 
 # =========================
@@ -28,7 +28,6 @@ from .models import (
     RewardLog,
     WebhookLog,
     IdempotencyKey,
-    TaskCategory,
 )
 from .utils import (
     PROVIDERS,
@@ -96,10 +95,7 @@ def iframe_offerwalls_view(request):
             if url:
                 data[provider] = url
         except Exception:
-            logger.exception(
-                "Failed to build iframe URL",
-                extra={"provider": provider},
-            )
+            logger.exception("Failed to build iframe URL", extra={"provider": provider})
 
     return JsonResponse({"offerwalls": data})
 
@@ -122,10 +118,7 @@ def refresh_api_tasks_view(request):
         try:
             result = fetcher(None)
         except Exception:
-            logger.exception(
-                "Provider fetch failed",
-                extra={"provider": provider},
-            )
+            logger.exception("Provider fetch failed", extra={"provider": provider})
             continue
 
         for offer in result.get("offers", []):
@@ -154,10 +147,7 @@ def refresh_api_tasks_view(request):
 @require_http_methods(["POST"])
 def provider_webhook_view(request, provider: str):
     if not provider_enabled(provider):
-        logger.warning(
-            "Postback for disabled provider",
-            extra={"provider": provider},
-        )
+        logger.warning("Postback for disabled provider", extra={"provider": provider})
         return HttpResponse(status=404)
 
     cfg = PROVIDERS.get(provider)
@@ -167,10 +157,7 @@ def provider_webhook_view(request, provider: str):
     try:
         payload = json.loads(request.body.decode())
     except json.JSONDecodeError:
-        logger.warning(
-            "Invalid JSON postback",
-            extra={"provider": provider},
-        )
+        logger.warning("Invalid JSON postback", extra={"provider": provider})
         return HttpResponse(status=400)
 
     raw_body = request.body.decode()
@@ -197,11 +184,7 @@ def provider_webhook_view(request, provider: str):
             return HttpResponse(status=403)
 
     elif method == "ip":
-        allowed_ips = getattr(
-            settings,
-            f"{provider.upper()}_POSTBACK_IPS",
-            [],
-        )
+        allowed_ips = getattr(settings, f"{provider.upper()}_POSTBACK_IPS", [])
         if not verify_ip(request.META.get("REMOTE_ADDR"), allowed_ips):
             return HttpResponse(status=403)
 
@@ -217,10 +200,7 @@ def provider_webhook_view(request, provider: str):
     if not user_id or not tx_id or reward <= 0:
         return HttpResponse(status=400)
 
-    user = get_object_or_404(
-        User.objects.select_related("profile"),
-        pk=user_id,
-    )
+    user = get_object_or_404(User.objects.select_related("profile"), pk=user_id)
 
     task = Task.objects.filter(
         provider_name=provider,
@@ -229,13 +209,8 @@ def provider_webhook_view(request, provider: str):
 
     category_code = task.category if task else "other"
 
-    try:
-        admin_cap = TaskCategory.objects.get(
-            code=category_code
-        ).reward_amount
-    except TaskCategory.DoesNotExist:
-        admin_cap = reward
-
+    # 🔐 Authoritative reward source
+    admin_cap = task.admin_reward_ugx if task else reward
     final_reward = min(reward, admin_cap)
 
     # -----------------------------
@@ -273,6 +248,4 @@ def provider_webhook_view(request, provider: str):
     except IntegrityError:
         return JsonResponse({"status": "duplicate"})
 
-    return JsonResponse(
-        {"status": "ok", "reward_ugx": final_reward}
-    )
+    return JsonResponse({"status": "ok", "reward_ugx": final_reward})
