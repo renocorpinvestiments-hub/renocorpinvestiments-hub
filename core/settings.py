@@ -164,7 +164,17 @@ FLUTTERWAVE_PUBLIC_KEY = env('FLUTTERWAVE_PUBLIC_KEY', default='')
 FLUTTERWAVE_SECRET_KEY = env('FLUTTERWAVE_SECRET_KEY', default='')
 FLUTTERWAVE_ENCRYPTION_KEY = env('FLUTTERWAVE_ENCRYPTION_KEY', default='')
 
+# Read Flutterwave public key safely
+FLUTTERWAVE_PUBLIC_KEY = env('FLUTTERWAVE_PUBLIC_KEY', default=None)
+
+# Enable payments only if the key exists
 FEATURE_PAYMENTS_ENABLED = bool(FLUTTERWAVE_PUBLIC_KEY)
+
+# Optional: warn in logs if the key is missing
+if FEATURE_PAYMENTS_ENABLED:
+    print("💳 Flutterwave payments are enabled.")
+else:
+    print("⚠️ Flutterwave public key not set. Payments are disabled.")
 
 # -----------------------------------------------------------------------------
 # OFFERWALLS (ALL SAFE)
