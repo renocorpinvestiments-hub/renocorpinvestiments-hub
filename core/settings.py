@@ -2,7 +2,6 @@
 # DJANGO PRODUCTION SETTINGS FOR RENOCORP
 # -----------------------------------------------------------------------------
 import os
-import sys
 import logging
 from pathlib import Path
 from celery.schedules import crontab
@@ -21,7 +20,7 @@ env = environ.Env(DEBUG=(bool, False))
 environ.Env.read_env(BASE_DIR / '.env')
 
 # -----------------------------------------------------------------------------
-# CORE SETTINGS (SAFE)
+# CORE SETTINGS
 # -----------------------------------------------------------------------------
 SECRET_KEY = env('SECRET_KEY', default='unsafe-dev-key-change-me')
 DEBUG = env.bool('DEBUG', default=False)
@@ -50,15 +49,8 @@ EMAIL_HOST_PASSWORD = env('EMAIL_HOST_PASSWORD', default='')
 DEFAULT_FROM_EMAIL = EMAIL_HOST_USER or 'no-reply@example.com'
 
 # -----------------------------------------------------------------------------
-# DATABASE CONFIGURATION (RENDER-PROOF)
+# DATABASE CONFIGURATION
 # -----------------------------------------------------------------------------
-# Ensure psycopg2-binary is installed
-try:
-    import psycopg2  # noqa: F401
-except ImportError:
-    print("❌ psycopg2-binary is not installed. Install it with 'pip install psycopg2-binary'")
-    sys.exit(1)
-
 DATABASE_URL = env('DATABASE_URL', default='sqlite:///' + str(BASE_DIR / 'db.sqlite3'))
 
 DATABASES = {
@@ -69,7 +61,6 @@ DATABASES = {
     )
 }
 
-# Explicitly set PostgreSQL engine if needed
 if DATABASE_URL.startswith("postgres://") or DATABASE_URL.startswith("postgresql://"):
     DATABASES['default']['ENGINE'] = 'django.db.backends.postgresql'
 
@@ -205,7 +196,7 @@ FLUTTERWAVE_PUBLIC_KEY = env('FLUTTERWAVE_PUBLIC_KEY', default='')
 FLUTTERWAVE_SECRET_KEY = env('FLUTTERWAVE_SECRET_KEY', default='')
 FLUTTERWAVE_ENCRYPTION_KEY = env('FLUTTERWAVE_ENCRYPTION_KEY', default='')
 
-FEATURE_PAYMENTS_ENABLED = bool(env('FLUTTERWAVE_PUBLIC_KEY', default=''))
+FEATURE_PAYMENTS_ENABLED = bool(FLUTTERWAVE_PUBLIC_KEY)
 
 if FEATURE_PAYMENTS_ENABLED:
     print("💳 Flutterwave payments are enabled.")
