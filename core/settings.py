@@ -2,6 +2,7 @@
 # DJANGO PRODUCTION SETTINGS FOR RENOCORP
 # -----------------------------------------------------------------------------
 import os
+import sys
 import logging
 from pathlib import Path
 from celery.schedules import crontab
@@ -38,7 +39,7 @@ ADMIN_USERNAME = env('ADMIN_USERNAME', default='')
 ADMIN_PASSWORD = env('ADMIN_PASSWORD', default='')
 
 # -----------------------------------------------------------------------------
-# EMAIL CONFIGURATION (SAFE)
+# EMAIL CONFIGURATION
 # -----------------------------------------------------------------------------
 EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
 EMAIL_HOST = env('EMAIL_HOST', default='smtp.gmail.com')
@@ -49,15 +50,32 @@ EMAIL_HOST_PASSWORD = env('EMAIL_HOST_PASSWORD', default='')
 DEFAULT_FROM_EMAIL = EMAIL_HOST_USER or 'no-reply@example.com'
 
 # -----------------------------------------------------------------------------
-# DATABASE CONFIGURATION (SAFE)
+# DATABASE CONFIGURATION (RENDER-PROOF)
 # -----------------------------------------------------------------------------
+# Ensure psycopg2-binary is installed
+try:
+    import psycopg2  # noqa: F401
+except ImportError:
+    print("❌ psycopg2-binary is not installed. Install it with 'pip install psycopg2-binary'")
+    sys.exit(1)
+
+DATABASE_URL = env('DATABASE_URL', default='sqlite:///' + str(BASE_DIR / 'db.sqlite3'))
+
 DATABASES = {
     'default': dj_database_url.config(
-        default=env('DATABASE_URL', default='sqlite:///' + str(BASE_DIR / 'db.sqlite3')),
+        default=DATABASE_URL,
         conn_max_age=600,
-        ssl_require=False
+        ssl_require=DATABASE_URL.startswith("postgres://") or DATABASE_URL.startswith("postgresql://")
     )
 }
+
+# Explicitly set PostgreSQL engine if needed
+if DATABASE_URL.startswith("postgres://") or DATABASE_URL.startswith("postgresql://"):
+    DATABASES['default']['ENGINE'] = 'django.db.backends.postgresql'
+
+# Optional: log database info on startup
+print(f"✅ Database engine: {DATABASES['default']['ENGINE']}")
+print(f"✅ Database URL: {DATABASE_URL}")
 
 # -----------------------------------------------------------------------------
 # INSTALLED APPS
@@ -78,7 +96,7 @@ INSTALLED_APPS = [
     'django_celery_results',
     'django_extensions',
 
-    # Project apps (inside apps/)
+    # Project apps
     'apps.dashboard.apps.DashboardConfig',
     'apps.admin_panel.apps.AdminPanelConfig',
     'apps.ai_core.apps.AiCoreConfig',
