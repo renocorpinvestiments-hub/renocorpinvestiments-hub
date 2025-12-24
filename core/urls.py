@@ -35,16 +35,7 @@ urlpatterns = [
         include(("apps.admin_panel.urls", "admin_panel"), namespace="admin_panel"),
     ),
 
-    # -------------------------------
-    # Manual Admin Panel (OTP)
-    # -------------------------------
-    path(
-        "admin/manual/",
-        include(
-            ("apps.admin_panel.manual_urls", "admin_panel_manual"),
-            namespace="admin_panel_manual",
-        ),
-    ),
+    
 
     # -------------------------------
     # User Accounts
