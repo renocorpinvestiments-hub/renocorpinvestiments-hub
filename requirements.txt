@@ -24,7 +24,8 @@ sentry-sdk==2.19.0                # Error tracking for production
 
 # --- Security & Performance ---
 gunicorn==23.0.0                  # WSGI HTTP server for cloud deployment
-whitenoise==6.7.0                 # Serves static files efficiently
+whitenoise==6.7.0  # Serves static files efficiently
+setuptools==68.0.0
 
 # --- Task Queue & Scheduling ---
 celery==5.4.0                     # Distributed task queue
