@@ -41,7 +41,7 @@ def handle_transaction_completion(sender, instance: Transaction, created, **kwar
     if instance.tx_type == "subscription" and instance.status == "success":
         try:
             if hasattr(instance.user, "invited_by") and instance.user.invited_by:
-                InvitationManager.reward_for_activation(instance.user)
+                reward_for_activation(instance.user)
         except Exception as e:
             logger.exception(f"Failed to reward inviter for user {instance.user.id}: {e}")
 
