@@ -118,16 +118,14 @@ def admin_dashboard(request):
         {"users_count": users_count, "active_users": active_users, "gifts_count": gifts_count},
     )
 
-# ------------------------------------------------
-# Manual User Login (Free Trial)
-# ------------------------------------------------
 @staff_member_required
 def manual_login(request):
     if request.method == "POST":
         form = PendingManualUserForm(request.POST)
         if form.is_valid():
             pending = form.save(commit=False)
-            pending.admin_username = request.user.username
+            # Track which admin created this manual user (optional)
+            pending.invited_by = request.user.username
             pending.save()
 
             otp = generate_otp()
@@ -141,10 +139,7 @@ def manual_login(request):
     else:
         form = PendingManualUserForm()
     return render(request, "admin/manual_login.html", {"form": form, "page_title": "MANUAL LOGIN PAGE"})
-
-# ------------------------------------------------
-# Verify OTP
-# ------------------------------------------------
+    
 @staff_member_required
 def verify_otp(request):
     pending_id = request.session.get('pending_manual_user_id')
@@ -169,9 +164,11 @@ def verify_otp(request):
                     messages.error(request, "OTP expired.")
                     log_event(f"Expired OTP attempt for {pending.email}", level='WARNING', user=request.user)
                 else:
-                    pending.is_verified = True
+                    # Update verified flag
+                    pending.verified = True
                     pending.save()
 
+                    # Create actual user
                     temp_password = generate_temporary_password()
                     username_base = pending.email.split('@')[0]
                     username = username_base
@@ -187,12 +184,12 @@ def verify_otp(request):
                         first_name=pending.name
                     )
 
-                    # fill profile
+                    # Populate profile
                     profile = user.profile
                     profile.account_number = pending.account_number
                     profile.age = pending.age
                     profile.gender = pending.gender
-                    profile.invited_by = pending.admin_username
+                    profile.invited_by = pending.invited_by  # replaced admin_username
                     profile.invitation_code = generate_invitation_code()
                     profile.total_invitations = 0
                     profile.subscription_status = 'trial'
@@ -200,6 +197,7 @@ def verify_otp(request):
                     profile.trial_expiry = timezone.now() + timedelta(days=30)
                     profile.save()
 
+                    # Update pending user record with temp credentials
                     pending.invitation_code = profile.invitation_code
                     pending.temporary_password = temp_password
                     pending.save()
@@ -212,7 +210,6 @@ def verify_otp(request):
     else:
         form = ManualUserOTPForm()
     return render(request, "admin/verify_otp.html", {"form": form, "pending": pending})
-
 # ------------------------------------------------
 # Transaction / System Log Page
 # ------------------------------------------------
