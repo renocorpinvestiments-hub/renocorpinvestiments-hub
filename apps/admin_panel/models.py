@@ -334,3 +334,32 @@ class GiftOffer(models.Model):
 
     def __str__(self):
         return f"GiftOffer({self.title}, Reward: {self.reward_amount})"
+
+# ============================================================
+# TASK CONTROL MODEL
+# ============================================================
+class TaskControl(models.Model):
+    """
+    Admin-controlled global limits and earnings for tasks.
+    """
+
+    videos_count = models.PositiveIntegerField(default=0, help_text="Number of videos allowed per day")
+    video_earning = models.DecimalField(max_digits=12, decimal_places=2, default=0, validators=[MinValueValidator(0)])
+
+    surveys_count = models.PositiveIntegerField(default=0, help_text="Number of surveys allowed per day")
+    survey_earning = models.DecimalField(max_digits=12, decimal_places=2, default=0, validators=[MinValueValidator(0)])
+
+    app_tests_count = models.PositiveIntegerField(default=0, help_text="Number of app tests allowed per day")
+    app_test_earning = models.DecimalField(max_digits=12, decimal_places=2, default=0, validators=[MinValueValidator(0)])
+
+    invite_cost = models.DecimalField(max_digits=12, decimal_places=2, default=0, validators=[MinValueValidator(0)],
+                                      help_text="Cost per invite for the user")
+
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        verbose_name = "Task Control"
+        verbose_name_plural = "Task Controls"
+
+    def __str__(self):
+        return f"TaskControl(Videos: {self.videos_count}, Surveys: {self.surveys_count}, App Tests: {self.app_tests_count})"
