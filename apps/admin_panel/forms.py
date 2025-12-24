@@ -94,26 +94,23 @@ class PayrollEntryForm(forms.ModelForm):
         }
 
 
-# ============================================================
-# PENDING MANUAL USER FORM
-# ============================================================
 class PendingManualUserForm(forms.ModelForm):
     class Meta:
         model = PendingManualUser
-        fields = ['name', 'age', 'gender', 'account_number', 'email', 'admin_username', 'invitation_code', 'temporary_password', 'is_verified']
+        fields = [
+            'name', 'age', 'gender', 'account_number', 'email',
+            'invitation_code', 'temporary_password', 'verified'
+        ]
         widgets = {
             'name': forms.TextInput(attrs={'class': 'form-control'}),
             'age': forms.NumberInput(attrs={'class': 'form-control'}),
             'gender': forms.Select(attrs={'class': 'form-select'}),
             'account_number': forms.TextInput(attrs={'class': 'form-control'}),
             'email': forms.EmailInput(attrs={'class': 'form-control'}),
-            'admin_username': forms.TextInput(attrs={'class': 'form-control'}),
             'invitation_code': forms.TextInput(attrs={'class': 'form-control'}),
             'temporary_password': forms.PasswordInput(attrs={'class': 'form-control'}),
-            'is_verified': forms.CheckboxInput(attrs={'class': 'form-check-input'}),
+            'verified': forms.CheckboxInput(attrs={'class': 'form-check-input'}),
         }
-
-
 # ============================================================
 # MANUAL USER OTP FORM
 # ============================================================
