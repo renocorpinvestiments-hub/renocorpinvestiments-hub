@@ -192,7 +192,8 @@ LOGGING = {
     'disable_existing_loggers': False,
     'handlers': {'console': {'class': 'logging.StreamHandler'}},
     'root': {'handlers': ['console'], 'level': logging.INFO},
-}ADMIN_PASSWORD = env('ADMIN_PASSWORD')
+}
+ADMIN_PASSWORD = env('ADMIN_PASSWORD')
 
 # -----------------------------------------------------------------------------
 # EMAIL CONFIGURATION
