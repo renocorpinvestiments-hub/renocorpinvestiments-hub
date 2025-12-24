@@ -140,7 +140,27 @@ class IdempotencyKey(models.Model):
                 return obj, True
         except IntegrityError:
             return cls.objects.get(provider=provider, transaction_id=transaction_id), False
+class Invite(models.Model):
+    inviter = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name="sent_invites"
+    )
+    invitee = models.OneToOneField(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name="received_invite"
+    )
+    date_invited = models.DateTimeField(default=timezone.now)
 
+    class Meta:
+        indexes = [
+            models.Index(fields=["inviter"]),
+            models.Index(fields=["invitee"]),
+        ]
+
+    def __str__(self):
+        return f"{self.inviter} → {self.invitee}"
 # =============================================================
 # WEBHOOK AUDIT LOG
 # =============================================================
