@@ -6,8 +6,8 @@ from . import views
 app_name = "admin_panel"
 
 urlpatterns = [
-    # Admin auth
-    path("login/", views.admin_login, name="login"),
+    # Unified login for both users and admins
+    path("login/", views.unified_login, name="login"),
     path("logout/", views.admin_logout, name="logout"),
 
     # Dashboard
