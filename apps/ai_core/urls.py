@@ -8,7 +8,7 @@ urlpatterns = [
     # -------------------------------
     # Task endpoints
     # -------------------------------
-    path("tasks/", views.task_list_view, name="task_list"),
+    path("tasks/", views.api_task_list_view, name="task_list"),
     path("refresh-tasks/", views.refresh_tasks_view, name="refresh_tasks"),
 
     # -------------------------------
