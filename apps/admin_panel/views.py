@@ -14,7 +14,6 @@ from django.utils import timezone
 from django.db.models import Count, Sum
 from django.urls import reverse
 from django.conf import settings
-
 from .forms import (
     PendingManualUserForm,
     ManualUserOTPForm,
@@ -439,3 +438,48 @@ def graphs_view(request):
         )
 
     return render(request, "admin_panel/graphs.html", {})
+    # ==============================
+# REQUIRED ADMIN PAGE VIEWS
+# ==============================
+
+
+@login_required
+@staff_member_required
+def users(request):
+    return render(request, "admin_panel/users.html")
+
+
+@login_required
+@staff_member_required
+def gift_upload(request):
+    return render(request, "admin_panel/gift_upload.html")
+
+
+@login_required
+@staff_member_required
+def transactions(request):
+    return render(request, "admin_panel/transactions.html")
+
+
+@login_required
+@staff_member_required
+def manual_login(request):
+    return render(request, "admin_panel/manual_login.html")
+
+
+@login_required
+@staff_member_required
+def verify_otp(request):
+    return render(request, "admin_panel/verify_otp.html")
+
+
+@login_required
+@staff_member_required
+def settings_view(request):
+    return render(request, "admin_panel/settings.html")
+
+
+@login_required
+@staff_member_required
+def graphs_view(request):
+    return render(request, "admin_panel/graphs.html")
