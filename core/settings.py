@@ -24,7 +24,7 @@ environ.Env.read_env(BASE_DIR / '.env')
 # -----------------------------------------------------------------------------
 SECRET_KEY = env('SECRET_KEY', default='unsafe-dev-key-change-me')
 DEBUG = env.bool('DEBUG', default=False)
-ALLOWED_HOSTS = env.list('ALLOWED_HOSTS', default=['https://renocorpinvestiments-lwc8.onrender.com', 'localhost', '127.0.0.1'])
+ALLOWED_HOSTS = env.list('ALLOWED_HOSTS', default=['renocorpinvestiments-lwc8.onrender.com', 'localhost', '127.0.0.1'])
 
 CSRF_TRUSTED_ORIGINS = [
     f"https://{host.strip()}" for host in ALLOWED_HOSTS if host.strip() not in ['localhost', '127.0.0.1']
