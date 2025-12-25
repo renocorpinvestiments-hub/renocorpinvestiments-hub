@@ -1,19 +1,13 @@
 #!/usr/bin/env bash
-# build.sh — Run on Render during deploy
 
-# Exit immediately if a command fails
-set -e
-
-# 1️⃣ Install Python dependencies
-echo "Installing Python dependencies..."
+# Install requirements
 pip install -r requirements.txt
 
-# 2️⃣ Make migrations (if needed)
-echo "Making migrations..."
-python manage.py makemigrations --noinput
+# Make migrations (create migration files)
+python manage.py makemigrations
 
-# 3️⃣ Apply migrations
-echo "Applying migrations..."
-python manage.py migrate --noinput
+# Apply migrations (create tables in the database)
+python manage.py migrate
 
-echo "Build complete!"
+# Collect static files (optional if you have static assets)
+python manage.py collectstatic --noinput
