@@ -52,24 +52,6 @@ urlpatterns = [
         "ai_core/",
         include(("apps.ai_core.urls", "ai_core"), namespace="ai_core"),
     ),
-
-    # -------------------------------
-    # AI App
-    # -------------------------------
-    path(
-        "ai/",
-        include(("apps.ai_app.urls", "ai_app"), namespace="ai_app"),
-    ),
-]
-
-# -------------------------------
-# Optional direct route to AI graphs
-# -------------------------------
-if ai_views and hasattr(ai_views, "graphs_view"):
-    urlpatterns.append(
-        path("graphs/", ai_views.graphs_view, name="graphs")
-    )
-
 # -------------------------------
 # Media files (DEV & some PaaS)
 # -------------------------------
