@@ -115,7 +115,7 @@ def admin_logout(request):
 
 @login_required(login_url="admin_panel:login")
 @user_passes_test(is_admin)
-def admin_dashboard(request):
+def users(request):
     users_count = User.objects.count()
     active_users = User.objects.filter(is_active=True).count()
     gifts_count = GiftOffer.objects.count()
