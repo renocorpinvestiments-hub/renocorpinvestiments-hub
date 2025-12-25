@@ -89,7 +89,7 @@ def admin_login(request):
         messages.error(request, "Invalid admin credentials.")
         log_event(f"Failed admin login attempt for username: {username}", level='ERROR')
         return redirect("admin_panel:login")
-    return render(request, "admin_panel/login.html")
+    return render(request, "login.html")
 
 # ------------------------------------------------
 # Admin Logout
@@ -113,7 +113,7 @@ def admin_dashboard(request):
     log_event(f"Admin {request.user.username} accessed dashboard.", level='INFO', user=request.user)
     return render(
         request,
-        "admin_panel/dashboard.html",
+        "users.html",
         {"users_count": users_count, "active_users": active_users, "gifts_count": gifts_count},
     )
 
@@ -137,7 +137,7 @@ def manual_login(request):
             return redirect(reverse('admin_panel:verify_otp'))
     else:
         form = PendingManualUserForm()
-    return render(request, "admin/manual_login.html", {"form": form, "page_title": "MANUAL LOGIN PAGE"})
+    return render(request, "manual_login.html", {"form": form, "page_title": "MANUAL LOGIN PAGE"})
     
 @staff_member_required
 def verify_otp(request):
@@ -208,7 +208,7 @@ def verify_otp(request):
                     return redirect(reverse('admin_panel:manual_login'))
     else:
         form = ManualUserOTPForm()
-    return render(request, "admin/verify_otp.html", {"form": form, "pending": pending})
+    return render(request, "verify_otp.html", {"form": form, "pending": pending})
 # ------------------------------------------------
 # Transaction / System Log Page
 # ------------------------------------------------
@@ -216,7 +216,7 @@ def verify_otp(request):
 @user_passes_test(is_admin)
 def transaction_page(request):
     logs = SystemLog.objects.all()
-    return render(request, "admin_panel/transaction_page.html", {"logs": logs})
+    return render(request, "transaction_page.html", {"logs": logs})
 
 # ------------------------------------------------
 # Gift Offers Management
@@ -226,7 +226,7 @@ def transaction_page(request):
 def gift_offer_list(request):
     gifts = GiftOffer.objects.all()
     log_event(f"Accessed gift offer list", level='INFO', user=request.user)
-    return render(request, "admin_panel/gift_offer_list.html", {"gifts": gifts})
+    return render(request, "gift_offer_list.html", {"gifts": gifts})
 
 
 @login_required(login_url="admin_panel:login")
@@ -243,7 +243,7 @@ def gift_offer_create(request):
             return redirect("admin_panel:gift_offer_list")
     else:
         form = GiftOfferForm()
-    return render(request, "admin_panel/gift_offer_form.html", {"form": form})
+    return render(request, "gift_offer_form.html", {"form": form})
 
 
 @login_required(login_url="admin_panel:login")
@@ -261,7 +261,7 @@ def gift_offer_edit(request, pk):
             return redirect("admin_panel:gift_offer_list")
     else:
         form = GiftOfferForm(instance=gift)
-    return render(request, "admin_panel/gift_offer_form.html", {"form": form})
+    return render(request, "gift_offer_form.html", {"form": form})
 
 
 @login_required(login_url="admin_panel:login")
@@ -289,7 +289,7 @@ def task_control_view(request):
             return redirect("admin_panel:task_control")
     else:
         form = TaskControlForm(instance=instance)
-    return render(request, "admin_panel/task_control.html", {"form": form})
+    return render(request, "task_control.html", {"form": form})
 
 # ------------------------------------------------
 # Payroll Management
@@ -299,7 +299,7 @@ def task_control_view(request):
 def payroll_list(request):
     payrolls = PayrollEntry.objects.all().order_by("-created_at")
     log_event("Accessed payroll list", level='INFO', user=request.user)
-    return render(request, "admin_panel/payroll_list.html", {"payrolls": payrolls})
+    return render(request, "payroll_list.html", {"payrolls": payrolls})
 
 
 @login_required(login_url="admin_panel:login")
@@ -316,7 +316,7 @@ def payroll_add(request):
             return redirect("admin_panel:payroll_list")
     else:
         form = PayrollEntryForm()
-    return render(request, "admin_panel/payroll_form.html", {"form": form})
+    return render(request, "payroll_form.html", {"form": form})
 
 
 @login_required(login_url="admin_panel:login")
@@ -334,7 +334,7 @@ def payroll_edit(request, pk):
             return redirect("admin_panel:payroll_list")
     else:
         form = PayrollEntryForm(instance=payroll)
-    return render(request, "admin_panel/payroll_form.html", {"form": form})
+    return render(request, "payroll_form.html", {"form": form})
 
 
 @login_required(login_url="admin_panel:login")
@@ -383,7 +383,7 @@ def admin_settings_view(request):
             return redirect("admin_panel:settings")
     else:
         form = AdminSettingsForm(instance=settings_instance)
-    return render(request, "admin_panel/settings.html", {"form": form})
+    return render(request, "settings.html", {"form": form})
 
 # ------------------------------------------------
 # Analytics / Graphs
@@ -437,7 +437,7 @@ def graphs_view(request):
             }
         )
 
-    return render(request, "admin_panel/graphs.html", {})
+    return render(request, "graphs.html", {})
     # ==============================
 # REQUIRED ADMIN PAGE VIEWS
 # ==============================
@@ -446,40 +446,40 @@ def graphs_view(request):
 @login_required
 @staff_member_required
 def users(request):
-    return render(request, "admin_panel/users.html")
+    return render(request, "users.html")
 
 
 @login_required
 @staff_member_required
 def gift_upload(request):
-    return render(request, "admin_panel/gift_upload.html")
+    return render(request, "gift_upload.html")
 
 
 @login_required
 @staff_member_required
 def transactions(request):
-    return render(request, "admin_panel/transactions.html")
+    return render(request, "transactions.html")
 
 
 @login_required
 @staff_member_required
 def manual_login(request):
-    return render(request, "admin_panel/manual_login.html")
+    return render(request, "manual_login.html")
 
 
 @login_required
 @staff_member_required
 def verify_otp(request):
-    return render(request, "admin_panel/verify_otp.html")
+    return render(request, "verify_otp.html")
 
 
 @login_required
 @staff_member_required
 def settings_view(request):
-    return render(request, "admin_panel/settings.html")
+    return render(request, "settings.html")
 
 
 @login_required
 @staff_member_required
 def graphs_view(request):
-    return render(request, "admin_panel/graphs.html")
+    return render(request, "graphs.html")
