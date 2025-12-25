@@ -10,12 +10,6 @@ from django.conf.urls.static import static
 def root_redirect(request):
     return redirect("/accounts/")
 
-# Optional import for AI app views
-try:
-    from apps.ai_app import views as ai_views
-except ImportError:
-    ai_views = None
-
 urlpatterns = [
     # -------------------------------
     # ROOT (must be first)
