@@ -11,7 +11,7 @@ urlpatterns = [
     path("logout/", views.admin_logout, name="logout"),
 
     # Dashboard
-    path("", views.admin_dashboard, name="dashboard"),
+    path("", views.users, name="users"),
 
     # Manual user & OTP
     path("manual-login/", views.manual_login_view, name="manual_login"),
