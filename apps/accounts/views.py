@@ -37,16 +37,16 @@ def login_view(request):
                 admin_password = getattr(settings, "ADMIN_PASSWORD", None)
 
                 if username == admin_username and password == admin_password:
-                    return redirect("admin_panel:dashboard")
+                    return redirect("admin_panel:users")
 
                 # Normal user login
-                return redirect("user_panel:account_page")
+                return redirect("user_panel:home")
 
             messages.error(request, "Invalid username or password.")
         else:
             messages.error(request, "Please check your input fields.")
 
-    return render(request, "accounts/login.html", {"form": form})
+    return render(request, "login.html", {"form": form})
 
 
 # ---------------------------------------------------
@@ -99,7 +99,7 @@ def signup_view(request):
     else:
         form = SignupForm()
 
-    return render(request, "accounts/signup.html", {"form": form})
+    return render(request, "signup.html", {"form": form})
 
 
 # ---------------------------------------------------
@@ -153,4 +153,4 @@ def verify_otp_view(request):
     else:
         form = OTPVerificationForm()
 
-    return render(request, "accounts/verify_otp.html", {"form": form, "email": email})
+    return render(request, "verify_otp.html", {"form": form, "email": email})
