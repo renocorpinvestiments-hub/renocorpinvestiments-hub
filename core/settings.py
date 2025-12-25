@@ -3,6 +3,7 @@
 # -----------------------------------------------------------------------------
 import os
 import logging
+from django.core.management import call_command
 from pathlib import Path
 from celery.schedules import crontab
 import environ
@@ -262,3 +263,9 @@ LOGGING = {
     'handlers': {'console': {'class': 'logging.StreamHandler'}},
     'root': {'handlers': ['console'], 'level': logging.INFO},
 }
+
+if os.environ.get("RENDER"):
+    try:
+        call_command("migrate", interactive=False)
+    except Exception as e:
+        print("Migration error:", e)
