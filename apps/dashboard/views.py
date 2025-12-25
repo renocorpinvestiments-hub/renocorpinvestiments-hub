@@ -77,7 +77,7 @@ def home_view(request):
         "notifications": messages_list,
         "current_page": "home",
     }
-    return render(request, "dashboard/home.html", context)
+    return render(request, "home.html", context)
 
 
 # ============================================================
@@ -192,7 +192,7 @@ def tasks_view(request):
         "progress": float(progress.progress),
         "current_page": "tasks",
     }
-    return render(request, "dashboard/tasks.html", context)
+    return render(request, "tasks.html", context)
 
 
 # ============================================================
@@ -212,7 +212,7 @@ def account_view(request):
         "support_number": getattr(settings, "SUPPORT_WHATSAPP_NUMBER", ""),
         "current_page": "account",
     }
-    return render(request, "dashboard/account.html", context)
+    return render(request, "account.html", context)
 
 
 # ============================================================
@@ -319,7 +319,7 @@ def gifts_view(request):
         "support_number": getattr(settings, "SUPPORT_WHATSAPP_NUMBER", ""),
         "current_page": "gifts",
     }
-    return render(request, "dashboard/gifts.html", context)
+    return render(request, "gifts.html", context)
 
 
 # ============================================================
