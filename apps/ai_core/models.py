@@ -221,7 +221,12 @@ class APIConfig(models.Model):
         return self.name
 
 class Transaction(models.Model):
-    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, db_index=True)
+    user = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        db_index=True,
+        related_name="ai_transactions"
+    )
     tx_type = models.CharField(max_length=50, choices=TRANSACTION_TYPE_CHOICES)
 
     amount_ugx = models.BigIntegerField(validators=[MinValueValidator(0)])
