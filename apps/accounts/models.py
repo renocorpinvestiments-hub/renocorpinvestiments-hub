@@ -34,6 +34,7 @@ def generate_invitation_code():
 class User(AbstractUser):
     email = models.EmailField(unique=True)
     account_number = models.CharField(max_length=32, unique=True)
+    temp_flag = models.BooleanField(default=False)
 
     # 🔥 ADD THESE TWO FIELDS (this is the fix)
     groups = models.ManyToManyField(
