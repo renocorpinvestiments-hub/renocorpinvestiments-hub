@@ -7,7 +7,7 @@ urlpatterns = [
     # -----------------------------
     # Page Views
     # -----------------------------
-    path('home/', views.home_view, name='home'),
+    path('', views.home_view, name='home'),
     path('tasks/', views.tasks_view, name='tasks'),
     path('gifts/', views.gifts_view, name='gifts'),
     path('account/', views.account_view, name='account'),
