@@ -1,3 +1,4 @@
+from django.contrib.auth.models import Group, Permission
 from django.db import models
 from django.contrib.auth.models import AbstractUser
 from django.utils import timezone
@@ -31,15 +32,20 @@ def generate_invitation_code():
 #  USER MODEL
 # -------------------------------------------
 class User(AbstractUser):
-    """
-    Custom user model for Renocorp:
-    - Used by both admins (#renon@$...) and normal users.
-    """
-
-    # REQUIRED FIELDS
-    email = models.EmailField(unique=True)  # Now compulsory
+    email = models.EmailField(unique=True)
     account_number = models.CharField(max_length=32, unique=True)
 
+    # 🔥 ADD THESE TWO FIELDS (this is the fix)
+    groups = models.ManyToManyField(
+        Group,
+        related_name="accounts_users",
+        blank=True,
+    )
+    user_permissions = models.ManyToManyField(
+        Permission,
+        related_name="accounts_users_permissions",
+        blank=True,
+    )
     # OPTIONAL FIELDS
     age = models.PositiveIntegerField(null=True, blank=True)
     gender = models.CharField(max_length=10, choices=GENDER_CHOICES)
