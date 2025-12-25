@@ -52,6 +52,7 @@ urlpatterns = [
         "ai_core/",
         include(("apps.ai_core.urls", "ai_core"), namespace="ai_core"),
     ),
+]
 # -------------------------------
 # Media files (DEV & some PaaS)
 # -------------------------------
