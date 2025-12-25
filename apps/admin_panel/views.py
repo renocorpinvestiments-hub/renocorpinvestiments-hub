@@ -57,6 +57,14 @@ class SystemLog(models.Model):
     class Meta:
         ordering = ['-timestamp']
 
+# apps/admin_panel/views.py
+
+def unified_login(request):
+    # You can reuse admin_login logic
+    if request.user.is_authenticated and is_admin(request.user):
+        return redirect("admin_panel:dashboard")
+    return admin_login(request)
+
 
 # -----------------------------
 # Logging helper
