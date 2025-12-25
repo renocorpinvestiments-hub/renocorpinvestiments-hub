@@ -2,18 +2,22 @@
 
 import random
 import string
+import uuid
 from datetime import timedelta
+from decimal import Decimal
 
 from django.shortcuts import render, redirect, get_object_or_404
 from django.http import JsonResponse
 from django.contrib import messages
-from django.contrib.auth import authenticate, login, logout
+from django.contrib.auth import authenticate, login, logout, update_session_auth_hash
 from django.contrib.auth.decorators import login_required, user_passes_test
 from django.contrib.admin.views.decorators import staff_member_required
 from django.utils import timezone
-from django.db.models import Count, Sum
+from django.db import models, transaction as db_transaction
+from django.db.models import Count, Sum, F
 from django.urls import reverse
 from django.conf import settings
+
 from .forms import (
     PendingManualUserForm,
     ManualUserOTPForm,
@@ -25,20 +29,18 @@ from .forms import (
 from .models import PendingManualUser, ManualUserOTP, GiftOffer, TaskControl, PayrollEntry, AdminSettings
 from .utils import generate_otp, generate_invitation_code, generate_temporary_password, send_otp_email, send_account_created_email
 
-# Use your project's custom user model
-from apps.accounts.models import User
+from apps.accounts.models import User  # your custom user model
 
-# Optional external transactions app
+# Optional transactions app
 try:
     from transactions.models import Transaction
 except ImportError:
     Transaction = None
 
-# ------------------------------------------------
-# System Log Model for admin transaction page
-# ------------------------------------------------
-from django.db import models
 
+# -----------------------------
+# System Log Model
+# -----------------------------
 class SystemLog(models.Model):
     LEVEL_CHOICES = [
         ('INFO', 'Info'),
@@ -55,9 +57,10 @@ class SystemLog(models.Model):
     class Meta:
         ordering = ['-timestamp']
 
-# ------------------------------------------------
-# Helper to log system events
-# ------------------------------------------------
+
+# -----------------------------
+# Logging helper
+# -----------------------------
 def log_event(message, level='INFO', user=None, related_object=None):
     SystemLog.objects.create(
         message=message,
@@ -66,16 +69,18 @@ def log_event(message, level='INFO', user=None, related_object=None):
         related_object=str(related_object) if related_object else None
     )
 
-# ------------------------------------------------
-# Helper: Check if user is admin
-# ------------------------------------------------
+
+# -----------------------------
+# Admin check
+# -----------------------------
 def is_admin(user) -> bool:
     admin_name = getattr(settings, "ADMIN_USERNAME", "#renon@$joey")
     return bool(user and user.is_authenticated and (user.is_superuser or user.username == admin_name))
 
-# ------------------------------------------------
-# Admin Login
-# ------------------------------------------------
+
+# -----------------------------
+# Admin Login / Logout / Dashboard
+# -----------------------------
 def admin_login(request):
     if request.method == "POST":
         username = request.POST.get("username", "").strip()
@@ -89,11 +94,9 @@ def admin_login(request):
         messages.error(request, "Invalid admin credentials.")
         log_event(f"Failed admin login attempt for username: {username}", level='ERROR')
         return redirect("admin_panel:login")
-    return render(request, "login.html")
+    return render(request, "admin_panel/login.html")
 
-# ------------------------------------------------
-# Admin Logout
-# ------------------------------------------------
+
 @login_required(login_url="admin_panel:login")
 def admin_logout(request):
     log_event(f"Admin {request.user.username} logged out.", level='INFO', user=request.user)
@@ -101,29 +104,31 @@ def admin_logout(request):
     messages.info(request, "You have logged out successfully.")
     return redirect("admin_panel:login")
 
-# ------------------------------------------------
-# Admin Dashboard
-# ------------------------------------------------
+
 @login_required(login_url="admin_panel:login")
 @user_passes_test(is_admin)
 def admin_dashboard(request):
-    users_count = CustomUser.objects.count()
-    active_users = CustomUser.objects.filter(is_active=True).count()
+    users_count = User.objects.count()
+    active_users = User.objects.filter(is_active=True).count()
     gifts_count = GiftOffer.objects.count()
     log_event(f"Admin {request.user.username} accessed dashboard.", level='INFO', user=request.user)
     return render(
         request,
-        "users.html",
+        "admin_panel/users.html",
         {"users_count": users_count, "active_users": active_users, "gifts_count": gifts_count},
     )
 
+
+# -----------------------------
+# Manual User / OTP
+# -----------------------------
+@login_required
 @staff_member_required
-def manual_login(request):
+def manual_login_view(request):
     if request.method == "POST":
         form = PendingManualUserForm(request.POST)
         if form.is_valid():
             pending = form.save(commit=False)
-            # Track which admin created this manual user (optional)
             pending.invited_by = request.user.username
             pending.save()
 
@@ -137,10 +142,12 @@ def manual_login(request):
             return redirect(reverse('admin_panel:verify_otp'))
     else:
         form = PendingManualUserForm()
-    return render(request, "manual_login.html", {"form": form, "page_title": "MANUAL LOGIN PAGE"})
-    
+    return render(request, "admin_panel/manual_login.html", {"form": form, "page_title": "MANUAL LOGIN PAGE"})
+
+
+@login_required
 @staff_member_required
-def verify_otp(request):
+def verify_otp_view(request):
     pending_id = request.session.get('pending_manual_user_id')
     if not pending_id:
         messages.error(request, "No pending manual user found. Please start from Manual Login page.")
@@ -163,32 +170,27 @@ def verify_otp(request):
                     messages.error(request, "OTP expired.")
                     log_event(f"Expired OTP attempt for {pending.email}", level='WARNING', user=request.user)
                 else:
-                    # Update verified flag
-                    pending.verified = True
-                    pending.save()
-
                     # Create actual user
                     temp_password = generate_temporary_password()
                     username_base = pending.email.split('@')[0]
                     username = username_base
                     counter = 1
-                    while CustomUser.objects.filter(username=username).exists():
+                    while User.objects.filter(username=username).exists():
                         username = f"{username_base}{counter}"
                         counter += 1
 
-                    user = CustomUser.objects.create_user(
+                    user = User.objects.create_user(
                         username=username,
                         email=pending.email,
                         password=temp_password,
                         first_name=pending.name
                     )
 
-                    # Populate profile
                     profile = user.profile
                     profile.account_number = pending.account_number
                     profile.age = pending.age
                     profile.gender = pending.gender
-                    profile.invited_by = pending.invited_by  # replaced admin_username
+                    profile.invited_by = pending.invited_by
                     profile.invitation_code = generate_invitation_code()
                     profile.total_invitations = 0
                     profile.subscription_status = 'trial'
@@ -196,37 +198,41 @@ def verify_otp(request):
                     profile.trial_expiry = timezone.now() + timedelta(days=30)
                     profile.save()
 
-                    # Update pending user record with temp credentials
                     pending.invitation_code = profile.invitation_code
                     pending.temporary_password = temp_password
+                    pending.verified = True
                     pending.save()
 
                     send_account_created_email(pending.email, username, profile.invitation_code, temp_password)
                     del request.session['pending_manual_user_id']
+
                     messages.success(request, "User created and account details sent by email.")
                     log_event(f"Manual user account created for {pending.email}", level='SUCCESS', user=request.user)
                     return redirect(reverse('admin_panel:manual_login'))
     else:
         form = ManualUserOTPForm()
-    return render(request, "verify_otp.html", {"form": form, "pending": pending})
-# ------------------------------------------------
-# Transaction / System Log Page
-# ------------------------------------------------
+    return render(request, "admin_panel/verify_otp.html", {"form": form, "pending": pending})
+
+
+# -----------------------------
+# System / Transaction Logs
+# -----------------------------
 @login_required(login_url="admin_panel:login")
 @user_passes_test(is_admin)
 def transaction_page(request):
     logs = SystemLog.objects.all()
-    return render(request, "transaction_page.html", {"logs": logs})
+    return render(request, "admin_panel/transaction_page.html", {"logs": logs})
 
-# ------------------------------------------------
+
+# -----------------------------
 # Gift Offers Management
-# ------------------------------------------------
+# -----------------------------
 @login_required(login_url="admin_panel:login")
 @user_passes_test(is_admin)
 def gift_offer_list(request):
     gifts = GiftOffer.objects.all()
     log_event(f"Accessed gift offer list", level='INFO', user=request.user)
-    return render(request, "gift_offer_list.html", {"gifts": gifts})
+    return render(request, "admin_panel/gift_offer_list.html", {"gifts": gifts})
 
 
 @login_required(login_url="admin_panel:login")
@@ -243,7 +249,7 @@ def gift_offer_create(request):
             return redirect("admin_panel:gift_offer_list")
     else:
         form = GiftOfferForm()
-    return render(request, "gift_offer_form.html", {"form": form})
+    return render(request, "admin_panel/gift_offer_form.html", {"form": form})
 
 
 @login_required(login_url="admin_panel:login")
@@ -261,7 +267,7 @@ def gift_offer_edit(request, pk):
             return redirect("admin_panel:gift_offer_list")
     else:
         form = GiftOfferForm(instance=gift)
-    return render(request, "gift_offer_form.html", {"form": form})
+    return render(request, "admin_panel/gift_offer_form.html", {"form": form})
 
 
 @login_required(login_url="admin_panel:login")
@@ -273,9 +279,10 @@ def gift_offer_delete(request, pk):
     log_event(f"Gift offer deleted: {gift}", level='SUCCESS', user=request.user)
     return redirect("admin_panel:gift_offer_list")
 
-# ------------------------------------------------
+
+# -----------------------------
 # Task Control
-# ------------------------------------------------
+# -----------------------------
 @login_required(login_url="admin_panel:login")
 @user_passes_test(is_admin)
 def task_control_view(request):
@@ -289,17 +296,18 @@ def task_control_view(request):
             return redirect("admin_panel:task_control")
     else:
         form = TaskControlForm(instance=instance)
-    return render(request, "task_control.html", {"form": form})
+    return render(request, "admin_panel/task_control.html", {"form": form})
 
-# ------------------------------------------------
+
+# -----------------------------
 # Payroll Management
-# ------------------------------------------------
+# -----------------------------
 @login_required(login_url="admin_panel:login")
 @user_passes_test(is_admin)
 def payroll_list(request):
     payrolls = PayrollEntry.objects.all().order_by("-created_at")
     log_event("Accessed payroll list", level='INFO', user=request.user)
-    return render(request, "payroll_list.html", {"payrolls": payrolls})
+    return render(request, "admin_panel/payroll_list.html", {"payrolls": payrolls})
 
 
 @login_required(login_url="admin_panel:login")
@@ -316,7 +324,7 @@ def payroll_add(request):
             return redirect("admin_panel:payroll_list")
     else:
         form = PayrollEntryForm()
-    return render(request, "payroll_form.html", {"form": form})
+    return render(request, "admin_panel/payroll_form.html", {"form": form})
 
 
 @login_required(login_url="admin_panel:login")
@@ -334,7 +342,7 @@ def payroll_edit(request, pk):
             return redirect("admin_panel:payroll_list")
     else:
         form = PayrollEntryForm(instance=payroll)
-    return render(request, "payroll_form.html", {"form": form})
+    return render(request, "admin_panel/payroll_form.html", {"form": form})
 
 
 @login_required(login_url="admin_panel:login")
@@ -346,9 +354,10 @@ def payroll_delete(request, pk):
     log_event(f"Payroll record deleted: {payroll}", level='SUCCESS', user=request.user)
     return redirect("admin_panel:payroll_list")
 
-# ------------------------------------------------
+
+# -----------------------------
 # Admin Settings
-# ------------------------------------------------
+# -----------------------------
 @login_required(login_url="admin_panel:login")
 @user_passes_test(is_admin)
 def admin_settings_view(request):
@@ -356,38 +365,34 @@ def admin_settings_view(request):
     if request.method == "POST":
         form = AdminSettingsForm(request.POST, instance=settings_instance)
         if form.is_valid():
-            settings_obj = form.save()
-
+            form.save()
             new_password = request.POST.get("new_password")
             confirm_password = request.POST.get("confirm_password")
-
             if new_password or confirm_password:
                 if new_password != confirm_password:
                     messages.error(request, "Passwords do not match.")
                     log_event("Admin password update failed: mismatch", level='WARNING', user=request.user)
                     return redirect("admin_panel:settings")
-
                 if len(new_password) < 6:
                     messages.error(request, "Password must be at least 6 characters long.")
                     log_event("Admin password update failed: too short", level='WARNING', user=request.user)
                     return redirect("admin_panel:settings")
-
                 request.user.set_password(new_password)
                 request.user.save()
                 messages.success(request, "Admin password updated successfully. Please log in again.")
                 log_event("Admin password updated successfully", level='SUCCESS', user=request.user)
                 return redirect("admin_panel:login")
-
             messages.success(request, "Settings updated successfully.")
             log_event("Admin settings updated", level='SUCCESS', user=request.user)
             return redirect("admin_panel:settings")
     else:
         form = AdminSettingsForm(instance=settings_instance)
-    return render(request, "settings.html", {"form": form})
+    return render(request, "admin_panel/settings.html", {"form": form})
 
-# ------------------------------------------------
+
+# -----------------------------
 # Analytics / Graphs
-# ------------------------------------------------
+# -----------------------------
 @login_required(login_url="admin_panel:login")
 @user_passes_test(is_admin)
 def graphs_view(request):
@@ -395,91 +400,50 @@ def graphs_view(request):
 
     if request.GET.get("format") == "json":
         months = [(today - timedelta(days=30 * i)).strftime("%b") for i in reversed(range(6))]
-
-        # User Growth
-        user_growth_data = []
-        for i in range(6):
-            start = today - timedelta(days=30 * (i + 1))
-            end = today - timedelta(days=30 * i)
-            count = CustomUser.objects.filter(date_joined__range=[start, end]).count()
-            user_growth_data.insert(0, count)
-
-        # Subscription Status via profile
-        active_count = CustomUser.objects.filter(profile__subscription_status="active").count()
-        expired_count = CustomUser.objects.filter(profile__subscription_status="expired").count()
-
-        # Revenue Flow
+        user_growth_data = [
+            User.objects.filter(date_joined__range=[today - timedelta(days=30*(i+1)), today - timedelta(days=30*i)]).count()
+            for i in range(6)
+        ]
+        active_count = User.objects.filter(profile__subscription_status="active").count()
+        expired_count = User.objects.filter(profile__subscription_status="expired").count()
         revenue_data = []
         if Transaction:
             for i in range(6):
-                start = today - timedelta(days=30 * (i + 1))
-                end = today - timedelta(days=30 * i)
+                start = today - timedelta(days=30*(i+1))
+                end = today - timedelta(days=30*i)
                 revenue = Transaction.objects.filter(created_at__range=[start, end]).aggregate(total=Sum("amount"))["total"] or 0
                 revenue_data.insert(0, float(revenue))
         else:
-            revenue_data = [0] * 6
-
-        # Invitation Performance
-        invitation_data = (
-            CustomUser.objects.values("profile__invited_by")
-            .annotate(total=Count("id"))
-            .order_by("-total")[:5]
-        )
-        invitation_labels = [(i["profile__invited_by"] or "Unknown") for i in invitation_data]
+            revenue_data = [0]*6
+        invitation_data = User.objects.values("profile__invited_by").annotate(total=Count("id")).order_by("-total")[:5]
+        invitation_labels = [i["profile__invited_by"] or "Unknown" for i in invitation_data]
         invitation_values = [i["total"] for i in invitation_data]
+        return JsonResponse({
+            "user_growth": {"labels": months, "values": user_growth_data},
+            "subscription_status": [active_count, expired_count],
+            "revenue_flow": {"labels": months, "values": revenue_data},
+            "invitation_performance": {"labels": invitation_labels, "values": invitation_values},
+        })
 
-        return JsonResponse(
-            {
-                "user_growth": {"labels": months, "values": user_growth_data},
-                "subscription_status": [active_count, expired_count],
-                "revenue_flow": {"labels": months, "values": revenue_data},
-                "invitation_performance": {"labels": invitation_labels, "values": invitation_values},
-            }
-        )
+    return render(request, "admin_panel/graphs.html")
 
-    return render(request, "graphs.html", {})
-    # ==============================
-# REQUIRED ADMIN PAGE VIEWS
-# ==============================
+
+# -----------------------------
+# Simple Render Pages
+# -----------------------------
+@login_required
+@staff_member_required
+def users_view(request):
+    return render(request, "admin_panel/users.html")
 
 
 @login_required
 @staff_member_required
-def users(request):
-    return render(request, "users.html")
+def gift_upload_view(request):
+    return render(request, "admin_panel/gift_upload.html")
 
 
 @login_required
 @staff_member_required
-def gift_upload(request):
-    return render(request, "gift_upload.html")
-
-
-@login_required
-@staff_member_required
-def transactions(request):
-    return render(request, "transactions.html")
-
-
-@login_required
-@staff_member_required
-def manual_login(request):
-    return render(request, "manual_login.html")
-
-
-@login_required
-@staff_member_required
-def verify_otp(request):
-    return render(request, "verify_otp.html")
-
-
-@login_required
-@staff_member_required
-def settings_view(request):
-    return render(request, "settings.html")
-
-
-@login_required
-@staff_member_required
-def graphs_view(request):
-    return render(request, "graphs.html")
+def transactions_view(request):
+    return render(request, "admin_panel/transactions.html")
