@@ -125,7 +125,11 @@ class Transaction(models.Model):
         ('queued_for_manual', 'Queued for Manual Review'),
     )
 
-    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
+    user = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name="dashboard_transactions"
+    )
     amount = models.DecimalField(max_digits=12, decimal_places=2, default=0)
     transaction_type = models.CharField(max_length=20, choices=TRANSACTION_TYPES)
     status = models.CharField(max_length=30, choices=STATUS_CHOICES, default='pending')
