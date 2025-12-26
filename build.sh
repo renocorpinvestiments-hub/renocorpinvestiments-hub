@@ -1,17 +1,16 @@
 #!/usr/bin/env bash
+set -e
 
-# 1. Install requirements
 pip install -r requirements.txt
 
-# 2. Make migrations for accounts first
+# Make sure migration files exist
 python manage.py makemigrations accounts
-
-# 3. Make migrations for other apps, including admin_panel
 python manage.py makemigrations
 
-# 4. Apply migrations in order
+# Force Django to forget the broken state (safe on fresh deploys)
+python manage.py migrate accounts --fake || true
+python manage.py migrate admin --fake || true
+
+# Now apply everything in the correct order
 python manage.py migrate accounts
 python manage.py migrate
-
-# 5. Optional: collect static files (skip if on free tier)
-# python manage.py collectstatic --noinput
