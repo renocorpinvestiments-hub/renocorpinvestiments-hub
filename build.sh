@@ -4,7 +4,7 @@
 pip install -r requirements.txt
 
 # Make migrations (optional if you already have migration files)
-python manage.py makemigrations
+python manage.py makemigrations accounts
 
 # Apply migrations (create tables in the database)
 python manage.py migrate
