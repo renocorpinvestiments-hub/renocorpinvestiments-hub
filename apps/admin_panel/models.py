@@ -1,5 +1,5 @@
 # apps/admin_panel/models.py
-
+from django.contrib.auth import get_user_model
 from django.db import models, transaction
 from django.conf import settings
 from django.utils import timezone
@@ -9,6 +9,8 @@ from django.dispatch import receiver
 from django.db.models.signals import post_save
 from datetime import timedelta
 import uuid
+def get_user():
+    return get_user_model()
 
 User = settings.AUTH_USER_MODEL
 
@@ -114,7 +116,7 @@ class UserProfile(models.Model):
         ("expired", "Expired"),
     )
 
-    user = models.OneToOneField(User, on_delete=models.CASCADE, related_name="profile")
+    user = models.OneToOneField("accounts.User", on_delete=models.CASCADE, related_name="profile")
     invitation_code = models.CharField(max_length=64, unique=True, blank=True, null=True)
     invited_by = models.CharField(max_length=150, blank=True, null=True)
 
@@ -154,7 +156,7 @@ class RewardLog(models.Model):
     Never delete rows from this table.
     """
 
-    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="reward_logs")
+    user = models.ForeignKey("accounts.User", on_delete=models.CASCADE, related_name="reward_logs")
     category = models.ForeignKey(TaskCategory, on_delete=models.PROTECT)
 
     amount = models.DecimalField(max_digits=12, decimal_places=2)
@@ -189,7 +191,7 @@ class TransactionLog(models.Model):
         ("failed", "Failed"),
     )
 
-    user = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True)
+    user = models.ForeignKey(accounts.User, on_delete=models.SET_NULL, null=True, blank=True)
     actor = models.CharField(max_length=32, default="system")
 
     amount = models.DecimalField(max_digits=14, decimal_places=2)
@@ -216,7 +218,7 @@ class TransactionLog(models.Model):
 # ADMIN LOGIN AUDIT
 # ============================================================
 class AdminLoginAudit(models.Model):
-    admin_user = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True)
+    admin_user = models.ForeignKey("accounts.User", on_delete=models.SET_NULL, null=True, blank=True)
     username_entered = models.CharField(max_length=150, blank=True)
     ip_address = models.GenericIPAddressField(blank=True, null=True)
     user_agent = models.CharField(max_length=512, blank=True)
