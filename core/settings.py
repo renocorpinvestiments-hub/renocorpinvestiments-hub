@@ -95,6 +95,8 @@ INSTALLED_APPS = [
     'apps.accounts.apps.AccountsConfig',
 ]
 
+# Use the custom user model
+AUTH_USER_MODEL = "accounts.User"
 # -----------------------------------------------------------------------------
 # MIDDLEWARE
 # -----------------------------------------------------------------------------
