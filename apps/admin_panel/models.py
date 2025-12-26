@@ -9,7 +9,7 @@ from django.dispatch import receiver
 from django.db.models.signals import post_save
 from datetime import timedelta
 import uuid
-
+User = get_user_model()
 
 # ============================================================
 # UTILITIES
@@ -142,7 +142,7 @@ class UserProfile(models.Model):
 def create_profile(sender, instance, created, **kwargs):
     User = get_user_model()
     if sender == User and created:
-        UserProfile.objects.create(user=instance)
+        UserProfile.objects.get_or_create(user=instance)
 
 # ============================================================
 # REWARD LEDGER (SOURCE OF TRUTH)
