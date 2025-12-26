@@ -1,32 +1,22 @@
+import uuid
 from django.db import models
 from django.utils import timezone
 from django.conf import settings
-import uuid
 from django.db.models.signals import post_save
 from django.dispatch import receiver
 
-@receiver(post_save, sender='dashboard.UserProfile')
-def assign_unique_invite_code(sender, instance, created, **kwargs):
-    if created and not instance.invitation_code:
-        code = generate_invite_code()
-        while UserProfile.objects.filter(invitation_code=code).exists():
-            code = generate_invite_code()
-        instance.invitation_code = code
-        instance.save(update_fields=['invitation_code'])
+# ------------------------------
+# Helpers
+# ------------------------------
 def generate_reference():
     return uuid.uuid4().hex
-# ------------------------------
-# Helper functions
-# ------------------------------
+
 def generate_invite_code():
-    for _ in range(5):
-        code = uuid.uuid4().hex[:10].upper()
-        if not UserProfile.objects.filter(invitation_code=code).exists():
-            return code
-    raise Exception("Unable to generate unique invite code")
+    """Generate random code without touching DB"""
+    return uuid.uuid4().hex[:10].upper()
+
 def today_date():
     return timezone.localdate()
-
 
 
 # ---------- USER PROFILE ----------
@@ -37,10 +27,10 @@ class UserProfile(models.Model):
         upload_to='profile_pics/', default='profile_pics/default.png'
     )
     invitation_code = models.CharField(
-    max_length=10,
-    unique=True,
-    default=generate_invite_code,  # safe, no DB query
-    db_index=True
+        max_length=10,
+        unique=True,
+        default=generate_invite_code,  # safe, no DB query
+        db_index=True
     )
     balance = models.DecimalField(max_digits=12, decimal_places=2, default=0)
     commission = models.DecimalField(max_digits=12, decimal_places=2, default=0)
@@ -51,7 +41,6 @@ class UserProfile(models.Model):
     joined_at = models.DateTimeField(auto_now_add=True)
 
     def has_active_subscription(self):
-        """Return True if subscription is valid and not expired."""
         if not self.subscription_expiry:
             return False
         return self.subscription_expiry >= timezone.localdate()
@@ -65,6 +54,17 @@ class UserProfile(models.Model):
     class Meta:
         ordering = ['-joined_at']
 
+
+# ---------- POST-SAVE SIGNAL TO ENSURE UNIQUE CODE ----------
+@receiver(post_save, sender=UserProfile)
+def assign_unique_invite_code(sender, instance, created, **kwargs):
+    if created and instance.invitation_code:
+        code = instance.invitation_code
+        while UserProfile.objects.filter(invitation_code=code).exclude(id=instance.id).exists():
+            code = generate_invite_code()
+        if code != instance.invitation_code:
+            instance.invitation_code = code
+            instance.save(update_fields=['invitation_code'])
 
 # ---------- TASK MODELS ----------
 class BaseTask(models.Model):
