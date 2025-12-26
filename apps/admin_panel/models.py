@@ -1,5 +1,5 @@
 # apps/admin_panel/models.py
-
+from django.contrib.auth import get_user_model
 from django.db import models, transaction
 from django.conf import settings
 from django.utils import timezone
@@ -138,11 +138,11 @@ class UserProfile(models.Model):
         return f"Profile({self.user})"
 
 
-@receiver(post_save, sender=settings.AUTH_USER_MODEL)
+@receiver(post_save)
 def create_profile(sender, instance, created, **kwargs):
-    if created:
+    User = get_user_model()
+    if sender == User and created:
         UserProfile.objects.create(user=instance)
-
 
 # ============================================================
 # REWARD LEDGER (SOURCE OF TRUTH)
