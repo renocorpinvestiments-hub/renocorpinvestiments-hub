@@ -1,10 +1,7 @@
 #!/usr/bin/env bash
 set -e
 
+# Install Python dependencies only
 pip install -r requirements.txt
 
-python manage.py makemigrations accounts
-python manage.py makemigrations
-
-python manage.py migrate accounts
-python manage.py migrate
+# Skip migrations during build — the DB is unreachable at build time
