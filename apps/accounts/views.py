@@ -40,7 +40,7 @@ def login_view(request):
                     return redirect("admin_panel:users")
 
                 # Normal user login
-                return redirect("user_panel:home")
+                return redirect("dashboard:home")
 
             messages.error(request, "Invalid username or password.")
         else:
