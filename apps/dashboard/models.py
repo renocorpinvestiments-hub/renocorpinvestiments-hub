@@ -7,8 +7,7 @@ def generate_reference():
 # ------------------------------
 # Helper functions
 # ------------------------------
-def generate_unique_invite_code():
-    """Generate a unique invite code for UserProfile."""
+def default_invitation_code():
     for _ in range(5):
         code = uuid.uuid4().hex[:10].upper()
         if not UserProfile.objects.filter(invitation_code=code).exists():
@@ -21,7 +20,7 @@ def today_date():
 
 # ---------- USER PROFILE ----------
 class UserProfile(models.Model):
-    user = models.OneToOneField("accounts.user", on_delete=models.CASCADE)
+    user = models.OneToOneField("accounts.User", on_delete=models.CASCADE)
     phone = models.CharField(max_length=20, unique=True)
     profile_picture = models.ImageField(
         upload_to='profile_pics/', default='profile_pics/default.png'
