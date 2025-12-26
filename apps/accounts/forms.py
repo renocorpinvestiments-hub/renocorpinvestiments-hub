@@ -1,9 +1,11 @@
+
 from django import forms
 from django.contrib.auth.forms import AuthenticationForm
-from .models import User
+from django.apps import apps
 import random
 import string
-
+def get_user_model():
+    return apps.get_model("accounts", "User")
 # ------------------------------
 # Helper: OTP generator
 # ------------------------------
@@ -50,7 +52,7 @@ class SignupForm(forms.ModelForm):
     )
 
     class Meta:
-        model = User
+        model = get_user_model()
         fields = [
             "username",
             "gender",
@@ -72,6 +74,7 @@ class SignupForm(forms.ModelForm):
         email = self.cleaned_data.get("email")
         if not email:
             raise forms.ValidationError("Email is required.")
+        User = get_user_model()
         if User.objects.filter(email=email).exists():
             raise forms.ValidationError("This email is already registered.")
         return email
@@ -80,6 +83,7 @@ class SignupForm(forms.ModelForm):
         acct = self.cleaned_data.get("account_number")
         if not acct:
             raise forms.ValidationError("Account number is required.")
+        User = get_user_model()
         if User.objects.filter(account_number=acct).exists():
             raise forms.ValidationError("Account number already exists.")
         return acct
@@ -88,6 +92,7 @@ class SignupForm(forms.ModelForm):
         code = self.cleaned_data.get("invitation_code")
         if not code:
             raise forms.ValidationError("Invitation code is required.")
+        User = get_user_model()
         inviter = User.objects.filter(invitation_code=code).first()
         if inviter is None:
             raise forms.ValidationError("Invalid invitation code.")
