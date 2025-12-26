@@ -2,7 +2,8 @@ from django.db import models
 from django.utils import timezone
 from django.conf import settings
 import uuid
-
+def generate_reference():
+    return uuid.uuid4().hex
 # ------------------------------
 # Helper functions
 # ------------------------------
@@ -13,11 +14,14 @@ def generate_unique_invite_code():
         if not UserProfile.objects.filter(invitation_code=code).exists():
             return code
     raise Exception("Unable to generate unique invite code")
+def today_date():
+    return timezone.localdate()
+
 
 
 # ---------- USER PROFILE ----------
 class UserProfile(models.Model):
-    user = models.OneToOneField(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
+    user = models.OneToOneField("accounts.user", on_delete=models.CASCADE)
     phone = models.CharField(max_length=20, unique=True)
     profile_picture = models.ImageField(
         upload_to='profile_pics/', default='profile_pics/default.png'
@@ -91,7 +95,7 @@ class GiftOffer(BaseTask):
 # ---------- COMPLETED TASKS ----------
 class CompletedTask(models.Model):
     """Tracks task completions by user (API or iframe tasks)."""
-    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
+    user = models.ForeignKey("accounts.User", on_delete=models.CASCADE)
     task_type = models.CharField(max_length=50)  # 'VideoTask', 'SurveyTask', etc.
     task_id = models.UUIDField()  # links to BaseTask task_id
     provider = models.CharField(max_length=50)
@@ -126,14 +130,14 @@ class Transaction(models.Model):
     )
 
     user = models.ForeignKey(
-        settings.AUTH_USER_MODEL,
+        "accounts.User",
         on_delete=models.CASCADE,
         related_name="dashboard_transactions"
     )
     amount = models.DecimalField(max_digits=12, decimal_places=2, default=0)
     transaction_type = models.CharField(max_length=20, choices=TRANSACTION_TYPES)
     status = models.CharField(max_length=30, choices=STATUS_CHOICES, default='pending')
-    reference = models.CharField(max_length=255, unique=True, default=lambda: uuid.uuid4().hex)
+    reference = models.CharField(max_length=255, unique=True, default=generate_reference)
     provider_reference = models.CharField(max_length=255, blank=True, null=True)
     flutterwave_id = models.CharField(max_length=255, blank=True, null=True)
     raw_provider_response = models.JSONField(blank=True, null=True)
@@ -158,7 +162,7 @@ class Notification(models.Model):
         ('error', 'Error'),
     )
 
-    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
+    user = models.ForeignKey("accounts.User", on_delete=models.CASCADE)
     message = models.TextField()
     type = models.CharField(max_length=10, choices=NOTIF_TYPES, default='info')
     is_read = models.BooleanField(default=False)
@@ -174,11 +178,11 @@ class Notification(models.Model):
 
 # ---------- TASK PROGRESS ----------
 class TaskProgress(models.Model):
-    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
+    user = models.ForeignKey("accounts.User", on_delete=models.CASCADE)
     total_tasks = models.IntegerField(default=14)
     completed_tasks = models.IntegerField(default=0)
     progress = models.DecimalField(max_digits=5, decimal_places=2, default=0.0)
-    last_reset = models.DateField(default=lambda: timezone.localdate())
+    last_reset = models.DateField(default=today_date)
 
     def update_progress(self):
         if self.total_tasks > 0:
@@ -199,7 +203,7 @@ class LedgerEntry(models.Model):
         ('debit', 'Debit')
     )
 
-    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
+    user = models.ForeignKey("accounts.User", on_delete=models.CASCADE)
     amount = models.DecimalField(max_digits=12, decimal_places=2, default=0)
     entry_type = models.CharField(max_length=10, choices=ENTRY_TYPES)
     reason = models.CharField(max_length=255, blank=True, null=True)
