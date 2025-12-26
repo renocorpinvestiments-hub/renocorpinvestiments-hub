@@ -7,10 +7,12 @@ pip install -r requirements.txt
 python manage.py makemigrations accounts
 python manage.py makemigrations
 
-# Force Django to forget the broken state (safe on fresh deploys)
-python manage.py migrate accounts --fake || true
-python manage.py migrate admin --fake || true
+# 🔥 Force-reset Django's migration history (free tier rescue)
+python manage.py migrate accounts 0001 --fake || true
+python manage.py migrate admin 0001 --fake || true
+python manage.py migrate contenttypes 0001 --fake || true
+python manage.py migrate auth 0001 --fake || true
 
-# Now apply everything in the correct order
+# 🧱 Now rebuild migrations in correct order
 python manage.py migrate accounts
 python manage.py migrate
