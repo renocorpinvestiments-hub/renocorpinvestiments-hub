@@ -1,5 +1,5 @@
 # apps/admin_panel/models.py
-from django.contrib.auth import get_user_model
+
 from django.db import models, transaction
 from django.conf import settings
 from django.utils import timezone
@@ -9,10 +9,7 @@ from django.dispatch import receiver
 from django.db.models.signals import post_save
 from datetime import timedelta
 import uuid
-def get_user():
-    return get_user_model()
 
-User = settings.AUTH_USER_MODEL
 
 # ============================================================
 # UTILITIES
@@ -141,7 +138,7 @@ class UserProfile(models.Model):
         return f"Profile({self.user})"
 
 
-@receiver(post_save, sender=User)
+@receiver(post_save, sender=settings.AUTH_USER_MODEL)
 def create_profile(sender, instance, created, **kwargs):
     if created:
         UserProfile.objects.create(user=instance)
@@ -191,7 +188,7 @@ class TransactionLog(models.Model):
         ("failed", "Failed"),
     )
 
-    user = models.ForeignKey(accounts.User, on_delete=models.SET_NULL, null=True, blank=True)
+    user = models.ForeignKey("accounts.User", on_delete=models.SET_NULL, null=True, blank=True)
     actor = models.CharField(max_length=32, default="system")
 
     amount = models.DecimalField(max_digits=14, decimal_places=2)
