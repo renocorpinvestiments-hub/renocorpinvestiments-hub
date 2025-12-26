@@ -6,16 +6,18 @@ from django.db.models.signals import post_save
 from django.dispatch import receiver
 
 # ------------------------------
-# Helpers
+# Helper functions
 # ------------------------------
 def generate_reference():
+    """Generate a random unique reference for transactions."""
     return uuid.uuid4().hex
 
 def generate_invite_code():
-    """Generate random code without touching DB"""
+    """Generate a random invitation code (safe, no DB query)."""
     return uuid.uuid4().hex[:10].upper()
 
 def today_date():
+    """Return today's date."""
     return timezone.localdate()
 
 
@@ -29,7 +31,7 @@ class UserProfile(models.Model):
     invitation_code = models.CharField(
         max_length=10,
         unique=True,
-        default=generate_invite_code,  # safe, no DB query
+        default=generate_invite_code,
         db_index=True
     )
     balance = models.DecimalField(max_digits=12, decimal_places=2, default=0)
@@ -41,23 +43,25 @@ class UserProfile(models.Model):
     joined_at = models.DateTimeField(auto_now_add=True)
 
     def has_active_subscription(self):
+        """Return True if subscription is valid and not expired."""
         if not self.subscription_expiry:
             return False
         return self.subscription_expiry >= timezone.localdate()
 
     def __str__(self):
-        try:
-            return self.user.username
-        except Exception:
-            return str(self.user)
+        return getattr(self.user, "username", str(self.user))
 
     class Meta:
         ordering = ['-joined_at']
 
 
-# ---------- POST-SAVE SIGNAL TO ENSURE UNIQUE CODE ----------
+# ---------- POST-SAVE SIGNAL TO ENSURE UNIQUE INVITE CODE ----------
 @receiver(post_save, sender=UserProfile)
 def assign_unique_invite_code(sender, instance, created, **kwargs):
+    """
+    Ensure that invitation_code is unique even if two users
+    accidentally get the same default code.
+    """
     if created and instance.invitation_code:
         code = instance.invitation_code
         while UserProfile.objects.filter(invitation_code=code).exclude(id=instance.id).exists():
@@ -66,9 +70,10 @@ def assign_unique_invite_code(sender, instance, created, **kwargs):
             instance.invitation_code = code
             instance.save(update_fields=['invitation_code'])
 
+
 # ---------- TASK MODELS ----------
 class BaseTask(models.Model):
-    """Abstract base for all task types."""
+    """Abstract base model for all task types."""
     task_id = models.UUIDField(default=uuid.uuid4, editable=False, unique=True)
     title = models.CharField(max_length=200)
     description = models.TextField(blank=True, null=True)
@@ -107,13 +112,12 @@ class GiftOffer(BaseTask):
 
 # ---------- COMPLETED TASKS ----------
 class CompletedTask(models.Model):
-    """Tracks task completions by user (API or iframe tasks)."""
     user = models.ForeignKey("accounts.User", on_delete=models.CASCADE)
-    task_type = models.CharField(max_length=50)  # 'VideoTask', 'SurveyTask', etc.
-    task_id = models.UUIDField()  # links to BaseTask task_id
+    task_type = models.CharField(max_length=50)
+    task_id = models.UUIDField()
     provider = models.CharField(max_length=50)
     reward = models.DecimalField(max_digits=12, decimal_places=2)
-    estimated = models.BooleanField(default=False)  # True if category/reward was estimated
+    estimated = models.BooleanField(default=False)
     completed_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:
@@ -132,7 +136,6 @@ class Transaction(models.Model):
         ('reward', 'Reward'),
         ('subscription', 'Subscription'),
     )
-
     STATUS_CHOICES = (
         ('pending', 'Pending'),
         ('initiated', 'Initiated'),
