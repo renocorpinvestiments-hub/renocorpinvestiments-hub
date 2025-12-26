@@ -1,14 +1,17 @@
 #!/usr/bin/env bash
 
-# Install requirements
+# 1. Install requirements
 pip install -r requirements.txt
 
-# Make migrations (optional if you already have migration files)
+# 2. Make migrations for accounts first
 python manage.py makemigrations accounts
 
-# Apply migrations (create tables in the database)
+# 3. Make migrations for other apps, including admin_panel
+python manage.py makemigrations
+
+# 4. Apply migrations in order
+python manage.py migrate accounts
 python manage.py migrate
 
-# NOTE: Skip collectstatic on free tier
-# If you have static files, Django can serve them directly via STATIC_URL
+# 5. Optional: collect static files (skip if on free tier)
 # python manage.py collectstatic --noinput
