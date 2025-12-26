@@ -2,12 +2,23 @@ from django.db import models
 from django.utils import timezone
 from django.conf import settings
 import uuid
+from django.db.models.signals import post_save
+from django.dispatch import receiver
+
+@receiver(post_save, sender='dashboard.UserProfile')
+def assign_unique_invite_code(sender, instance, created, **kwargs):
+    if created and not instance.invitation_code:
+        code = generate_invite_code()
+        while UserProfile.objects.filter(invitation_code=code).exists():
+            code = generate_invite_code()
+        instance.invitation_code = code
+        instance.save(update_fields=['invitation_code'])
 def generate_reference():
     return uuid.uuid4().hex
 # ------------------------------
 # Helper functions
 # ------------------------------
-def default_invitation_code():
+def generate_invite_code():
     for _ in range(5):
         code = uuid.uuid4().hex[:10].upper()
         if not UserProfile.objects.filter(invitation_code=code).exists():
@@ -26,7 +37,10 @@ class UserProfile(models.Model):
         upload_to='profile_pics/', default='profile_pics/default.png'
     )
     invitation_code = models.CharField(
-        max_length=10, unique=True, default=generate_unique_invite_code, db_index=True
+    max_length=10,
+    unique=True,
+    default=generate_invite_code,  # safe, no DB query
+    db_index=True
     )
     balance = models.DecimalField(max_digits=12, decimal_places=2, default=0)
     commission = models.DecimalField(max_digits=12, decimal_places=2, default=0)
