@@ -3,11 +3,12 @@
 # Install requirements
 pip install -r requirements.txt
 
-# Make migrations (create migration files)
+# Make migrations (optional if you already have migration files)
 python manage.py makemigrations
 
 # Apply migrations (create tables in the database)
 python manage.py migrate
 
-# Collect static files (optional if you have static assets)
-python manage.py collectstatic --noinput
+# NOTE: Skip collectstatic on free tier
+# If you have static files, Django can serve them directly via STATIC_URL
+# python manage.py collectstatic --noinput
