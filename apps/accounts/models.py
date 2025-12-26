@@ -1,4 +1,3 @@
-from django.utils.translation import gettext_lazy as _
 from django.contrib.auth.models import Group, Permission
 from django.db import models
 from django.contrib.auth.models import AbstractUser
@@ -37,7 +36,7 @@ class User(AbstractUser):
     account_number = models.CharField(max_length=32, unique=True)
     temp_flag = models.BooleanField(default=False)
 
-    # 🔥 ADD THESE TWO FIELDS (this is the fix)
+    # Fix for group/permission conflicts
     groups = models.ManyToManyField(
         Group,
         related_name="accounts_users",
@@ -48,18 +47,19 @@ class User(AbstractUser):
         related_name="accounts_users_permissions",
         blank=True,
     )
-    # OPTIONAL FIELDS
+
+    # Optional fields
     age = models.PositiveIntegerField(null=True, blank=True)
     gender = models.CharField(max_length=10, choices=GENDER_CHOICES)
 
-    # USER'S OWN UNIQUE CODE — assigned ONLY after verification
+    # Invitation code (assigned after verification)
     invitation_code = models.CharField(max_length=32, unique=True, blank=True, null=True)
 
-    # SUBSCRIPTION + BALANCE
+    # Subscription + balance
     subscription_status = models.CharField(max_length=10, choices=SUBSCRIPTION_CHOICES, default="inactive")
     balance = models.DecimalField(max_digits=12, decimal_places=2, default=0)
 
-    # WHO INVITED THIS USER? (filled at signup)
+    # Who invited this user
     invited_by = models.ForeignKey(
         "self",
         on_delete=models.SET_NULL,
@@ -80,32 +80,18 @@ class User(AbstractUser):
     def __str__(self):
         return self.username
 
-    # -------------------------
-    # ADMIN IDENTIFICATION RULE
-    # -------------------------
     def is_admin_username(self):
         """Admin username pattern must start with '#renon@$'"""
         return self.username.startswith("#renon@$")
 
-    # -------------------------
-    # INVITATION CODE ASSIGNER
-    # -------------------------
     def assign_invitation_code(self):
-        """
-        Assigns a unique invitation code to the user,
-        but ONLY if they do not have one yet.
-        Used after OTP verification.
-        """
+        """Assign a unique invitation code if not already set."""
         if not self.invitation_code:
             code = generate_invitation_code()
-
-            # Guarantee uniqueness even under race conditions
             while User.objects.filter(invitation_code=code).exists():
                 code = generate_invitation_code()
-
             self.invitation_code = code
             self.save(update_fields=["invitation_code"])
-
         return self.invitation_code
 
 
