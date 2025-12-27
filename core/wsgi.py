@@ -1,19 +1,30 @@
-"""
-WSGI config for Renocorp AI project.
-
-This file exposes the WSGI callable as a module-level variable named `application`.
-It serves as the entry point for WSGI-compatible web servers like Gunicorn or uWSGI.
-"""
-
 import os
+import django
+from django.core.management import call_command
+from django.db import connection
+
+os.environ.setdefault("DJANGO_SETTINGS_MODULE", "core.settings")
+
+django.setup()
+
+# ---------- SAFETY MIGRATION BLOCK ----------
+def database_has_tables():
+    with connection.cursor() as cursor:
+        if connection.vendor == "postgresql":
+            cursor.execute("""
+                SELECT EXISTS (
+                    SELECT FROM information_schema.tables
+                    WHERE table_schema = 'public'
+                );
+            """)
+        else:
+            cursor.execute("SELECT count(*) FROM sqlite_master;")
+
+        return cursor.fetchone()[0]
+
+if not database_has_tables():
+    call_command("migrate", interactive=False)
+# --------------------------------------------
+
 from django.core.wsgi import get_wsgi_application
-
-# -----------------------------------------------------------------------------
-# Default Django settings module
-# -----------------------------------------------------------------------------
-os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'core.settings')
-
-# -----------------------------------------------------------------------------
-# Get the WSGI application callable
-# -----------------------------------------------------------------------------
 application = get_wsgi_application()
