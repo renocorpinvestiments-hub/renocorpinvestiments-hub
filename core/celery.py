@@ -11,7 +11,7 @@ app.autodiscover_tasks()
 
 app.conf.timezone = "UTC"
 
-
+app.conf.beat_schedule = {
     # ----------------------------------
     # Sunday Payroll
     # ----------------------------------
