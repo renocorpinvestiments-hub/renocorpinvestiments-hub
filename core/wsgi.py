@@ -19,7 +19,7 @@ def wait_for_db(max_retries=12, delay=3):
     return False
 
 if wait_for_db():
-    # FORCE all migrations now
+    # FORCE all migrations to run now
     call_command("migrate", interactive=False)
 # ----------------------------------------
 
