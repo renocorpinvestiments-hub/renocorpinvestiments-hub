@@ -5,7 +5,6 @@ from django.core.management import call_command
 from django.db import connection
 
 os.environ.setdefault("DJANGO_SETTINGS_MODULE", "core.settings")
-
 django.setup()
 
 # ---------- ONE-TIME DB REPAIR ----------
@@ -18,8 +17,8 @@ def wait_for_db(max_retries=12, delay=3):
             time.sleep(delay)
     return False
 
+# Force migrations no matter what tables exist
 if wait_for_db():
-    # FORCE all migrations to run now
     call_command("migrate", interactive=False)
 # ----------------------------------------
 
