@@ -148,7 +148,7 @@ STATIC_ROOT = BASE_DIR / 'staticfiles'
 STATICFILES_DIRS = [BASE_DIR / 'static']
 MEDIA_URL = '/media/'
 MEDIA_ROOT = BASE_DIR / 'media'
-STATICFILES_STORAGE = 'whitenoise.storage.StaticFilesStorage'
+STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 # -----------------------------------------------------------------------------
 # CACHE
 # -----------------------------------------------------------------------------
@@ -265,9 +265,3 @@ LOGGING = {
     'handlers': {'console': {'class': 'logging.StreamHandler'}},
     'root': {'handlers': ['console'], 'level': logging.INFO},
 }
-
-if os.environ.get("RENDER"):
-    try:
-        call_command("migrate", interactive=False)
-    except Exception as e:
-        print("Migration error:", e)
