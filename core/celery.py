@@ -11,15 +11,6 @@ app.autodiscover_tasks()
 
 app.conf.timezone = "UTC"
 
-app.conf.beat_schedule = {
-    # ----------------------------------
-    # Refresh offerwall tasks daily
-    # ----------------------------------
-    "refresh-tasks-daily": {
-        "task": "ai_core.utils.run_fetch_all_providers_async",
-        "schedule": crontab(hour=0, minute=0),
-        "options": {"queue": "high_priority"},
-    },
 
     # ----------------------------------
     # Sunday Payroll
