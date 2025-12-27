@@ -8,7 +8,7 @@ os.environ.setdefault("DJANGO_SETTINGS_MODULE", "core.settings")
 
 django.setup()
 
-# ---------- DB REPAIR MODE ----------
+# ---------- ONE-TIME DB REPAIR ----------
 def wait_for_db(max_retries=12, delay=3):
     for _ in range(max_retries):
         try:
@@ -19,8 +19,9 @@ def wait_for_db(max_retries=12, delay=3):
     return False
 
 if wait_for_db():
+    # Force all migrations, ignore table check
     call_command("migrate", interactive=False)
-# -----------------------------------
+# ----------------------------------------
 
 from django.core.wsgi import get_wsgi_application
 application = get_wsgi_application()
