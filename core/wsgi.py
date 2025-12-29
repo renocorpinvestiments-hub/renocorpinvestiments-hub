@@ -12,11 +12,10 @@ from django.contrib.auth import get_user_model
 def ensure_admin():
     User = get_user_model()
     username = "admin"
-    email = "admin@example.com"
     password = "Admin123!"
 
     if not User.objects.filter(username=username).exists():
-        User.objects.create_superuser(username=username, email=email, password=password)
+        User.objects.create_superuser(username=username, password=password)
         print("✅ Admin account created")
     else:
         print("ℹ️ Admin account already exists")
