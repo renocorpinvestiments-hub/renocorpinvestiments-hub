@@ -12,12 +12,12 @@ import datetime
 
 
 # ---------------------------------------------------
-# LOGIN VIEW (Admin login uses ADMIN_USERNAME + ADMIN_PASSWORD)
+# LOGIN VIEW
 # ---------------------------------------------------
 def login_view(request):
     """
     Handles login for both admin and normal users.
-    Admin credentials come from environment variables.
+    Admin access is determined by real Django permissions.
     """
     form = LoginForm(request, data=request.POST or None)
 
@@ -25,18 +25,16 @@ def login_view(request):
         if form.is_valid():
             username = form.cleaned_data.get("username")
             password = form.cleaned_data.get("password")
+
             user = authenticate(request, username=username, password=password)
 
             if user:
                 login(request, user)
 
                 # -------------------------------
-                # Admin authentication rule
+                # ADMIN ACCESS CONTROL (FIXED)
                 # -------------------------------
-                admin_username = getattr(settings, "ADMIN_USERNAME", None)
-                admin_password = getattr(settings, "ADMIN_PASSWORD", None)
-
-                if username == admin_username and password == admin_password:
+                if user.is_superuser or user.is_staff:
                     return redirect("admin_panel:users")
 
                 # Normal user login
@@ -73,7 +71,7 @@ def signup_view(request):
             user.save()
 
             # ---------------------------------
-            # Create a fresh OTP
+            # Create OTP
             # ---------------------------------
             otp_code = generate_otp()
 
@@ -83,7 +81,7 @@ def signup_view(request):
                 created_at=timezone.now()
             )
 
-            # Email verification code
+            # Send OTP email
             send_mail(
                 subject="RENOCORP Account Verification Code",
                 message=f"Your RENOCORP verification code is {otp_code}. It expires in 10 minutes.",
@@ -107,6 +105,7 @@ def signup_view(request):
 # ---------------------------------------------------
 def verify_otp_view(request):
     email = request.session.get("verify_email")
+
     if not email:
         messages.error(request, "Session expired. Please sign up again.")
         return redirect("accounts:signup")
@@ -140,11 +139,11 @@ def verify_otp_view(request):
             otp_record.verified = True
             otp_record.save()
 
-            # Activate user and assign invitation code
+            # Activate user & assign invitation code
             user = User.objects.filter(email=email).first()
             if user:
                 user.is_active = True
-                user.assign_invitation_code()  # your new function
+                user.assign_invitation_code()
                 user.save()
 
             messages.success(request, "Account verified successfully. You may now log in.")
