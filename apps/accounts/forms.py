@@ -1,11 +1,12 @@
-
 from django import forms
 from django.contrib.auth.forms import AuthenticationForm
 from django.apps import apps
 import random
 import string
+
 def get_user_model():
     return apps.get_model("accounts", "User")
+
 # ------------------------------
 # Helper: OTP generator
 # ------------------------------
@@ -50,6 +51,14 @@ class SignupForm(forms.ModelForm):
         }),
         required=True
     )
+    account_number = forms.CharField(
+        required=True,
+        max_length=15,
+        widget=forms.TextInput(attrs={
+            "class": "form-control",
+            "placeholder": "Account number"
+        })
+    )
 
     class Meta:
         model = get_user_model()
@@ -65,7 +74,6 @@ class SignupForm(forms.ModelForm):
             "username": forms.TextInput(attrs={"class": "form-control", "placeholder": "Full name"}),
             "gender": forms.Select(attrs={"class": "form-control"}),
             "age": forms.NumberInput(attrs={"class": "form-control", "placeholder": "Age"}),
-            "account_number": forms.TextInput(attrs={"class": "form-control", "placeholder": "Account number"}),
             "email": forms.EmailInput(attrs={"class": "form-control", "placeholder": "Email address"}),
             "invitation_code": forms.TextInput(attrs={"class": "form-control", "placeholder": "Invitation code (required)"}),
         }
