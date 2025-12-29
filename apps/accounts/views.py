@@ -9,6 +9,12 @@ from django.conf import settings
 from .models import User, EmailOTP
 from .forms import LoginForm, SignupForm, OTPVerificationForm, generate_otp
 import datetime
+def fix_blank_account_numbers():
+    from .models import User
+    broken_users = User.objects.filter(account_number="")
+    for user in broken_users:
+        user.account_number = f"TEMP-{user.id}"
+        user.save()
 
 
 # ---------------------------------------------------
