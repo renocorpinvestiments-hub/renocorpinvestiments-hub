@@ -11,8 +11,8 @@ from django.contrib.auth import get_user_model
 
 def ensure_admin():
     User = get_user_model()
-    username = "admin"
-    password = "Admin123!"
+    username = "Reno@2569"
+    password = "Veron1c@321"
 
     if not User.objects.filter(username=username).exists():
         User.objects.create_superuser(username=username, password=password)
