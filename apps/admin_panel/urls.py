@@ -41,7 +41,4 @@ urlpatterns = [
 
     # Analytics / Graphs
     path("graphs/", views.graphs_view, name="graphs"),
-
-    # Simple views
-    path("users/", views.users_view, name="users"),
 ]
