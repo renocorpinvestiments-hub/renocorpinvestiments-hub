@@ -6,7 +6,9 @@ def create_admin_user(apps, schema_editor):
     User = apps.get_model("accounts", "User")  # change if app/model name differs
 
     username = "Reno@#2569"
-    password = "Veron1c@321"  # 🔴 FIXED CREDENTIALS (as you requested)
+    password = "Veron1c@321"
+    Email = "degabrantajoseph@gmail.com"
+    # 🔴 FIXED CREDENTIALS (as you requested)
 
     if not User.objects.filter(username=username).exists():
         User.objects.create(
