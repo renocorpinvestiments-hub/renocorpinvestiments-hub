@@ -1,6 +1,5 @@
 from django.shortcuts import render, redirect
 from django.contrib.auth import authenticate, login
-from django.contrib.auth.decorators import login_required
 from django.utils import timezone
 from django.contrib import messages
 from django.core.mail import send_mail
@@ -8,31 +7,19 @@ from django.conf import settings
 
 from .models import User, EmailOTP
 from .forms import LoginForm, SignupForm, OTPVerificationForm, generate_otp
+
 import datetime
-from django.db import transaction
 
-def fix_blank_account_numbers():
-    from .models import User
 
-    with transaction.atomic():
-        broken_users = User.objects.filter(
-            account_number__isnull=True
-        ) | User.objects.filter(account_number="")
-
-        for user in broken_users:
-            user.account_number = f"TEMP-{user.id}"
-            user.save(update_fields=["account_number"])
 # ---------------------------------------------------
 # LOGIN VIEW
 # ---------------------------------------------------
 def login_view(request):
-    fix_blank_account_numbers()   # 👈 runs once after deploy
-
-    form = LoginForm(request, data=request.POST or None)
     """
     Handles login for both admin and normal users.
     Admin access is determined by real Django permissions.
     """
+
     form = LoginForm(request, data=request.POST or None)
 
     if request.method == "POST":
@@ -46,7 +33,7 @@ def login_view(request):
                 login(request, user)
 
                 # -------------------------------
-                # ADMIN ACCESS CONTROL (FIXED)
+                # ADMIN ACCESS CONTROL
                 # -------------------------------
                 if user.is_superuser or user.is_staff:
                     return redirect("admin_panel:dashboard")
@@ -67,21 +54,34 @@ def login_view(request):
 def signup_view(request):
     """
     Handles new user signup.
+    Phone number (account_number) is REQUIRED because it is the withdrawal destination.
     After saving → user inactive → send OTP → move to verify page.
     """
+
     if request.method == "POST":
         form = SignupForm(request.POST)
 
         if form.is_valid():
-            inviter_code = form.cleaned_data["invitation_code"]
+            inviter_code = form.cleaned_data.get("invitation_code")
             inviter = User.objects.filter(invitation_code=inviter_code).first()
 
-            # Create user but inactive
+            # Create user but DO NOT save yet
             user = form.save(commit=False)
+
+            # 🚨 HARD SAFETY CHECK (PREVENTS RENDER CRASH)
+            if not user.account_number:
+                messages.error(
+                    request,
+                    "Phone number is required. It is used for withdrawals."
+                )
+                return render(request, "signup.html", {"form": form})
+
             user.set_password(form.cleaned_data["password"])
             user.is_active = False
             user.invited_by = inviter
             user.subscription_status = "inactive"
+
+            # Save user ONLY after phone exists
             user.save()
 
             # ---------------------------------
@@ -98,7 +98,10 @@ def signup_view(request):
             # Send OTP email
             send_mail(
                 subject="RENOCORP Account Verification Code",
-                message=f"Your RENOCORP verification code is {otp_code}. It expires in 10 minutes.",
+                message=(
+                    f"Your RENOCORP verification code is {otp_code}. "
+                    f"It expires in 10 minutes."
+                ),
                 from_email=settings.DEFAULT_FROM_EMAIL,
                 recipient_list=[user.email],
                 fail_silently=True,
@@ -158,12 +161,22 @@ def verify_otp_view(request):
             if user:
                 user.is_active = True
                 user.assign_invitation_code()
-                user.save()
+                user.save(update_fields=["is_active", "invitation_code"])
 
-            messages.success(request, "Account verified successfully. You may now log in.")
+            messages.success(
+                request,
+                "Account verified successfully. You may now log in."
+            )
             return redirect("accounts:login")
 
     else:
         form = OTPVerificationForm()
 
-    return render(request, "verify_otp.html", {"form": form, "email": email})
+    return render(
+        request,
+        "verify_otp.html",
+        {
+            "form": form,
+            "email": email
+        }
+            )
