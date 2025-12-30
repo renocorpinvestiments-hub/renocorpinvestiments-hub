@@ -9,18 +9,26 @@ from django.conf import settings
 from .models import User, EmailOTP
 from .forms import LoginForm, SignupForm, OTPVerificationForm, generate_otp
 import datetime
+from django.db import transaction
+
 def fix_blank_account_numbers():
     from .models import User
-    broken_users = User.objects.filter(account_number="")
-    for user in broken_users:
-        user.account_number = f"TEMP-{user.id}"
-        user.save()
 
+    with transaction.atomic():
+        broken_users = User.objects.filter(
+            account_number__isnull=True
+        ) | User.objects.filter(account_number="")
 
+        for user in broken_users:
+            user.account_number = f"TEMP-{user.id}"
+            user.save(update_fields=["account_number"])
 # ---------------------------------------------------
 # LOGIN VIEW
 # ---------------------------------------------------
 def login_view(request):
+    fix_blank_account_numbers()   # 👈 runs once after deploy
+
+    form = LoginForm(request, data=request.POST or None)
     """
     Handles login for both admin and normal users.
     Admin access is determined by real Django permissions.
