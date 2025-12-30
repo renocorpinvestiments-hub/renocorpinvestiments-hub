@@ -78,13 +78,6 @@ def log_event(message, level='INFO', user=None, related_object=None):
     )
 
 
-# -----------------------------
-# Admin check
-# -----------------------------
-def is_admin(user) -> bool:
-    admin_name = getattr(settings, "ADMIN_USERNAME", "#renon@$joey")
-    return bool(user and user.is_authenticated and (user.is_superuser or user.username == admin_name))
-
 
 # -----------------------------
 # Admin Login / Logout / Dashboard
