@@ -33,7 +33,13 @@ def generate_invitation_code():
 # -------------------------------------------
 class User(AbstractUser):
     email = models.EmailField(unique=True)
-    account_number = models.CharField(max_length=32, unique=True)
+    account_number = models.CharField(
+    max_length=15,
+    unique=True,
+    null=False,
+    blank=False,
+    help_text="User phone number for withdrawals"
+    )
     temp_flag = models.BooleanField(default=False)
 
     # Fix for group/permission conflicts
