@@ -17,21 +17,20 @@ def generate_otp(length=6):
 # ------------------------------
 # LOGIN FORM (for both admin & users)
 # ------------------------------
+
 class LoginForm(AuthenticationForm):
-    username = forms.CharField(
-        label="Username",
-        widget=forms.TextInput(attrs={
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+
+        self.fields["username"].widget.attrs.update({
             "class": "form-control",
             "placeholder": "Enter username",
         })
-    )
-    password = forms.CharField(
-        label="Password",
-        widget=forms.PasswordInput(attrs={
+
+        self.fields["password"].widget.attrs.update({
             "class": "form-control",
             "placeholder": "Enter password",
         })
-    )
 
 # ------------------------------
 # USER SIGNUP FORM
