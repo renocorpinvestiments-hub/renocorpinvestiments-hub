@@ -23,7 +23,7 @@ def create_admin_user(apps, schema_editor):
 class Migration(migrations.Migration):
 
     dependencies = [
-        ("accounts", "0003_previous_migration"),  # 👈 replace correctly
+        ("accounts", "0002_fix_schema"),  # 👈 replace correctly
     ]
 
     operations = [
