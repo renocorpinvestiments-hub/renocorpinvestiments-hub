@@ -87,13 +87,24 @@ class SignupForm(forms.ModelForm):
         return email
 
     def clean_account_number(self):
-        acct = self.cleaned_data.get("account_number")
-        if not acct:
-            raise forms.ValidationError("Account number is required.")
-        User = get_user_model()
-        if User.objects.filter(account_number=acct).exists():
-            raise forms.ValidationError("Account number already exists.")
-        return acct
+    acct = self.cleaned_data.get("account_number")
+
+    if not acct:
+        raise forms.ValidationError("Phone number is required.")
+
+    # Allow only digits and optional +
+    if not acct.replace("+", "").isdigit():
+        raise forms.ValidationError("Enter a valid phone number.")
+
+    # Length check (international standard)
+    if len(acct.replace("+", "")) < 9 or len(acct.replace("+", "")) > 15:
+        raise forms.ValidationError("Phone number must be 9 to 15 digits.")
+
+    User = get_user_model()
+    if User.objects.filter(account_number=acct).exists():
+        raise forms.ValidationError("This phone number is already registered.")
+
+    return acct
 
     def clean_invitation_code(self):
         code = self.cleaned_data.get("invitation_code")
