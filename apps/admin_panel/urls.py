@@ -4,7 +4,7 @@ from . import views
 app_name = "admin_panel"
 
 urlpatterns = [
-    path("", views.admin_dashboard, name="admin_dashboard"),
+    path("", views.admin_dashboard, name="dashboard"),
 
     path("manual-login/", views.manual_login_view, name="manual_login"),
     path("verify-otp/", views.verify_otp_view, name="verify_otp"),
