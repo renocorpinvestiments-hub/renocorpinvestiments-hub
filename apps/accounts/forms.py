@@ -3,12 +3,17 @@ from django.contrib.auth.forms import AuthenticationForm
 from django.apps import apps
 import random
 import string
+
+
+# -------------------------------------------------
+# PHONE NORMALIZATION
+# -------------------------------------------------
 def normalize_phone(phone: str, default_country_code="256"):
     """
     Normalize phone number to international format.
     Examples:
-    0700123456  -> +256700123456
-    700123456   -> +256700123456
+    0700123456   -> +256700123456
+    700123456    -> +256700123456
     +256700123456 -> +256700123456
     """
     if not phone:
@@ -37,21 +42,21 @@ def normalize_phone(phone: str, default_country_code="256"):
 
     return f"+{digits}"
 
+
 def get_user_model():
     return apps.get_model("accounts", "User")
 
 
-# ------------------------------
-# Helper: OTP generator
-# ------------------------------
+# -------------------------------------------------
+# OTP GENERATOR
+# -------------------------------------------------
 def generate_otp(length=6):
-    """Generate a 6-digit OTP code."""
-    return ''.join(random.choices(string.digits, k=length))
+    return "".join(random.choices(string.digits, k=length))
 
 
-# ------------------------------
-# LOGIN FORM (for both admin & users)
-# ------------------------------
+# -------------------------------------------------
+# LOGIN FORM
+# -------------------------------------------------
 class LoginForm(AuthenticationForm):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -67,16 +72,16 @@ class LoginForm(AuthenticationForm):
         })
 
 
-# ------------------------------
-# USER SIGNUP FORM
-# ------------------------------
+# -------------------------------------------------
+# SIGNUP FORM
+# -------------------------------------------------
 class SignupForm(forms.ModelForm):
     password = forms.CharField(
         widget=forms.PasswordInput(attrs={
             "class": "form-control",
             "placeholder": "Enter password",
         }),
-        required=True
+        required=True,
     )
 
     confirm_password = forms.CharField(
@@ -84,7 +89,7 @@ class SignupForm(forms.ModelForm):
             "class": "form-control",
             "placeholder": "Confirm password",
         }),
-        required=True
+        required=True,
     )
 
     account_number = forms.CharField(
@@ -92,8 +97,8 @@ class SignupForm(forms.ModelForm):
         max_length=15,
         widget=forms.TextInput(attrs={
             "class": "form-control",
-            "placeholder": "Phone number (e.g. +2567XXXXXXXX)"
-        })
+            "placeholder": "Phone number (e.g. +2567XXXXXXXX)",
+        }),
     )
 
     class Meta:
@@ -109,28 +114,29 @@ class SignupForm(forms.ModelForm):
         widgets = {
             "username": forms.TextInput(attrs={
                 "class": "form-control",
-                "placeholder": "Full name"
+                "placeholder": "Full name",
             }),
             "gender": forms.Select(attrs={"class": "form-control"}),
             "age": forms.NumberInput(attrs={
                 "class": "form-control",
-                "placeholder": "Age"
+                "placeholder": "Age",
             }),
             "email": forms.EmailInput(attrs={
                 "class": "form-control",
-                "placeholder": "Email address"
+                "placeholder": "Email address",
             }),
             "invitation_code": forms.TextInput(attrs={
                 "class": "form-control",
-                "placeholder": "Invitation code (required)"
+                "placeholder": "Invitation code (required)",
             }),
         }
 
-    # ------------------------------
+    # -------------------------------------------------
     # VALIDATIONS
-    # ------------------------------
+    # -------------------------------------------------
     def clean_email(self):
-          email = self.cleaned_data.get("email")
+        email = self.cleaned_data.get("email")
+
         if not email:
             raise forms.ValidationError("Email is required.")
 
@@ -141,19 +147,18 @@ class SignupForm(forms.ModelForm):
         return email
 
     def clean_account_number(self):
-    raw_phone = self.cleaned_data.get("account_number")
+        raw_phone = self.cleaned_data.get("account_number")
 
-    if not raw_phone:
-        raise forms.ValidationError("Phone number is required.")
+        if not raw_phone:
+            raise forms.ValidationError("Phone number is required.")
 
-    # Normalize phone
-    phone = normalize_phone(raw_phone)
+        phone = normalize_phone(raw_phone)
 
-    User = get_user_model()
-    if User.objects.filter(account_number=phone).exists():
-        raise forms.ValidationError("This phone number is already registered.")
+        User = get_user_model()
+        if User.objects.filter(account_number=phone).exists():
+            raise forms.ValidationError("This phone number is already registered.")
 
-    return phone
+        return phone
 
     def clean_invitation_code(self):
         code = self.cleaned_data.get("invitation_code")
@@ -179,9 +184,9 @@ class SignupForm(forms.ModelForm):
         return cleaned_data
 
 
-# ------------------------------
+# -------------------------------------------------
 # OTP VERIFICATION FORM
-# ------------------------------
+# -------------------------------------------------
 class OTPVerificationForm(forms.Form):
     otp = forms.CharField(
         max_length=6,
@@ -189,5 +194,5 @@ class OTPVerificationForm(forms.Form):
         widget=forms.TextInput(attrs={
             "class": "form-control",
             "placeholder": "Enter OTP",
-        })
+        }),
     )
