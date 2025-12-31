@@ -16,4 +16,5 @@ urlpatterns = [
     path("gifts/upload/", views.gift_upload_view, name="gift_upload"),
 
     path("logout/", views.admin_logout, name="logout"),
+    path("update-user/<int:user_id>/", views.update_user, name="update_user"),
 ]
