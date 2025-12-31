@@ -239,6 +239,9 @@
     </div>
 
     <script>
+        document.querySelectorAll('.expanded form').forEach(form => {
+    form.addEventListener('click', e => e.stopPropagation());
+});
         // Card Expand/Collapse
         const cards = document.querySelectorAll('.user-card');
         cards.forEach(card => {
