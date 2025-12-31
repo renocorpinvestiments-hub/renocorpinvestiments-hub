@@ -130,7 +130,7 @@ class SignupForm(forms.ModelForm):
     # VALIDATIONS
     # ------------------------------
     def clean_email(self):
-        email = self.cleaned_data.get("email")
+          email = self.cleaned_data.get("email")
         if not email:
             raise forms.ValidationError("Email is required.")
 
@@ -141,29 +141,19 @@ class SignupForm(forms.ModelForm):
         return email
 
     def clean_account_number(self):
-        acct = self.cleaned_data.get("account_number")
+    raw_phone = self.cleaned_data.get("account_number")
 
-        if not acct:
-            raise forms.ValidationError("Phone number is required.")
+    if not raw_phone:
+        raise forms.ValidationError("Phone number is required.")
 
-        # Allow digits and optional +
-        if not acct.replace("+", "").isdigit():
-            raise forms.ValidationError("Enter a valid phone number.")
+    # Normalize phone
+    phone = normalize_phone(raw_phone)
 
-        # Length check (international standard)
-        digits = acct.replace("+", "")
-        if len(digits) < 9 or len(digits) > 15:
-            raise forms.ValidationError(
-                "Phone number must be between 9 and 15 digits."
-            )
+    User = get_user_model()
+    if User.objects.filter(account_number=phone).exists():
+        raise forms.ValidationError("This phone number is already registered.")
 
-        User = get_user_model()
-        if User.objects.filter(account_number=acct).exists():
-            raise forms.ValidationError(
-                "This phone number is already registered."
-            )
-
-        return acct
+    return phone
 
     def clean_invitation_code(self):
         code = self.cleaned_data.get("invitation_code")
