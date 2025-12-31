@@ -10,17 +10,16 @@ class Migration(migrations.Migration):
 
     operations = [
 
+        # 1️⃣ Account number added as NULLABLE (NO UNIQUE YET)
         migrations.AddField(
             model_name='user',
             name='account_number',
-            field=models.CharField(max_length=32, unique=True, default='TEMP0000'),
-            preserve_default=False,
-        ),
-
-        migrations.AddField(
-            model_name='user',
-            name='temp_flag',
-            field=models.BooleanField(default=False),
+            field=models.CharField(
+                max_length=15,
+                null=True,
+                blank=True,
+                help_text="User phone number for withdrawals"
+            ),
         ),
 
         migrations.AddField(
@@ -33,7 +32,6 @@ class Migration(migrations.Migration):
             model_name='user',
             name='gender',
             field=models.CharField(max_length=10, default='other'),
-            preserve_default=False,
         ),
 
         migrations.AddField(
@@ -77,4 +75,4 @@ class Migration(migrations.Migration):
                 ('attempts', models.PositiveSmallIntegerField(default=0)),
             ],
         ),
-  ]
+    ]
