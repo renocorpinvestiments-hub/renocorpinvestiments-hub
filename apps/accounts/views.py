@@ -36,7 +36,7 @@ def login_view(request):
                 # ADMIN ACCESS CONTROL
                 # -------------------------------
                 if user.is_superuser or user.is_staff:
-                    return redirect("admin_panel:dashboard")
+                    return redirect("admin_panel:admin_dashboard")
 
                 # Normal user login
                 return redirect("dashboard:home")
