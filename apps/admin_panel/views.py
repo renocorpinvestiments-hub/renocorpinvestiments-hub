@@ -58,7 +58,7 @@ def admin_logout(request):
 @login_required
 @staff_member_required
 def admin_dashboard(request):
-    users = User.objects.select_related("profile").all()
+    users = User.objects.all()
     total_balance = UserProfile.objects.aggregate(total=Sum("balance"))["total"] or 0
 
     return render(request, "users.html", {
@@ -67,6 +67,7 @@ def admin_dashboard(request):
     })
 
 @login_required
+@staff_member_required
 def update_user(request, user_id):
     if request.method == "POST":
         user = get_object_or_404(User, id=user_id)
