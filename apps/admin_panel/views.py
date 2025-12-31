@@ -66,7 +66,18 @@ def admin_dashboard(request):
         "total_balance": total_balance,
     })
 
+@login_required
+def update_user(request, user_id):
+    if request.method == "POST":
+        user = get_object_or_404(User, id=user_id)
 
+        user.name = request.POST.get("name", user.name)
+        user.email = request.POST.get("email", user.email)
+        user.age = request.POST.get("age", user.age)
+
+        user.save()
+
+    return redirect("admin_panel:dashboard")
 # =====================================================
 # 2️⃣ ANALYTICS / GRAPHS
 # =====================================================
