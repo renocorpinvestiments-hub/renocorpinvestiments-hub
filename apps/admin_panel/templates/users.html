@@ -171,7 +171,7 @@
     <header>RENOCORP ADMIN PANEL</header>
 
     <div class="top-ribbon">
-        <span>Users: {{ total_users }}</span>
+        <span>Users: {{ users|length }}</span>
         <span>Total Balance: {{ total_balance }} UGX</span>
     </div>
 
@@ -188,8 +188,8 @@
                     <p>{{ user.email }}</p>
                 </div>
                 <div>
-                    <p><strong>Balance:</strong> {{ user.balance }} UGX</p>
-                    <p><strong>Expiry:</strong> {{ user.subscription_expiry|date:"M d, Y" }}</p>
+                    <p><strong>Balance:</strong> {{ user.userprofile.balance|default:0 }} UGX</p>
+                    <p><strong>Expiry:</strong> {{ user.userprofile.subscription_expiry|date:"M d, Y" }}</p>
                 </div>
             </div>
 
