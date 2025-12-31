@@ -61,7 +61,7 @@ def admin_dashboard(request):
     users = User.objects.select_related("profile").all()
     total_balance = UserProfile.objects.aggregate(total=Sum("balance"))["total"] or 0
 
-    return render(request, "admin_panel/users.html", {
+    return render(request, "users.html", {
         "users": users,
         "total_balance": total_balance,
     })
@@ -88,7 +88,7 @@ def graphs_view(request):
         "created_at__date"
     ).annotate(total=Sum("amount")).order_by("created_at__date")
 
-    return render(request, "admin_panel/graphs.html", {
+    return render(request, "graphs.html", {
         "total_users": total_users,
         "new_users_week": new_users_week,
         "rewards_total": rewards_total,
@@ -107,7 +107,7 @@ def transaction_page(request):
     system_logs = TransactionLog.objects.filter(txn_type="system")
     payrolls = PayrollEntry.objects.all()
 
-    return render(request, "admin_panel/transactions.html", {
+    return render(request, "transactions.html", {
         "transactions": transactions,
         "system_logs": system_logs,
         "payrolls": payrolls,
@@ -131,7 +131,7 @@ def manual_login_view(request):
         request.session["pending_manual_user_id"] = pending.id
         return redirect("admin_panel:verify_otp")
 
-    return render(request, "admin_panel/manual_login.html", {"form": form})
+    return render(request, "manual_login.html", {"form": form})
 
 
 @login_required
@@ -162,7 +162,7 @@ def verify_otp_view(request):
             pending.delete()
             return redirect("admin_panel:dashboard")
 
-    return render(request, "admin_panel/verify_otp.html", {"form": form})
+    return render(request, "verify_otp.html", {"form": form})
 
 
 # =====================================================
@@ -178,7 +178,7 @@ def admin_settings_view(request):
         form.save()
         messages.success(request, "Settings updated")
 
-    return render(request, "admin_panel/settings.html", {"form": form})
+    return render(request, "settings.html", {"form": form})
 
 
 # =====================================================
@@ -193,4 +193,4 @@ def gift_upload_view(request):
         form.save()
         messages.success(request, "Gift uploaded")
 
-    return render(request, "admin_panel/gift_upload.html", {"form": form})
+    return render(request, "gift_upload.html", {"form": form})
