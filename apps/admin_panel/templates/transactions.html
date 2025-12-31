@@ -3,9 +3,10 @@
 
 {% block content %}
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper/swiper-bundle.min.css" />
+
 <style>
   body { background-color: #0d1117; color: #e6edf3; font-family: "Inter", sans-serif; margin:0; padding:0; }
-  .swiper { width: 100%; height: 100%; padding-bottom: 70px; } /* padding for bottom nav */
+  .swiper { width: 100%; height: 100%; padding-bottom: 70px; }
   .swiper-slide { width: 100%; padding: 1rem; box-sizing: border-box; overflow-y: auto; }
 
   h2 { color: #58a6ff; text-align: center; margin-bottom: 1rem; }
@@ -13,47 +14,94 @@
   .card { background: #161b22; border:1px solid #30363d; border-radius:10px; padding:1rem; margin-bottom:1rem; }
   .card-header { display:flex; justify-content:space-between; margin-bottom:0.5rem; }
   .name { color:#58a6ff; font-weight:600; }
+
   .status.success { color:#2ea043; font-weight:600; }
   .status.failed { color:#f85149; font-weight:600; }
-  .details span { margin-right:1rem; color:#c9d1d9; font-size:0.9rem; display:block; margin-bottom:0.2rem; }
+
+  .details span {
+    color:#c9d1d9;
+    font-size:0.9rem;
+    display:block;
+    margin-bottom:0.2rem;
+  }
+
   .no-data { text-align:center; color:#8b949e; font-style:italic; margin-top:3rem; }
 
   .bottom-nav {
-    position: fixed; bottom: 0; left: 0; width: 100%; background-color: #161b22;
-    border-top:1px solid #30363d; display:flex; overflow-x:auto; white-space:nowrap; -webkit-overflow-scrolling: touch;
+    position: fixed; bottom: 0; left: 0; width: 100%;
+    background-color: #161b22;
+    border-top:1px solid #30363d;
+    display:flex;
+    overflow-x:auto;
     padding:0.5rem 0;
   }
-  .bottom-nav a { display:inline-block; flex:0 0 auto; padding:0.6rem 1rem; color:#8b949e; text-decoration:none; text-align:center; font-size:0.85rem; }
+
+  .bottom-nav a {
+    padding:0.6rem 1rem;
+    color:#8b949e;
+    text-decoration:none;
+    font-size:0.85rem;
+  }
+
   .bottom-nav a.active { color:#58a6ff; font-weight:600; }
-  .bottom-nav i { display:block; margin-bottom:0.2rem; font-size:1.2rem; }
 
-  .search-bar { display:flex; gap:0.5rem; margin-bottom:1rem; background:#161b22; border:1px solid #30363d; padding:0.5rem; border-radius:8px; }
-  .search-bar input { flex:1; background:none; border:none; outline:none; color:#e6edf3; }
-  .search-bar button { background:#238636; border:none; color:white; padding:0.4rem 0.8rem; border-radius:6px; cursor:pointer; }
+  .search-bar {
+    display:flex;
+    gap:0.5rem;
+    margin-bottom:1rem;
+    background:#161b22;
+    border:1px solid #30363d;
+    padding:0.5rem;
+    border-radius:8px;
+  }
+
+  .search-bar input {
+    flex:1;
+    background:none;
+    border:none;
+    outline:none;
+    color:#e6edf3;
+  }
+
+  .search-bar button {
+    background:#238636;
+    border:none;
+    color:white;
+    padding:0.4rem 0.8rem;
+    border-radius:6px;
+    cursor:pointer;
+  }
+
   .search-bar button:hover { background:#2ea043; }
-
 </style>
 
 <div class="swiper">
   <div class="swiper-wrapper">
 
-    <!-- Transactions Slide -->
+    <!-- TRANSACTIONS -->
     <div class="swiper-slide">
       <h2>Transaction History</h2>
+
       <div class="search-bar">
-        <input type="text" id="searchTransactions" placeholder="Search by name or type..."/>
+        <input type="text" id="searchTransactions" placeholder="Search by name or type…">
         <button onclick="filterTransactions()">Search</button>
       </div>
+
       {% if transactions %}
       <div id="transactionsList">
         {% for tx in transactions %}
-        <div class="card" data-name="{{ tx.user.username|lower }}" data-type="{{ tx.txn_type|lower }}">
+        <div class="card"
+             data-name="{{ tx.user.username|default:'system'|lower }}"
+             data-type="{{ tx.txn_type|lower }}">
+
           <div class="card-header">
             <div class="name">{{ tx.user.username|default:"SYSTEM" }}</div>
-            <div class="status {% if tx.status == "successful" %}success{% else %}failed{% endif %}">
-    {{ tx.status|title }}
+
+            <div class="status {% if tx.status|lower == 'successful' %}success{% else %}failed{% endif %}">
+              {{ tx.status|title }}
             </div>
           </div>
+
           <div class="details">
             <span>Type: {{ tx.txn_type|title }}</span>
             <span>Amount: {{ tx.amount }} UGX</span>
@@ -63,44 +111,50 @@
         {% endfor %}
       </div>
       {% else %}
-      <div class="no-data">No transactions found.</div>
+        <div class="no-data">No transactions found.</div>
       {% endif %}
     </div>
 
-    <!-- System Logs Slide -->
+    <!-- SYSTEM LOGS -->
     <div class="swiper-slide">
       <h2>System Logs</h2>
+
       {% if logs %}
-      <div>
         {% for log in logs %}
         <div class="card">
           <div class="card-header">
             <div class="name">{{ log.user|default:"SYSTEM" }}</div>
-            <div class="status {% if log.level=="SUCCESS" or log.level=="INFO" %}success{% else %}failed{% endif %}">{{ log.level }}</div>
+
+            <div class="status {% if log.level|upper in 'SUCCESS,INFO' %}success{% else %}failed{% endif %}">
+              {{ log.level }}
+            </div>
           </div>
+
           <div class="details">
             <span>Time: {{ log.timestamp|date:"M d, Y - H:i" }}</span>
             <span>Message: {{ log.message }}</span>
           </div>
         </div>
         {% endfor %}
-      </div>
       {% else %}
-      <div class="no-data">No logs available.</div>
+        <div class="no-data">No logs available.</div>
       {% endif %}
     </div>
 
-    <!-- Payroll Entry Slide -->
+    <!-- PAYROLL ENTRIES -->
     <div class="swiper-slide">
       <h2>Payroll Entries</h2>
+
       {% if payrolls %}
-      <div>
         {% for p in payrolls %}
         <div class="card">
           <div class="card-header">
             <div class="name">{{ p.name }}</div>
-            <div class="status {% if p.enabled %}success{% else %}failed{% endif %}">{{ p.enabled|yesno:"Enabled,Disabled" }}</div>
+            <div class="status {% if p.enabled %}success{% else %}failed{% endif %}">
+              {{ p.enabled|yesno:"Enabled,Disabled" }}
+            </div>
           </div>
+
           <div class="details">
             <span>Account: {{ p.account_number }}</span>
             <span>Amount: {{ p.amount }}</span>
@@ -109,73 +163,64 @@
           </div>
         </div>
         {% endfor %}
-      </div>
       {% else %}
-      <div class="no-data">No payroll entries.</div>
+        <div class="no-data">No payroll entries.</div>
       {% endif %}
     </div>
 
-    <!-- Available Payrolls Slide -->
+    <!-- AVAILABLE PAYROLLS -->
     <div class="swiper-slide">
       <h2>Available Payrolls</h2>
+
       {% if payrolls %}
-      <div>
         {% for p in payrolls %}
-        {% if p.enabled %}
-        <div class="card">
-          <div class="card-header">
-            <div class="name">{{ p.name }}</div>
-            <div class="status success">Enabled</div>
+          {% if p.enabled %}
+          <div class="card">
+            <div class="card-header">
+              <div class="name">{{ p.name }}</div>
+              <div class="status success">Enabled</div>
+            </div>
+            <div class="details">
+              <span>Account: {{ p.account_number }}</span>
+              <span>Amount: {{ p.amount }}</span>
+            </div>
           </div>
-          <div class="details">
-            <span>Account: {{ p.account_number }}</span>
-            <span>Amount: {{ p.amount }}</span>
-          </div>
-        </div>
-        {% endif %}
+          {% endif %}
         {% endfor %}
-      </div>
       {% else %}
-      <div class="no-data">No available payrolls.</div>
+        <div class="no-data">No available payrolls.</div>
       {% endif %}
     </div>
 
   </div>
-  <!-- Optional pagination -->
   <div class="swiper-pagination"></div>
 </div>
 
-<!-- Bottom Nav -->
+<!-- BOTTOM NAV -->
 <nav class="bottom-nav">
-  <a href="{% url 'admin_panel:dashboard' %}"><i class="bi bi-people"></i>Users</a>
-  <a href="{% url 'admin_panel:graphs' %}"><i class="bi bi-graph-up"></i>Graphs</a>
-  <a href="{% url 'admin_panel:manual_login' %}"><i class="bi bi-person-plus"></i>Login</a>
-  <a href="{% url 'admin_panel:gift_upload' %}"><i class="bi bi-gift"></i>Gifts</a>
-  <a href="{% url 'admin_panel:settings' %}"><i class="bi bi-gear"></i>Settings</a>
-  <a href="{% url 'admin_panel:transactions' %}" class="active"><i class="bi bi-cash-stack"></i>Trans</a>
+  <a href="{% url 'admin_panel:dashboard' %}">Users</a>
+  <a href="{% url 'admin_panel:graphs' %}">Graphs</a>
+  <a href="{% url 'admin_panel:manual_login' %}">Login</a>
+  <a href="{% url 'admin_panel:gift_upload' %}">Gifts</a>
+  <a href="{% url 'admin_panel:settings' %}">Settings</a>
+  <a href="{% url 'admin_panel:transactions' %}" class="active">Trans</a>
 </nav>
 
 <script src="https://cdn.jsdelivr.net/npm/swiper/swiper-bundle.min.js"></script>
 <script>
-  const swiper = new Swiper('.swiper', {
+  new Swiper('.swiper', {
     slidesPerView: 1,
-    spaceBetween: 0,
     pagination: { el: '.swiper-pagination', clickable: true },
     grabCursor: true,
   });
 
   function filterTransactions() {
-    const query = document.getElementById('searchTransactions').value.toLowerCase();
-    const cards = document.querySelectorAll('#transactionsList .card');
-    let found = false;
-    cards.forEach(card => {
-      const name = card.dataset.name;
-      const type = card.dataset.type;
-      if(name.includes(query) || type.includes(query)){
-        card.style.display = 'block'; found=true;
-      } else { card.style.display = 'none'; }
+    const q = document.getElementById('searchTransactions').value.toLowerCase();
+    document.querySelectorAll('#transactionsList .card').forEach(card => {
+      card.style.display =
+        card.dataset.name.includes(q) || card.dataset.type.includes(q)
+        ? 'block' : 'none';
     });
-    if(!found) alert("No matching transactions found.");
   }
 </script>
 {% endblock %}
