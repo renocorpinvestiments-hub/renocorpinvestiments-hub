@@ -3,7 +3,39 @@ from django.contrib.auth.forms import AuthenticationForm
 from django.apps import apps
 import random
 import string
+def normalize_phone(phone: str, default_country_code="256"):
+    """
+    Normalize phone number to international format.
+    Examples:
+    0700123456  -> +256700123456
+    700123456   -> +256700123456
+    +256700123456 -> +256700123456
+    """
+    if not phone:
+        return None
 
+    phone = phone.strip().replace(" ", "")
+
+    # Already international
+    if phone.startswith("+"):
+        digits = phone[1:]
+    else:
+        digits = phone
+
+        # Remove leading zero
+        if digits.startswith("0"):
+            digits = digits[1:]
+
+        # Prepend country code
+        digits = default_country_code + digits
+
+    if not digits.isdigit():
+        raise forms.ValidationError("Invalid phone number format.")
+
+    if len(digits) < 11 or len(digits) > 15:
+        raise forms.ValidationError("Invalid phone number length.")
+
+    return f"+{digits}"
 
 def get_user_model():
     return apps.get_model("accounts", "User")
