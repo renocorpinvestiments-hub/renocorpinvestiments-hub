@@ -6,6 +6,7 @@ from django.contrib.auth.decorators import login_required
 from django.contrib.admin.views.decorators import staff_member_required
 from django.utils import timezone
 from django.db.models import Sum, Count
+from django.core.exceptions import ObjectDoesNotExist
 
 from .forms import (
     PendingManualUserForm,
@@ -65,30 +66,36 @@ def admin_dashboard(request):
         "users": users,
         "total_balance": total_balance,
     })
+
 @login_required
 @staff_member_required
 def update_user(request, user_id):
     user = get_object_or_404(User, id=user_id)
-    profile = user.profile
+
+    # ✅ SAFE: always ensure profile exists
+    profile, _ = UserProfile.objects.get_or_create(user=user)
 
     if request.method == "POST":
+        # USER MODEL
         user.name = request.POST.get("name", user.name)
         user.email = request.POST.get("email", user.email)
-        user.save()
+        user.save(update_fields=["name", "email"])
 
-        profile.age = request.POST.get("age", profile.age)
-        profile.gender = request.POST.get("gender", profile.gender)
-        profile.account_number = request.POST.get("account_number", profile.account_number)
-        profile.invitation_code = request.POST.get("invitation_code", profile.invitation_code)
-        profile.invited_by = request.POST.get("invited_by", profile.invited_by)
+        # PROFILE MODEL
+        profile.age = request.POST.get("age") or profile.age
+        profile.gender = request.POST.get("gender") or profile.gender
+        profile.account_number = request.POST.get("account_number") or profile.account_number
+        profile.invitation_code = request.POST.get("invitation_code") or profile.invitation_code
+        profile.invited_by = request.POST.get("invited_by") or profile.invited_by
         profile.subscription_status = request.POST.get(
             "subscription_status", profile.subscription_status
         )
+
         profile.save()
 
-    return redirect("admin_panel:dashboard")
+        messages.success(request, "User updated successfully")
 
-    
+    return redirect("admin_panel:dashboard")
 # =====================================================
 # 2️⃣ ANALYTICS / GRAPHS
 # =====================================================
