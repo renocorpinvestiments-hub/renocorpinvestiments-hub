@@ -15,7 +15,7 @@
       color: #e6edf3;
       font-family: "Inter", sans-serif;
       margin: 0;
-      padding: 0;
+      padding-bottom: 70px;
     }
 
     .container {
@@ -46,6 +46,18 @@
       padding-bottom: 0.5rem;
       margin-bottom: 1rem;
       font-size: 1.2rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    select {
+      background: #0d1117;
+      color: #e6edf3;
+      border: 1px solid #30363d;
+      padding: 5px 8px;
+      border-radius: 6px;
+      font-size: 0.85rem;
     }
 
     canvas {
@@ -53,7 +65,7 @@
       height: 350px !important;
     }
 
-    /* Scrollable Bottom Nav */
+    /* Bottom Nav */
     .bottom-nav {
       position: fixed;
       bottom: 0;
@@ -64,111 +76,158 @@
       display: flex;
       overflow-x: auto;
       white-space: nowrap;
-      -webkit-overflow-scrolling: touch;
-      scrollbar-width: thin;
-      scrollbar-color: #58a6ff #161b22;
-    }
-
-    .bottom-nav::-webkit-scrollbar {
-      height: 6px;
-    }
-
-    .bottom-nav::-webkit-scrollbar-thumb {
-      background-color: #58a6ff;
-      border-radius: 3px;
-    }
-
-    .bottom-nav::-webkit-scrollbar-track {
-      background: #161b22;
     }
 
     .bottom-nav a {
-      display: inline-block;
-      flex: 0 0 auto;
       padding: 0.6rem 1rem;
       color: #8b949e;
       text-decoration: none;
       font-size: 0.85rem;
       text-align: center;
-      transition: color 0.2s;
     }
 
     .bottom-nav a.active {
       color: #58a6ff;
       font-weight: 600;
     }
-
-    .bottom-nav i {
-      font-size: 1.2rem;
-      display: block;
-      margin-bottom: 0.2rem;
-    }
-
-    @media (max-width: 600px) {
-      .container { padding: 1rem; }
-      h2 { font-size: 1.5rem; }
-    }
   </style>
 </head>
 
 <body>
-  <div class="container">
-    <h2>Analytics Dashboard</h2>
+<div class="container">
+  <h2>Analytics Dashboard</h2>
 
-    <div class="chart-card">
-      <h3>User Growth</h3>
-      <canvas id="userGrowthChart"></canvas>
-    </div>
-
-    <div class="chart-card">
-      <h3>Transactions (Last 7 Days)</h3>
-      <canvas id="transactionChart"></canvas>
-    </div>
-
-    <div class="chart-card">
-      <h3>Referral Statistics</h3>
-      <canvas id="referralChart"></canvas>
-    </div>
+  <!-- USER GROWTH -->
+  <div class="chart-card">
+    <h3>
+      User Growth
+      <select id="growthRange">
+        <option value="day">Today</option>
+        <option value="week" selected>7 Days</option>
+        <option value="month">30 Days</option>
+        <option value="year">1 Year</option>
+      </select>
+    </h3>
+    <canvas id="userGrowthChart"></canvas>
   </div>
 
-  <!-- Bottom Navigation -->
-  <nav class="bottom-nav">
-    <a href="{% url 'admin_panel:dashboard' %}"><i class="bi bi-people"></i>Users</a>
-    <a href="{% url 'admin_panel:graphs' %}" class="active"><i class="bi bi-graph-up"></i>Graphs</a>
-    <a href="{% url 'admin_panel:manual_login' %}"><i class="bi bi-person-plus"></i>Login</a>
-    <a href="{% url 'admin_panel:gift_upload' %}"><i class="bi bi-gift"></i>Gifts</a>
-    <a href="{% url 'admin_panel:settings' %}"><i class="bi bi-gear"></i>Settings</a>
-    <a href="{% url 'admin_panel:transactions' %}"><i class="bi bi-cash-stack"></i>Trans</a>
-  </nav>
+  <!-- REFERRAL RATE -->
+  <div class="chart-card">
+    <h3>Referral Rate (Invites per Hour)</h3>
+    <canvas id="referralChart"></canvas>
+  </div>
+</div>
 
-  <!-- Chart.js CDN -->
-  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<!-- Bottom Navigation -->
+<nav class="bottom-nav">
+  <a href="{% url 'admin_panel:dashboard' %}">Users</a>
+  <a href="{% url 'admin_panel:graphs' %}" class="active">Graphs</a>
+  <a href="{% url 'admin_panel:manual_login' %}">Login</a>
+  <a href="{% url 'admin_panel:gift_upload' %}">Gifts</a>
+  <a href="{% url 'admin_panel:settings' %}">Settings</a>
+  <a href="{% url 'admin_panel:transactions' %}">Trans</a>
+</nav>
 
-  <script>
-    const userGrowthData = JSON.parse('{{ user_growth_data|safe }}');
-    const transactionData = JSON.parse('{{ transaction_data|safe }}');
-    const referralData = JSON.parse('{{ referral_data|safe }}');
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
-    const colors = { blue: '#58a6ff', green: '#2ea043', orange: '#f39c12', red: '#e74c3c' };
+<script>
+const colors = { blue: '#58a6ff', green: '#2ea043' };
 
-    new Chart(document.getElementById('userGrowthChart'), {
-      type: 'line',
-      data: { labels: userGrowthData.labels, datasets: [{ label: 'New Users', data: userGrowthData.values, borderColor: colors.blue, fill: false, tension: 0.3 }] },
-      options: { scales: { x: { ticks: { color: '#8b949e' } }, y: { ticks: { color: '#8b949e' } } }, plugins: { legend: { labels: { color: '#e6edf3' } } } }
-    });
+let userGrowthChart, referralChart;
 
-    new Chart(document.getElementById('transactionChart'), {
-      type: 'bar',
-      data: { labels: transactionData.labels, datasets: [{ label: 'Total Transactions (UGX)', data: transactionData.values, backgroundColor: colors.green }] },
-      options: { scales: { x: { ticks: { color: '#8b949e' } }, y: { ticks: { color: '#8b949e' } } }, plugins: { legend: { labels: { color: '#e6edf3' } } } }
-    });
+// INIT
+document.addEventListener("DOMContentLoaded", () => {
+  initCharts();
+  startLiveUpdates();
 
-    new Chart(document.getElementById('referralChart'), {
-      type: 'doughnut',
-      data: { labels: referralData.labels, datasets: [{ data: referralData.values, backgroundColor: [colors.blue, colors.orange, colors.green, colors.red] }] },
-      options: { plugins: { legend: { position: 'bottom', labels: { color: '#e6edf3' } } } }
-    });
-  </script>
+  document.getElementById("growthRange").addEventListener("change", () => {
+    fetchAndUpdate();
+  });
+});
+
+// CREATE CHARTS
+function initCharts() {
+  userGrowthChart = new Chart(document.getElementById("userGrowthChart"), {
+    type: 'line',
+    data: { labels: [], datasets: [{
+      label: 'New Users',
+      data: [],
+      borderColor: colors.blue,
+      tension: 0.3,
+      fill: false
+    }]},
+    options: chartOptions()
+  });
+
+  referralChart = new Chart(document.getElementById("referralChart"), {
+    type: 'line',
+    data: { labels: [], datasets: [{
+      label: 'Invites / Hour',
+      data: [],
+      borderColor: colors.green,
+      tension: 0.3,
+      fill: false
+    }]},
+    options: chartOptions()
+  });
+
+  fetchAndUpdate();
+}
+
+// FETCH DATA (LIVE)
+function fetchAndUpdate() {
+  const range = document.getElementById("growthRange").value;
+  fetch(`?range=${range}`, {
+    headers: { "X-Requested-With": "XMLHttpRequest" }
+  })
+  .then(res => res.text())
+  .then(html => {
+    const parser = new DOMParser();
+    const doc = parser.parseFromString(html, "text/html");
+
+    const growthData = JSON.parse(doc.querySelector("#growth-data").textContent);
+    const referralData = JSON.parse(doc.querySelector("#referral-data").textContent);
+
+    updateChart(userGrowthChart, growthData);
+    updateChart(referralChart, referralData);
+  });
+}
+
+// UPDATE CHART
+function updateChart(chart, data) {
+  chart.data.labels = data.labels;
+  chart.data.datasets[0].data = data.values;
+  chart.update();
+}
+
+// AUTO REFRESH EVERY 10s
+function startLiveUpdates() {
+  setInterval(fetchAndUpdate, 10000);
+}
+
+function chartOptions() {
+  return {
+    responsive: true,
+    plugins: {
+      legend: { labels: { color: '#e6edf3' } }
+    },
+    scales: {
+      x: { ticks: { color: '#8b949e' } },
+      y: { ticks: { color: '#8b949e' }, beginAtZero: true }
+    }
+  };
+}
+</script>
+
+<!-- HIDDEN JSON PAYLOADS -->
+<script type="application/json" id="growth-data">
+  {{ user_growth_data|safe }}
+</script>
+
+<script type="application/json" id="referral-data">
+  {{ referral_data|safe }}
+</script>
+
 </body>
 </html>
 {% endblock %}
