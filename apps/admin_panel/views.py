@@ -71,25 +71,20 @@ def admin_dashboard(request):
 @staff_member_required
 def update_user(request, user_id):
     user = get_object_or_404(User, id=user_id)
-
-    # ✅ SAFE: always ensure profile exists
     profile, _ = UserProfile.objects.get_or_create(user=user)
 
     if request.method == "POST":
-        # USER MODEL
+        # -------- USER --------
         full_name = request.POST.get("name", "").strip()
+        if full_name:
+            parts = full_name.split(" ", 1)
+            user.first_name = parts[0]
+            user.last_name = parts[1] if len(parts) > 1 else ""
 
-    if full_name:
-    parts = full_name.split(" ", 1)
-    user.first_name = parts[0]
-    user.last_name = parts[1] if len(parts) > 1 else ""
-
-user.email = request.POST.get("email", user.email)
-user.save(update_fields=["first_name", "last_name", "email"])
         user.email = request.POST.get("email", user.email)
-        user.save(update_fields=["name", "email"])
+        user.save(update_fields=["first_name", "last_name", "email"])
 
-        # PROFILE MODEL
+        # -------- PROFILE --------
         profile.age = request.POST.get("age") or profile.age
         profile.gender = request.POST.get("gender") or profile.gender
         profile.account_number = request.POST.get("account_number") or profile.account_number
@@ -98,7 +93,6 @@ user.save(update_fields=["first_name", "last_name", "email"])
         profile.subscription_status = request.POST.get(
             "subscription_status", profile.subscription_status
         )
-
         profile.save()
 
         messages.success(request, "User updated successfully")
