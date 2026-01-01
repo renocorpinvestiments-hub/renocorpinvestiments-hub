@@ -250,6 +250,21 @@ class PendingManualUser(models.Model):
 
     created_at = models.DateTimeField(auto_now_add=True)
     verified = models.BooleanField(default=False)
+    
+
+
+    def verify_otp(self, code):
+        otp = self.otps.filter(
+            otp_code=code,
+            expires_at__gte=timezone.now()
+        ).order_by('-created_at').first()
+
+        if otp:
+            self.verified = True
+            self.save(update_fields=["verified"])
+            otp.delete()  # single-use OTP
+            return True
+        return False
 
     def __str__(self):
         return f"PendingUser({self.email})"
