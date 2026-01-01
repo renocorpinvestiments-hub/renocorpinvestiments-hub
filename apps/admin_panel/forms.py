@@ -98,8 +98,8 @@ class PendingManualUserForm(forms.ModelForm):
     class Meta:
         model = PendingManualUser
         fields = [
-            'name', 'age', 'gender', 'account_number', 'email',
-            'invitation_code', 'temporary_password', 'verified'
+            'name', 'age', 'gender', 'account_number', 'email'
+            
         ]
         widgets = {
             'name': forms.TextInput(attrs={'class': 'form-control'}),
@@ -107,9 +107,6 @@ class PendingManualUserForm(forms.ModelForm):
             'gender': forms.Select(attrs={'class': 'form-select'}),
             'account_number': forms.TextInput(attrs={'class': 'form-control'}),
             'email': forms.EmailInput(attrs={'class': 'form-control'}),
-            'invitation_code': forms.TextInput(attrs={'class': 'form-control'}),
-            'temporary_password': forms.PasswordInput(attrs={'class': 'form-control'}),
-            'verified': forms.CheckboxInput(attrs={'class': 'form-check-input'}),
         }
 class ManualUserOTPForm(forms.ModelForm):
     class Meta:
