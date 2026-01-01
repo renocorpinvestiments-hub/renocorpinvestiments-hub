@@ -104,29 +104,80 @@ def update_user(request, user_id):
 @login_required
 @staff_member_required
 def graphs_view(request):
-    today = timezone.now()
-    week_ago = today - timedelta(days=7)
+    from django.db.models.functions import TruncHour, TruncDay, TruncMonth
 
-    total_users = User.objects.count()
-    new_users_week = User.objects.filter(date_joined__gte=week_ago).count()
+    range_type = request.GET.get("range", "week")
+    now = timezone.now()
 
-    rewards_total = RewardLog.objects.aggregate(total=Sum("amount"))["total"] or 0
-    withdrawals_total = TransactionLog.objects.filter(
-        txn_type="withdrawal", status="success"
-    ).aggregate(total=Sum("amount"))["total"] or 0
+    # ---------------------------
+    # USER GROWTH (DYNAMIC)
+    # ---------------------------
+    if range_type == "day":
+        start = now - timedelta(days=1)
+        growth_qs = (
+            User.objects.filter(date_joined__gte=start)
+            .annotate(period=TruncHour("date_joined"))
+            .values("period")
+            .annotate(count=Count("id"))
+            .order_by("period")
+        )
 
-    daily_rewards = RewardLog.objects.filter(created_at__gte=week_ago).values(
-        "created_at__date"
-    ).annotate(total=Sum("amount")).order_by("created_at__date")
+    elif range_type == "month":
+        start = now - timedelta(days=30)
+        growth_qs = (
+            User.objects.filter(date_joined__gte=start)
+            .annotate(period=TruncDay("date_joined"))
+            .values("period")
+            .annotate(count=Count("id"))
+            .order_by("period")
+        )
+
+    elif range_type == "year":
+        start = now - timedelta(days=365)
+        growth_qs = (
+            User.objects.filter(date_joined__gte=start)
+            .annotate(period=TruncMonth("date_joined"))
+            .values("period")
+            .annotate(count=Count("id"))
+            .order_by("period")
+        )
+
+    else:  # week (default)
+        start = now - timedelta(days=7)
+        growth_qs = (
+            User.objects.filter(date_joined__gte=start)
+            .annotate(period=TruncDay("date_joined"))
+            .values("period")
+            .annotate(count=Count("id"))
+            .order_by("period")
+        )
+
+    user_growth_data = {
+        "labels": [g["period"].strftime("%Y-%m-%d %H:%M") for g in growth_qs],
+        "values": [g["count"] for g in growth_qs],
+    }
+
+    # ---------------------------
+    # REFERRAL RATE (PER HOUR)
+    # ---------------------------
+    referral_qs = (
+        User.objects.filter(invited_by__isnull=False)
+        .annotate(hour=TruncHour("date_joined"))
+        .values("hour")
+        .annotate(count=Count("id"))
+        .order_by("hour")
+    )
+
+    referral_data = {
+        "labels": [r["hour"].strftime("%H:%M") for r in referral_qs],
+        "values": [r["count"] for r in referral_qs],
+    }
 
     return render(request, "graphs.html", {
-        "total_users": total_users,
-        "new_users_week": new_users_week,
-        "rewards_total": rewards_total,
-        "withdrawals_total": withdrawals_total,
-        "daily_rewards": daily_rewards,
+        "user_growth_data": user_growth_data,
+        "referral_data": referral_data,
+        "range_type": range_type,
     })
-
 
 # =====================================================
 # 3️⃣ TRANSACTIONS + SYSTEM LOGS + PAYROLL
