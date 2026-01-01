@@ -167,7 +167,7 @@
 
     <div class="user-summary">
         <div>
-            <h3>{{ user.name }}</h3>
+            <h3>{{ user.get_full_name|default:user.username }}</h3>
             <p>{{ user.email }}</p>
             <p>Username: {{ user.username }}</p>
         </div>
