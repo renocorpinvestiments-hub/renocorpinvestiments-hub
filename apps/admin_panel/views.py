@@ -65,20 +65,30 @@ def admin_dashboard(request):
         "users": users,
         "total_balance": total_balance,
     })
-
 @login_required
 @staff_member_required
 def update_user(request, user_id):
-    if request.method == "POST":
-        user = get_object_or_404(User, id=user_id)
+    user = get_object_or_404(User, id=user_id)
+    profile = user.profile
 
+    if request.method == "POST":
         user.name = request.POST.get("name", user.name)
         user.email = request.POST.get("email", user.email)
-        user.age = request.POST.get("age", user.age)
-
         user.save()
 
+        profile.age = request.POST.get("age", profile.age)
+        profile.gender = request.POST.get("gender", profile.gender)
+        profile.account_number = request.POST.get("account_number", profile.account_number)
+        profile.invitation_code = request.POST.get("invitation_code", profile.invitation_code)
+        profile.invited_by = request.POST.get("invited_by", profile.invited_by)
+        profile.subscription_status = request.POST.get(
+            "subscription_status", profile.subscription_status
+        )
+        profile.save()
+
     return redirect("admin_panel:dashboard")
+
+    
 # =====================================================
 # 2️⃣ ANALYTICS / GRAPHS
 # =====================================================
