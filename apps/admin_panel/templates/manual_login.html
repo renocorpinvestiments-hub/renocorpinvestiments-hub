@@ -1,165 +1,186 @@
 {% load static %}
-{% block title %}Manual Login Page{% endblock %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Manual Login | Renocorp Admin</title>
 
-{% block content %}
-<style>
-  body {
-    background-color: #111827;
-    color: #e5e7eb;
-    font-family: "Inter", sans-serif;
-  }
+  <!-- ✅ CRITICAL FOR PHONE SCALING -->
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-  h1 {
-    color: #60a5fa;
-    font-size: 1.8rem;
-    text-align: center;
-    margin-bottom: 2rem;
-    font-weight: 600;
-    letter-spacing: 0.5px;
-  }
+  <!-- Bootstrap Icons (for bottom nav icons) -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons/font/bootstrap-icons.css" rel="stylesheet">
 
-  .manual-card {
-    background: #1f2937;
-    border: 1px solid #374151;
-    border-radius: 12px;
-    max-width: 700px;
-    margin: 0 auto;
-    padding: 2rem;
-    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.4);
-  }
+  <style>
+    body {
+      background-color: #111827;
+      color: #e5e7eb;
+      font-family: "Inter", sans-serif;
+      margin: 0;
+      padding-bottom: 80px; /* space for bottom nav */
+    }
 
-  form label {
-    display: block;
-    margin-bottom: 0.5rem;
-    color: #d1d5db;
-    font-weight: 500;
-  }
+    .container {
+      max-width: 700px;
+      margin: 1.5rem auto;
+      padding: 1.5rem;
+    }
 
-  form input[type="text"],
-  form input[type="number"],
-  form input[type="email"],
-  form input[type="password"],
-  select {
-    width: 100%;
-    padding: 0.7rem;
-    background: #111827;
-    border: 1px solid #374151;
-    border-radius: 8px;
-    color: #f3f4f6;
-    font-size: 1rem;
-  }
+    h1 {
+      color: #60a5fa;
+      font-size: 1.8rem;
+      text-align: center;
+      margin-bottom: 1.5rem;
+      font-weight: 600;
+    }
 
-  form input:focus,
-  select:focus {
-    outline: none;
-    border-color: #60a5fa;
-    box-shadow: 0 0 0 1px #60a5fa;
-  }
+    .manual-card {
+      background: #1f2937;
+      border: 1px solid #374151;
+      border-radius: 14px;
+      padding: 1.5rem;
+      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.4);
+    }
 
-  .btn-add {
-    background: linear-gradient(90deg, #2563eb, #1e3a8a);
-    border: none;
-    color: #f9fafb;
-    font-weight: 600;
-    padding: 0.8rem 1.5rem;
-    border-radius: 8px;
-    margin-top: 1.5rem;
-    cursor: pointer;
-    width: 100%;
-    transition: all 0.2s ease-in-out;
-  }
+    form {
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
+    }
 
-  .btn-add:hover {
-    background: linear-gradient(90deg, #3b82f6, #1d4ed8);
-    transform: translateY(-1px);
-  }
+    form label {
+      color: #d1d5db;
+      font-weight: 500;
+      font-size: 0.95rem;
+    }
 
-  .note-text {
-    margin-top: 1.5rem;
-    color: #9ca3af;
-    font-size: 0.9rem;
-    text-align: center;
-  }
+    input,
+    select {
+      width: 100%;
+      padding: 0.75rem;
+      background: #111827;
+      border: 1px solid #374151;
+      border-radius: 8px;
+      color: #f3f4f6;
+      font-size: 1rem;
+    }
 
-  /* Scrollable Bottom Nav */
-  .bottom-nav {
-    position: fixed;
-    bottom: 0;
-    left: 0;
-    width: 100%;
-    background-color: #161b22;
-    border-top: 1px solid #30363d;
-    display: flex;
-    overflow-x: auto;
-    white-space: nowrap;
-    -webkit-overflow-scrolling: touch;
-    scrollbar-width: thin;
-    scrollbar-color: #58a6ff #161b22;
-  }
+    input:focus,
+    select:focus {
+      outline: none;
+      border-color: #60a5fa;
+      box-shadow: 0 0 0 1px #60a5fa;
+    }
 
-  .bottom-nav::-webkit-scrollbar {
-    height: 6px;
-  }
+    .btn-add {
+      background: linear-gradient(90deg, #2563eb, #1e3a8a);
+      border: none;
+      color: #f9fafb;
+      font-weight: 600;
+      padding: 0.9rem;
+      border-radius: 10px;
+      margin-top: 0.5rem;
+      font-size: 1rem;
+      cursor: pointer;
+    }
 
-  .bottom-nav::-webkit-scrollbar-thumb {
-    background-color: #58a6ff;
-    border-radius: 3px;
-  }
+    .note-text {
+      margin-top: 1rem;
+      color: #9ca3af;
+      font-size: 0.9rem;
+      text-align: center;
+    }
 
-  .bottom-nav::-webkit-scrollbar-track {
-    background: #161b22;
-  }
+    /* ===== Bottom Navigation ===== */
+    .bottom-nav {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      width: 100%;
+      background-color: #161b22;
+      border-top: 1px solid #30363d;
+      display: flex;
+      overflow-x: auto;
+      white-space: nowrap;
+    }
 
-  .bottom-nav a {
-    display: inline-block;
-    flex: 0 0 auto;
-    padding: 0.6rem 1rem;
-    color: #8b949e;
-    text-decoration: none;
-    font-size: 0.85rem;
-    text-align: center;
-    transition: color 0.2s;
-  }
+    .bottom-nav a {
+      flex: 0 0 auto;
+      padding: 0.6rem 1rem;
+      color: #8b949e;
+      text-decoration: none;
+      font-size: 0.85rem;
+      text-align: center;
+    }
 
-  .bottom-nav a.active {
-    color: #58a6ff;
-    font-weight: 600;
-  }
+    .bottom-nav a.active {
+      color: #58a6ff;
+      font-weight: 600;
+    }
 
-  .bottom-nav i {
-    font-size: 1.2rem;
-    display: block;
-    margin-bottom: 0.2rem;
-  }
-</style>
+    .bottom-nav i {
+      font-size: 1.2rem;
+      display: block;
+      margin-bottom: 0.2rem;
+    }
+  </style>
+</head>
 
-<h1>MANUAL LOGIN PAGE</h1>
+<body>
 
-<div class="manual-card">
-  <form method="post">
-    {% csrf_token %}
-    <div style="display:flex; flex-direction:column; gap:1rem;">
-      {{ form.name.label_tag }} {{ form.name }}
-      {{ form.age.label_tag }} {{ form.age }}
-      <div>
-        {{ form.gender.label_tag }}
-        {{ form.gender }}
-      </div>
-      {{ form.account_number.label_tag }} {{ form.account_number }}
-      {{ form.email.label_tag }} {{ form.email }}
-    </div>
-    <button type="submit" class="btn-add">ADD +</button>
-  </form>
-  <p class="note-text">After you tap ADD+, an OTP will be sent to the email address. You’ll be redirected to a verification page to confirm registration.</p>
+<div class="container">
+  <h1>Manual Login</h1>
+
+  <div class="manual-card">
+    <form method="post">
+      {% csrf_token %}
+
+      {{ form.name.label_tag }}
+      {{ form.name }}
+
+      {{ form.age.label_tag }}
+      {{ form.age }}
+
+      {{ form.gender.label_tag }}
+      {{ form.gender }}
+
+      {{ form.account_number.label_tag }}
+      {{ form.account_number }}
+
+      {{ form.email.label_tag }}
+      {{ form.email }}
+
+      <button type="submit" class="btn-add">ADD +</button>
+    </form>
+
+    <p class="note-text">
+      After you tap ADD+, an OTP will be sent to the email address.
+      You’ll be redirected to a verification page.
+    </p>
+  </div>
 </div>
 
-<!-- Navigation -->
+<!-- Bottom Navigation -->
 <nav class="bottom-nav">
-  <a href="{% url 'admin_panel:dashboard' %}"><i class="bi bi-people"></i>Users</a>
-  <a href="{% url 'admin_panel:graphs' %}"><i class="bi bi-graph-up"></i>Graphs</a>
-  <a href="{% url 'admin_panel:manual_login' %}" class="active"><i class="bi bi-person-plus"></i>Login</a>
-  <a href="{% url 'admin_panel:gift_upload' %}"><i class="bi bi-gift"></i>Gifts</a>
-  <a href="{% url 'admin_panel:settings' %}"><i class="bi bi-gear"></i>Settings</a>
-  <a href="{% url 'admin_panel:transactions' %}"><i class="bi bi-cash-stack"></i>Trans</a>
+  <a href="{% url 'admin_panel:dashboard' %}">
+    <i class="bi bi-people"></i>Users
+  </a>
+  <a href="{% url 'admin_panel:graphs' %}">
+    <i class="bi bi-graph-up"></i>Graphs
+  </a>
+  <a href="{% url 'admin_panel:manual_login' %}" class="active">
+    <i class="bi bi-person-plus"></i>Login
+  </a>
+  <a href="{% url 'admin_panel:gift_upload' %}">
+    <i class="bi bi-gift"></i>Gifts
+  </a>
+  <a href="{% url 'admin_panel:settings' %}">
+    <i class="bi bi-gear"></i>Settings
+  </a>
+  <a href="{% url 'admin_panel:transactions' %}">
+    <i class="bi bi-cash-stack"></i>Trans
+  </a>
 </nav>
-{% endblock %}
+
+</body>
+  </html>
