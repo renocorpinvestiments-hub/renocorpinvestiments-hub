@@ -77,7 +77,15 @@ def update_user(request, user_id):
 
     if request.method == "POST":
         # USER MODEL
-        user.name = request.POST.get("name", user.name)
+        full_name = request.POST.get("name", "").strip()
+
+    if full_name:
+    parts = full_name.split(" ", 1)
+    user.first_name = parts[0]
+    user.last_name = parts[1] if len(parts) > 1 else ""
+
+user.email = request.POST.get("email", user.email)
+user.save(update_fields=["first_name", "last_name", "email"])
         user.email = request.POST.get("email", user.email)
         user.save(update_fields=["name", "email"])
 
