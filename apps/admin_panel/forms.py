@@ -111,8 +111,8 @@ class PendingManualUserForm(forms.ModelForm):
 class ManualUserOTPForm(forms.ModelForm):
     class Meta:
         model = ManualUserOTP
-        fields = ['otp_code', 'expires_at']  # removed 'pending'
+        fields = ['otp_code']  # removed 'pending'
         widgets = {
             'otp_code': forms.TextInput(attrs={'class': 'form-control'}),
-            'expires_at': forms.DateTimeInput(attrs={'class': 'form-control', 'type': 'datetime-local'}),
+       
         }
