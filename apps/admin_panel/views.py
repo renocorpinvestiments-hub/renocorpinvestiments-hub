@@ -268,7 +268,26 @@ def verify_otp_view(request):
 
     return render(request, "verify_otp.html", {"form": form})
 
+@login_required
+@staff_member_required
+def resend_otp_view(request):
+    pending_id = request.session.get("pending_manual_user_id")
+    if not pending_id:
+        messages.error(request, "Session expired. Please restart manual login.")
+        return redirect("admin_panel:manual_login")
 
+    pending = get_object_or_404(PendingManualUser, id=pending_id)
+
+    # ❌ Invalidate old OTPs
+    pending.otps.all().delete()
+
+    # ✅ Generate & send new OTP
+    otp = generate_otp()
+    ManualUserOTP.create_otp(pending, otp)
+    send_otp_email(pending.email, otp)
+
+    messages.success(request, "A new OTP has been sent.")
+    return redirect("admin_panel:verify_otp")
 # =====================================================
 # 5️⃣ ADMIN SETTINGS
 # =====================================================
