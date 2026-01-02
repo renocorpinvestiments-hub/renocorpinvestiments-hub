@@ -6,7 +6,9 @@ from django.utils import timezone
 from django.contrib.auth import get_user_model
 from .models import UserProfile, PendingManualUser, ManualUserOTP
 
-logger = logging.getLogger("admin_panel.signals")
+logger.exception(
+    f"AdminPanel: Failed to update trial status for user {instance.user.id}: {e}"
+)
 User = get_user_model()
 
 
