@@ -206,17 +206,37 @@ def manual_login_view(request):
 
     if form.is_valid():
         pending = form.save()
-        # OTP is auto-created by signal
-        latest_otp = pending.otps.order_by("-created_at").first()
-        send_otp_email(pending.email, latest_otp.otp_code)
 
+        try:
+            latest_otp = pending.otps.order_by("-created_at").first()
+            send_otp_email(pending.email, latest_otp.otp_code)
+
+        except Exception as e:
+            # ❌ EMAIL FAILED → ADMIN NOTIFICATION
+            AdminNotification.objects.create(
+                title="OTP Email Failed",
+                message=(
+                    f"Failed to send OTP email to {pending.email}.\n"
+                    f"Reason: {str(e)}"
+                ),
+                category="email_error",
+            )
+
+            messages.error(
+                request,
+                "OTP could not be sent. Email system is not configured correctly."
+            )
+
+            pending.delete()  # rollback
+            return redirect("admin_panel:manual_login")
+
+        # ✅ EMAIL SENT
         request.session["pending_manual_user_id"] = pending.id
+        messages.success(request, "OTP sent successfully")
         return redirect("admin_panel:verify_otp")
 
     return render(request, "manual_login.html", {"form": form})
 
-
-@login_required
 @login_required
 @staff_member_required
 def verify_otp_view(request):
