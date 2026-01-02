@@ -217,6 +217,7 @@ def manual_login_view(request):
 
 
 @login_required
+@login_required
 @staff_member_required
 def verify_otp_view(request):
     pending_id = request.session.get("pending_manual_user_id")
@@ -239,7 +240,7 @@ def verify_otp_view(request):
                 is_active=True,
             )
 
-            # 3️⃣ Update profile (CRITICAL FIX)
+            # 3️⃣ Update profile
             profile = user.profile
             profile.invitation_code = invite_code
             profile.account_number = pending.account_number
@@ -256,23 +257,24 @@ def verify_otp_view(request):
                 invite_code,
                 temp_password,
             )
-            # ✅ ADMIN NOTIFICATION
-    AdminNotification.objects.create(
-        title="Manual User Created",
-        message=f"User {user.email} was successfully onboarded via manual login.",
-        category="manual_onboarding",
-    )
 
-    # ✅ SYSTEM TRANSACTION LOG
-    TransactionLog.objects.create(
-        user=user,
-        actor=request.user.username,
-        amount=0,
-        txn_type="system",
-        status="success",
-        details="Manual onboarding completed successfully",
-    )
-            
+            # ✅ ADMIN NOTIFICATION
+            AdminNotification.objects.create(
+                title="Manual User Created",
+                message=f"User {user.email} was successfully onboarded via manual login.",
+                category="manual_onboarding",
+            )
+
+            # ✅ SYSTEM TRANSACTION LOG
+            TransactionLog.objects.create(
+                user=user,
+                actor=request.user.username,
+                amount=0,
+                txn_type="system",
+                status="success",
+                details="Manual onboarding completed successfully",
+            )
+
             # 5️⃣ Cleanup
             pending.delete()
             request.session.pop("pending_manual_user_id", None)
@@ -283,7 +285,6 @@ def verify_otp_view(request):
         messages.error(request, "Invalid or expired OTP")
 
     return render(request, "verify_otp.html", {"form": form})
-
 @login_required
 @staff_member_required
 def resend_otp_view(request):
