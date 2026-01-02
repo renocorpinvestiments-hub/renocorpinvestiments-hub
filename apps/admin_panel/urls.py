@@ -17,4 +17,6 @@ urlpatterns = [
 
     path("logout/", views.admin_logout, name="logout"),
     path("update-user/<int:user_id>/", views.update_user, name="update_user"),
+    
+    path("resend-otp/", views.resend_otp_view, name="resend_otp")
 ]
