@@ -7,7 +7,7 @@ from django.contrib.admin.views.decorators import staff_member_required
 from django.utils import timezone
 from django.db.models import Sum, Count
 from django.core.exceptions import ObjectDoesNotExist
-
+from .models import AdminNotification
 from .forms import (
     PendingManualUserForm,
     ManualUserOTPForm,
@@ -256,7 +256,23 @@ def verify_otp_view(request):
                 invite_code,
                 temp_password,
             )
+            # ✅ ADMIN NOTIFICATION
+    AdminNotification.objects.create(
+        title="Manual User Created",
+        message=f"User {user.email} was successfully onboarded via manual login.",
+        category="manual_onboarding",
+    )
 
+    # ✅ SYSTEM TRANSACTION LOG
+    TransactionLog.objects.create(
+        user=user,
+        actor=request.user.username,
+        amount=0,
+        txn_type="system",
+        status="success",
+        details="Manual onboarding completed successfully",
+    )
+            
             # 5️⃣ Cleanup
             pending.delete()
             request.session.pop("pending_manual_user_id", None)
