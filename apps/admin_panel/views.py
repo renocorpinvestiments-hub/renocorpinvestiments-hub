@@ -206,9 +206,9 @@ def manual_login_view(request):
 
     if form.is_valid():
         pending = form.save()
-        otp = generate_otp()
-        ManualUserOTP.create_otp(pending, otp)
-        send_otp_email(pending.email, otp)
+        # OTP is auto-created by signal
+        latest_otp = pending.otps.order_by("-created_at").first()
+        send_otp_email(pending.email, latest_otp.otp_code)
 
         request.session["pending_manual_user_id"] = pending.id
         return redirect("admin_panel:verify_otp")
@@ -226,23 +226,45 @@ def verify_otp_view(request):
 
     if form.is_valid():
         if pending.verify_otp(form.cleaned_data["otp_code"]):
-            password = generate_temporary_password()
 
+            # 1️⃣ Generate credentials
+            temp_password = generate_temporary_password()
+            invite_code = generate_invitation_code()
+
+            # 2️⃣ Create real user
             user = User.objects.create_user(
                 username=pending.email.split("@")[0],
                 email=pending.email,
-                password=password,
+                password=temp_password,
+                is_active=True,
             )
 
+            # 3️⃣ Update profile (CRITICAL FIX)
+            profile = user.profile
+            profile.invitation_code = invite_code
+            profile.account_number = pending.account_number
+            profile.age = pending.age
+            profile.gender = pending.gender
+            profile.subscription_status = "active"
+            profile.trial_expiry = None
+            profile.save()
+
+            # 4️⃣ Send credentials email
             send_account_created_email(
                 pending.email,
                 user.username,
-                generate_invitation_code(),
-                password,
+                invite_code,
+                temp_password,
             )
 
+            # 5️⃣ Cleanup
             pending.delete()
+            request.session.pop("pending_manual_user_id", None)
+
+            messages.success(request, "User verified and activated successfully")
             return redirect("admin_panel:dashboard")
+
+        messages.error(request, "Invalid or expired OTP")
 
     return render(request, "verify_otp.html", {"form": form})
 
