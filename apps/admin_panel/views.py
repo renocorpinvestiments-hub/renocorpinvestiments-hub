@@ -207,15 +207,16 @@ def manual_login_view(request):
     if form.is_valid():
         email = form.cleaned_data["email"]
 
-pending = PendingManualUser.objects.filter(email=email, verified=False).first()
+        # 🧠 If a pending user already exists, reuse it
+        pending = PendingManualUser.objects.filter(email__iexact=email, verified=False).first()
 
-if pending:
-    # update existing pending user instead of crashing
-    for field in ["name", "age", "gender", "account_number"]:
-        setattr(pending, field, form.cleaned_data[field])
-    pending.save()
-else:
-    pending = form.save()
+        if pending:
+            # Update existing pending user instead of creating a new one
+            for field in ["name", "age", "gender", "account_number"]:
+                setattr(pending, field, form.cleaned_data[field])
+            pending.save()
+        else:
+            pending = form.save()
 
         try:
             latest_otp = pending.otps.order_by("-created_at").first()
@@ -225,10 +226,7 @@ else:
             # ❌ EMAIL FAILED → ADMIN NOTIFICATION
             AdminNotification.objects.create(
                 title="OTP Email Failed",
-                message=(
-                    f"Failed to send OTP email to {pending.email}.\n"
-                    f"Reason: {str(e)}"
-                ),
+                message=f"Failed to send OTP email to {pending.email}.\nReason: {str(e)}",
                 category="email_error",
             )
 
@@ -237,7 +235,7 @@ else:
                 "OTP could not be sent. Email system is not configured correctly."
             )
 
-            pending.delete()  # rollback
+            # ❗ DO NOT delete pending → allow retry
             return redirect("admin_panel:manual_login")
 
         # ✅ EMAIL SENT
@@ -246,7 +244,6 @@ else:
         return redirect("admin_panel:verify_otp")
 
     return render(request, "manual_login.html", {"form": form})
-
 @login_required
 @staff_member_required
 def verify_otp_view(request):
