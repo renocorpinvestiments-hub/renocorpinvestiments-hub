@@ -154,7 +154,7 @@ class RewardLog(models.Model):
     """
 
     user = models.ForeignKey("accounts.User", on_delete=models.CASCADE, related_name="reward_logs")
-    category = models.ForeignKey(TaskCategory, on_delete=models.PROTECT)
+    category = modelsForeignKey(TaskCategory, on_delete=models.PROTECT)
 
     amount = models.DecimalField(max_digits=12, decimal_places=2)
     source_ref = models.CharField(max_length=128, blank=True, null=True)
@@ -250,6 +250,8 @@ class PendingManualUser(models.Model):
 
     created_at = models.DateTimeField(auto_now_add=True)
     verified = models.BooleanField(default=False)
+    class Meta:
+        indexes = [models.Index(fields=["email"])]
     
 
 
