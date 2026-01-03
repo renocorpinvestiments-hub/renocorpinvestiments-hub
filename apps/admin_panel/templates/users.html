@@ -5,19 +5,6 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>RENOCORP Admin - Users</title>
-    {% if otp_failures %}
-<div style="background:#7f1d1d; padding:1rem; border-radius:10px; margin-bottom:1rem;">
-  <strong style="color:#fecaca;">⚠ Recent OTP / Email Failures</strong>
-
-  <ul style="margin-top:0.5rem;">
-    {% for alert in otp_failures %}
-      <li style="color:#fde68a; font-size:0.9rem;">
-        {{ alert.message }} — {{ alert.created_at|date:"M d, H:i" }}
-      </li>
-    {% endfor %}
-  </ul>
-</div>
-{% endif %}
     <link rel="icon" href="{% static 'images/logo.png' %}" type="image/png">
 
     <style>
@@ -162,6 +149,21 @@
 
 <body>
 <header>RENOCORP ADMIN PANEL</header>
+
+{% if otp_failures %}
+<div style="background:#7f1d1d; padding:1rem; border-radius:10px; margin-bottom:1rem; margin: 1rem;">
+  <strong style="color:#fecaca;">⚠ Recent OTP / Email Failures</strong>
+
+  <ul style="margin-top:0.5rem;">
+    {% for alert in otp_failures %}
+      <li style="color:#fde68a; font-size:0.9rem;">
+        {{ alert.message }} — {{ alert.created_at|date:"M d, H:i" }}
+      </li>
+    {% endfor %}
+  </ul>
+</div>
+{% endif %}
+    
 
 <div class="top-ribbon">
     <span>Users: {{ users|length }}</span>
