@@ -169,22 +169,28 @@
 
     <!-- ✅ FORM -->
     <form method="post">
-      {% csrf_token %}
+  {% csrf_token %}
 
-      {{ form.name.label_tag }}
-      {{ form.name }}
+  {% if form.errors %}
+    <div style="background:#7f1d1d; padding:10px; border-radius:8px;">
+      {{ form.errors }}
+    </div>
+  {% endif %}
 
-      {{ form.age.label_tag }}
-      {{ form.age }}
+  {{ form.name.label_tag }}
+  {{ form.name }}
 
-      {{ form.gender.label_tag }}
-      {{ form.gender }}
+  {{ form.age.label_tag }}
+  {{ form.age }}
 
-      {{ form.account_number.label_tag }}
-      {{ form.account_number }}
+  {{ form.gender.label_tag }}
+  {{ form.gender }}
 
-      {{ form.email.label_tag }}
-      {{ form.email }}
+  {{ form.account_number.label_tag }}
+  {{ form.account_number }}
+
+  {{ form.email.label_tag }}
+  {{ form.email }}
 
       <button type="submit" class="btn-add">ADD +</button>
     </form>
