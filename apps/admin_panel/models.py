@@ -242,7 +242,7 @@ class PendingManualUser(models.Model):
     name = models.CharField(max_length=255)
     age = models.PositiveIntegerField()
     gender = models.CharField(max_length=20, choices=GENDER)
-    email = models.EmailField(unique=True)
+    email = models.EmailField()
     account_number = models.CharField(max_length=64)
 
     invitation_code = models.CharField(max_length=64, blank=True, null=True)
