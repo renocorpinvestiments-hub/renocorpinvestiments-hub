@@ -154,7 +154,7 @@ class RewardLog(models.Model):
     """
 
     user = models.ForeignKey("accounts.User", on_delete=models.CASCADE, related_name="reward_logs")
-    category = modelsForeignKey(TaskCategory, on_delete=models.PROTECT)
+    category = models.ForeignKey(TaskCategory, on_delete=models.PROTECT)
 
     amount = models.DecimalField(max_digits=12, decimal_places=2)
     source_ref = models.CharField(max_length=128, blank=True, null=True)
