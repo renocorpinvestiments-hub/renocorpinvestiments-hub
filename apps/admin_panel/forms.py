@@ -12,6 +12,10 @@ from .models import (
     PendingManualUser,
     ManualUserOTP
 )
+from django.contrib.auth import get_user_model
+from .models import PendingManualUser
+
+
 
 
 # ============================================================
@@ -94,13 +98,22 @@ class PayrollEntryForm(forms.ModelForm):
         }
 
 
+User = get_user_model()
+
 class PendingManualUserForm(forms.ModelForm):
+
     class Meta:
         model = PendingManualUser
-        fields = [
-            'name', 'age', 'gender', 'account_number', 'email'
-            
-        ]
+        fields = ["name", "age", "gender", "account_number", "email"]
+
+    def clean_email(self):
+        email = self.cleaned_data["email"].lower().strip()
+
+        # 🔐 Block only if a REAL user already exists
+        if User.objects.filter(email__iexact=email).exists():
+            raise forms.ValidationError("This email already belongs to a registered user.")
+
+        return email
         widgets = {
             'name': forms.TextInput(attrs={'class': 'form-control'}),
             'age': forms.NumberInput(attrs={'class': 'form-control'}),
