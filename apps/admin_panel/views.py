@@ -56,15 +56,19 @@ def admin_logout(request):
 # =====================================================
 # 1️⃣ USERS DASHBOARD
 # =====================================================
-@login_required
-@staff_member_required
 def admin_dashboard(request):
     users = User.objects.all()
     total_balance = UserProfile.objects.aggregate(total=Sum("balance"))["total"] or 0
 
+    # 🧠 Fetch recent OTP/email failures
+    otp_failures = AdminNotification.objects.filter(
+        category="email_error"
+    ).order_by("-created_at")[:5]
+
     return render(request, "users.html", {
         "users": users,
         "total_balance": total_balance,
+        "otp_failures": otp_failures,
     })
 
 @login_required
