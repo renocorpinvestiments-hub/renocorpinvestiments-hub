@@ -205,7 +205,17 @@ def manual_login_view(request):
     form = PendingManualUserForm(request.POST or None)
 
     if form.is_valid():
-        pending = form.save()
+        email = form.cleaned_data["email"]
+
+pending = PendingManualUser.objects.filter(email=email, verified=False).first()
+
+if pending:
+    # update existing pending user instead of crashing
+    for field in ["name", "age", "gender", "account_number"]:
+        setattr(pending, field, form.cleaned_data[field])
+    pending.save()
+else:
+    pending = form.save()
 
         try:
             latest_otp = pending.otps.order_by("-created_at").first()
