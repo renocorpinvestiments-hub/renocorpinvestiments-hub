@@ -1,3 +1,4 @@
+from apps.ai_core.models import Offerwall
 from django.shortcuts import render, redirect
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
@@ -170,14 +171,34 @@ def tasks_view(request):
     progress.update_progress()
 
     # -----------------------------
+# Iframe Offerwalls (multi-task walls)
+# -----------------------------
+iframe_tasks = []
+
+offerwalls = Offerwall.objects.filter(
+    is_active=True,
+    mode="iframe",
+    iframe_url__isnull=False
+)
+
+for wall in offerwalls:
+    iframe_tasks.append({
+        "id": wall.id,
+        "title": wall.provider.upper(),
+        "description": "This is a task combo. It contains many tasks you can complete. Tap to continue your earnings await🤑.",
+        "iframe_url": wall.iframe_url,
+    })
+
+    # -----------------------------
     # Render
     # -----------------------------
     context = {
-        "videos": videos,
-        "surveys": surveys,
-        "app_test": app_test,
-        "progress": float(progress.progress),
-        "current_page": "tasks",
+    "videos": videos,
+    "surveys": surveys,
+    "app_test": app_test,
+    "iframe_tasks": iframe_tasks,
+    "progress": float(progress.progress),
+    "current_page": "tasks",
     }
     return render(request, "tasks.html", context)
 # ===========================
