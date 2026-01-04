@@ -227,7 +227,8 @@ def manual_login_view(request):
             if not latest_otp:
                raise Exception("OTP was not generated for this user")
 
-            send_otp_email(pending.email, latest_otp.otp_code)
+            # 🔥 TEMPORARILY DISABLE EMAIL TO PREVENT OOM CRASH
+               print("OTP:", latest_otp.otp_code)
         except Exception as e:
             # ❌ EMAIL FAILED → ADMIN NOTIFICATION
             AdminNotification.objects.create(
