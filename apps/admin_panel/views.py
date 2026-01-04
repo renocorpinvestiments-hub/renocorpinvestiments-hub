@@ -267,7 +267,20 @@ def verify_otp_view(request):
 
             # 2️⃣ Create real user
             user = User.objects.create_user(
-                username=pending.email.split("@")[0],
+                base_username = pending.email.split("@")[0]
+username = base_username
+counter = 1
+
+while User.objects.filter(username=username).exists():
+    username = f"{base_username}{counter}"
+    counter += 1
+
+user = User.objects.create_user(
+    username=username,
+    email=pending.email,
+    password=temp_password,
+    is_active=True,
+    )
                 email=pending.email,
                 password=temp_password,
                 is_active=True,
