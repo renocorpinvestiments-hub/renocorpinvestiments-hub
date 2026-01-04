@@ -28,7 +28,7 @@ from .models import (
     LedgerEntry,
     CompletedTask,
 )
-from apps.admin_panel.models import AdminSettings
+from apps.admin_panel.models import AdminSettings, TaskControl
 
 User = get_user_model()
 
