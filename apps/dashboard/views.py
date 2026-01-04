@@ -86,13 +86,19 @@ def home_view(request):
 def tasks_view(request):
     user = request.user
     profile = get_or_create_profile(user)
-
-    videos_limit = 10
-    surveys_limit = 2
-    app_tests_limit = 1
     today = timezone.localdate()
 
+    # -----------------------------
+    # Fetch admin-controlled task limits
+    # -----------------------------
+    task_control = TaskControl.objects.last()  # assumes a single row
+    videos_limit = task_control.videos_count if task_control else 20
+    surveys_limit = task_control.surveys_count if task_control else 6
+    app_tests_limit = task_control.app_tests_count if task_control else 2
+
+    # -----------------------------
     # Progress reset
+    # -----------------------------
     progress, _ = TaskProgress.objects.get_or_create(user=user)
     if progress.last_reset < today:
         progress.total_tasks = 0
@@ -101,20 +107,50 @@ def tasks_view(request):
         progress.last_reset = today
         progress.save(update_fields=["total_tasks", "completed_tasks", "progress", "last_reset"])
 
-    completed_ids = set(CompletedTask.objects.filter(user=user).values_list("task_id", flat=True))
+    # -----------------------------
+    # Completed tasks (AI core truth)
+    # -----------------------------
+    completed_ids = set(
+        CompletedTask.objects.filter(user=user).values_list("task_id", flat=True)
+    )
 
+    # -----------------------------
     # Video Tasks
-    videos_qs = VideoTask.objects.filter(active=True).exclude(task_id__in=completed_ids).order_by("-reward", "-created_at")[:videos_limit]
-    videos = [{"id": v.task_id, "title": v.title, "thumbnail": v.thumbnail, "url": v.video_url, "reward": float(v.reward)} for v in videos_qs]
+    # -----------------------------
+    videos_qs = (
+        VideoTask.objects.filter(active=True)
+        .exclude(task_id__in=completed_ids)
+        .order_by("-reward", "-created_at")[:videos_limit]
+    )
+    videos = [
+        {"id": v.task_id, "title": v.title, "thumbnail": v.thumbnail, "url": v.video_url, "reward": float(v.reward)}
+        for v in videos_qs
+    ]
 
+    # -----------------------------
     # Surveys
-    surveys_qs = SurveyTask.objects.filter(active=True).exclude(task_id__in=completed_ids).order_by("-reward", "-created_at")[:surveys_limit]
-    surveys = [{"id": s.task_id, "title": s.title, "provider_url": s.iframe_url or s.provider_url, "reward": float(s.reward)} for s in surveys_qs]
+    # -----------------------------
+    surveys_qs = (
+        SurveyTask.objects.filter(active=True)
+        .exclude(task_id__in=completed_ids)
+        .order_by("-reward", "-created_at")[:surveys_limit]
+    )
+    surveys = [
+        {"id": s.task_id, "title": s.title, "provider_url": s.iframe_url or s.provider_url, "reward": float(s.reward)}
+        for s in surveys_qs
+    ]
 
+    # -----------------------------
     # App Test
+    # -----------------------------
     app_test = None
     if app_tests_limit:
-        app = AppTest.objects.filter(active=True).exclude(task_id__in=completed_ids).order_by("-reward", "-created_at").first()
+        app = (
+            AppTest.objects.filter(active=True)
+            .exclude(task_id__in=completed_ids)
+            .order_by("-reward", "-created_at")
+            .first()
+        )
         if app:
             app_test = {
                 "id": app.task_id,
@@ -124,13 +160,18 @@ def tasks_view(request):
                 "reward": float(app.reward),
             }
 
+    # -----------------------------
     # Progress calculation
+    # -----------------------------
     total_tasks = len(videos) + len(surveys) + (1 if app_test else 0)
     completed_today = CompletedTask.objects.filter(user=user, completed_at__date=today).count()
     progress.total_tasks = total_tasks
     progress.completed_tasks = completed_today
     progress.update_progress()
 
+    # -----------------------------
+    # Render
+    # -----------------------------
     context = {
         "videos": videos,
         "surveys": surveys,
@@ -139,8 +180,6 @@ def tasks_view(request):
         "current_page": "tasks",
     }
     return render(request, "tasks.html", context)
-
-
 # ===========================
 # ACCOUNT
 # ===========================
