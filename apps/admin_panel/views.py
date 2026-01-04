@@ -224,8 +224,10 @@ def manual_login_view(request):
 
         try:
             latest_otp = pending.otps.order_by("-created_at").first()
-            send_otp_email(pending.email, latest_otp.otp_code)
+            if not latest_otp:
+               raise Exception("OTP was not generated for this user")
 
+            send_otp_email(pending.email, latest_otp.otp_code)
         except Exception as e:
             # ❌ EMAIL FAILED → ADMIN NOTIFICATION
             AdminNotification.objects.create(
