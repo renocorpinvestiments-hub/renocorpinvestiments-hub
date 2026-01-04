@@ -6,7 +6,8 @@ from typing import Optional
 from django.core.mail import send_mail
 from django.conf import settings
 from django.core.exceptions import ImproperlyConfigured
-
+import logging
+logger = logging.getLogger(__name__)
 
 def generate_otp(length: int = 6) -> str:
     """
