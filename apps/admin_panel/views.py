@@ -258,7 +258,8 @@ def verify_otp_view(request):
     pending = get_object_or_404(PendingManualUser, id=pending_id)
 
     form = ManualUserOTPForm(request.POST or None)
-
+    if request.method == "POST" and not form.is_valid():
+        print("OTP FORM ERRORS:", form.errors)
     if form.is_valid():
         if pending.verify_otp(form.cleaned_data["otp_code"]):
 
