@@ -87,6 +87,20 @@ class Task(models.Model):
             self.is_completed = True
             self.save(update_fields=["is_completed"])
 
+
+
+
+class Offerwall(models.Model):
+    provider = models.CharField(max_length=50, choices=PROVIDER_CHOICES, unique=True)
+    mode = models.CharField(max_length=20)  # iframe | api
+
+    iframe_url = models.TextField(null=True, blank=True)
+    is_active = models.BooleanField(default=True, db_index=True)
+
+    last_synced = models.DateTimeField(null=True, blank=True)
+
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
 # =============================================================
 # TASK FETCH / PROVIDER HEALTH LOGS
 # =============================================================
