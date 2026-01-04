@@ -265,28 +265,24 @@ def verify_otp_view(request):
             temp_password = generate_temporary_password()
             invite_code = generate_invitation_code()
 
-            # 2️⃣ Create real user
+            # 2️⃣ Create unique username safely
+            base_username = pending.email.split("@")[0]
+            username = base_username
+            counter = 1
+
+            while User.objects.filter(username=username).exists():
+                username = f"{base_username}{counter}"
+                counter += 1
+
+            # 3️⃣ Create real user
             user = User.objects.create_user(
-                base_username = pending.email.split("@")[0]
-username = base_username
-counter = 1
-
-while User.objects.filter(username=username).exists():
-    username = f"{base_username}{counter}"
-    counter += 1
-
-user = User.objects.create_user(
-    username=username,
-    email=pending.email,
-    password=temp_password,
-    is_active=True,
-    )
+                username=username,
                 email=pending.email,
                 password=temp_password,
                 is_active=True,
             )
 
-            # 3️⃣ Update profile
+            # 4️⃣ Update profile
             profile = user.profile
             profile.invitation_code = invite_code
             profile.account_number = pending.account_number
@@ -296,7 +292,7 @@ user = User.objects.create_user(
             profile.trial_expiry = None
             profile.save()
 
-            # 4️⃣ Send credentials email
+            # 5️⃣ Send credentials email
             send_account_created_email(
                 pending.email,
                 user.username,
@@ -321,7 +317,7 @@ user = User.objects.create_user(
                 details="Manual onboarding completed successfully",
             )
 
-            # 5️⃣ Cleanup
+            # 6️⃣ Cleanup
             pending.delete()
             request.session.pop("pending_manual_user_id", None)
 
