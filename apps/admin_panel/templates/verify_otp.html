@@ -46,7 +46,7 @@ button {
 
   <form method="post" onsubmit="showSpinner()">
     {% csrf_token %}
-    <input type="text" name="otp" placeholder="Enter OTP" required>
+    <input type="text" name="otp_code" placeholder="Enter OTP" required>
     <button type="submit">Verify</button>
   </form>
 
