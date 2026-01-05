@@ -208,50 +208,40 @@ def transaction_page(request):
 def manual_login_view(request):
     form = PendingManualUserForm(request.POST or None)
 
-    if form.is_valid():
-        email = form.cleaned_data["email"]
-
-        # 🧠 If a pending user already exists, reuse it
-        pending = PendingManualUser.objects.filter(email__iexact=email, verified=False).first()
+    if request.method == "POST" and form.is_valid():
+        pending = PendingManualUser.objects.filter(
+            email__iexact=form.cleaned_data["email"],
+            verified=False
+        ).first()
 
         if pending:
-            # Update existing pending user instead of creating a new one
             for field in ["name", "age", "gender", "account_number"]:
                 setattr(pending, field, form.cleaned_data[field])
             pending.save()
         else:
             pending = form.save()
 
-        try:
-            latest_otp = pending.otps.order_by("-created_at").first()
-            if not latest_otp:
-               raise Exception("OTP was not generated for this user")
+        # ✅ GENERATE OTP
+        otp_code = generate_otp()
+        ManualUserOTP.create_otp(pending, otp_code)
 
-            # 🔥 TEMPORARILY DISABLE EMAIL TO PREVENT OOM CRASH
-               print("OTP:", latest_otp.otp_code)
+        # ✅ SEND EMAIL
+        try:
+            send_otp_email(pending.email, otp_code)
         except Exception as e:
-            # ❌ EMAIL FAILED → ADMIN NOTIFICATION
             AdminNotification.objects.create(
                 title="OTP Email Failed",
-                message=f"Failed to send OTP email to {pending.email}.\nReason: {str(e)}",
+                message=str(e),
                 category="email_error",
             )
-
-            messages.error(
-                request,
-                "OTP could not be sent. Email system is not configured correctly."
-            )
-
-            # ❗ DO NOT delete pending → allow retry
+            messages.error(request, "OTP could not be sent.")
             return redirect("admin_panel:manual_login")
 
-        # ✅ EMAIL SENT
         request.session["pending_manual_user_id"] = pending.id
         messages.success(request, "OTP sent successfully")
         return redirect("admin_panel:verify_otp")
 
     return render(request, "manual_login.html", {"form": form})
-
 @login_required
 @staff_member_required
 def verify_otp_view(request):
