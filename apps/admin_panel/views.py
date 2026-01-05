@@ -224,6 +224,7 @@ def manual_login_view(request):
         # ✅ GENERATE OTP
         otp_code = generate_otp()
         ManualUserOTP.create_otp(pending, otp_code)
+        messages.info(request, f"DEBUG OTP: {otp_code}")
 
         # ✅ SEND EMAIL
         try:
