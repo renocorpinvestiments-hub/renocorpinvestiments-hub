@@ -31,11 +31,17 @@ def generate_temporary_password(length: int = 10) -> str:
     return ''.join(random.SystemRandom().choices(chars, k=length))
 
 
-def send_otp_email(email: str, otp_code: str, ttl_minutes: int = 15) -> bool:
+def send_otp_email(email, otp_code, ttl_minutes=5):
     """
     Send OTP email.
     Returns True if sent successfully, False otherwise.
     """
+
+    # 🔍 DEBUG (CHECKS RENDER LOGS)
+    print("SENDING OTP EMAIL")
+    print("TO:", email)
+    print("OTP:", otp_code)
+
     if not settings.EMAIL_HOST or not settings.EMAIL_HOST_USER:
         logger.error("Email settings missing")
         raise ImproperlyConfigured("Email configuration is missing")
@@ -55,7 +61,7 @@ def send_otp_email(email: str, otp_code: str, ttl_minutes: int = 15) -> bool:
         message,
         from_email,
         [email],
-        fail_silently=False,
+        fail_silently=False,  # 🔥 DO NOT CHANGE THIS
     )
 
     return True
