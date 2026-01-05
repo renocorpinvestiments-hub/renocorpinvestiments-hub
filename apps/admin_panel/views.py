@@ -251,6 +251,7 @@ def manual_login_view(request):
         return redirect("admin_panel:verify_otp")
 
     return render(request, "manual_login.html", {"form": form})
+
 @login_required
 @staff_member_required
 def verify_otp_view(request):
@@ -258,13 +259,15 @@ def verify_otp_view(request):
     if not pending_id:
         messages.error(request, "Session expired. Please restart manual login.")
         return redirect("admin_panel:manual_login")
+
     pending = get_object_or_404(PendingManualUser, id=pending_id)
     form = ManualUserOTPForm(request.POST or None)
+
     if request.method == "POST" and not form.is_valid():
         print("OTP FORM ERRORS:", form.errors)
+
     if form.is_valid():
         if pending.verify_otp(form.cleaned_data["otp_code"]):
-
             # 1️⃣ Generate credentials
             temp_password = generate_temporary_password()
             invite_code = generate_invitation_code()
@@ -287,7 +290,7 @@ def verify_otp_view(request):
             )
 
             # 4️⃣ Update profile
-            profile = user.profile
+            profile, _ = UserProfile.objects.get_or_create(user=user)
             profile.invitation_code = invite_code
             profile.account_number = pending.account_number
             profile.age = pending.age
