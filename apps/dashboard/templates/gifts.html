@@ -180,7 +180,7 @@
       {% for v in extra_videos %}
       <article class="card" data-id="{{ v.id }}" data-url="{{ v.url }}" data-title="{{ v.title|escapejs }}" data-reward="{{ v.reward }}">
         <div class="completed-overlay">TASK COMPLETED</div>
-        <div class="thumb" style="background-image:url('{{ v.thumbnail }}')">
+        <div class="thumb" style="background-image:url('{{ v.thumbnail|default_if_none:static('img/placeholder.jpg') }}')">
           <div class="play-small" aria-hidden>
             <svg viewBox="0 0 24 24" focusable="false"><path d="M5 3v18l15-9z"></path></svg>
           </div>
