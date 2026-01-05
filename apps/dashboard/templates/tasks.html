@@ -192,7 +192,7 @@
 
     if (window.videos) {
       document.querySelectorAll(".card").forEach(card => {
-        card.addEventListener("click", () => {
+        document.querySelectorAll(".card[data-id]").forEach(card => {
           const videoId = card.dataset.id;
           const videoData = window.videos.find(v => v.id == videoId);
           if (!videoData) return;
@@ -246,8 +246,7 @@
 
     updateProgress();
   });
-</script>
-  <script>
+
 document.querySelectorAll(".task-card").forEach(card => {
   card.addEventListener("click", () => {
     const url = card.dataset.url;
