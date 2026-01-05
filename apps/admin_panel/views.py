@@ -257,7 +257,7 @@ def verify_otp_view(request):
     pending_id = request.session.get("pending_manual_user_id")
     if not pending_id:
        messages.error(request, "Session expired. Please restart manual login.")
-    return redirect("admin_panel:manual_login")
+     return redirect("admin_panel:manual_login")
 
     pending = get_object_or_404(PendingManualUser, id=pending_id)
     form = ManualUserOTPForm(request.POST or None)
