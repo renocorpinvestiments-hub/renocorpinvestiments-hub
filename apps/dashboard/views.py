@@ -163,43 +163,131 @@ def tasks_view(request):
 
     # -----------------------------
     # Progress calculation
+@login_required
+def tasks_view(request):
+    user = request.user
+    profile = get_or_create_profile(user)
+    today = timezone.localdate()
+
+    # -----------------------------
+    # Fetch admin-controlled task limits
+    # -----------------------------
+    task_control = TaskControl.objects.last()
+    videos_limit = task_control.videos_count if task_control else 20
+    surveys_limit = task_control.surveys_count if task_control else 6
+    app_tests_limit = task_control.app_tests_count if task_control else 2
+
+    # -----------------------------
+    # Progress reset
+    # -----------------------------
+    progress, _ = TaskProgress.objects.get_or_create(user=user)
+    if progress.last_reset < today:
+        progress.total_tasks = 0
+        progress.completed_tasks = 0
+        progress.progress = 0
+        progress.last_reset = today
+        progress.save()
+
+    # -----------------------------
+    # Completed tasks
+    # -----------------------------
+    completed_ids = set(
+        CompletedTask.objects.filter(user=user).values_list("task_id", flat=True)
+    )
+
+    # -----------------------------
+    # Video Tasks
+    # -----------------------------
+    videos = [
+        {
+            "id": v.task_id,
+            "title": v.title,
+            "thumbnail": v.thumbnail,
+            "url": v.video_url,
+            "reward": float(v.reward),
+        }
+        for v in VideoTask.objects.filter(active=True)
+        .exclude(task_id__in=completed_ids)
+        .order_by("-reward", "-created_at")[:videos_limit]
+    ]
+
+    # -----------------------------
+    # Surveys
+    # -----------------------------
+    surveys = [
+        {
+            "id": s.task_id,
+            "title": s.title,
+            "provider_url": s.iframe_url or s.provider_url,
+            "reward": float(s.reward),
+        }
+        for s in SurveyTask.objects.filter(active=True)
+        .exclude(task_id__in=completed_ids)
+        .order_by("-reward", "-created_at")[:surveys_limit]
+    ]
+
+    # -----------------------------
+    # App Test
+    # -----------------------------
+    app_test = None
+    if app_tests_limit:
+        app = AppTest.objects.filter(active=True)\
+            .exclude(task_id__in=completed_ids)\
+            .order_by("-reward", "-created_at")\
+            .first()
+
+        if app:
+            app_test = {
+                "id": app.task_id,
+                "name": app.title,
+                "description": app.description,
+                "download_url": app.download_url,
+                "reward": float(app.reward),
+            }
+
+    # -----------------------------
+    # Progress calculation
     # -----------------------------
     total_tasks = len(videos) + len(surveys) + (1 if app_test else 0)
-    completed_today = CompletedTask.objects.filter(user=user, completed_at__date=today).count()
+    completed_today = CompletedTask.objects.filter(
+        user=user, completed_at__date=today
+    ).count()
+
     progress.total_tasks = total_tasks
     progress.completed_tasks = completed_today
     progress.update_progress()
 
     # -----------------------------
-# Iframe Offerwalls (multi-task walls)
-# -----------------------------
-iframe_tasks = []
+    # IFRAME OFFERWALLS ✅ FIXED
+    # -----------------------------
+    iframe_tasks = []
 
-offerwalls = Offerwall.objects.filter(
-    is_active=True,
-    mode="iframe",
-    iframe_url__isnull=False
-)
+    offerwalls = Offerwall.objects.filter(
+        is_active=True,
+        mode="iframe",
+        iframe_url__isnull=False
+    )
 
-for wall in offerwalls:
-    iframe_tasks.append({
-        "id": wall.id,
-        "title": wall.provider.upper(),
-        "description": "This is a task combo. It contains many tasks you can complete. Tap to continue your earnings await🤑.",
-        "iframe_url": wall.iframe_url,
-    })
+    for wall in offerwalls:
+        iframe_tasks.append({
+            "id": wall.id,
+            "title": wall.provider.upper(),
+            "description": "This is a task combo. Complete multiple tasks inside.",
+            "iframe_url": wall.iframe_url,
+        })
 
     # -----------------------------
     # Render
     # -----------------------------
     context = {
-    "videos": videos,
-    "surveys": surveys,
-    "app_test": app_test,
-    "iframe_tasks": iframe_tasks,
-    "progress": float(progress.progress),
-    "current_page": "tasks",
+        "videos": videos,
+        "surveys": surveys,
+        "app_test": app_test,
+        "iframe_tasks": iframe_tasks,
+        "progress": float(progress.progress),
+        "current_page": "tasks",
     }
+
     return render(request, "tasks.html", context)
 # ===========================
 # ACCOUNT
