@@ -1,14 +1,9 @@
 from django.shortcuts import render, redirect
 from django.contrib.auth import authenticate, login
-from django.utils import timezone
 from django.contrib import messages
-from django.core.mail import send_mail
-from django.conf import settings
 
-from .models import User, EmailOTP
-from .forms import LoginForm, SignupForm, OTPVerificationForm, generate_otp
-
-import datetime
+from .models import User
+from .forms import LoginForm, SignupForm
 
 
 # ---------------------------------------------------
@@ -38,7 +33,6 @@ def login_view(request):
                 if user.is_superuser or user.is_staff:
                     return redirect("admin_panel:dashboard")
 
-                # Normal user login
                 return redirect("dashboard:home")
 
             messages.error(request, "Invalid username or password.")
@@ -49,13 +43,15 @@ def login_view(request):
 
 
 # ---------------------------------------------------
-# SIGNUP VIEW
+# SIGNUP VIEW (NO OTP)
 # ---------------------------------------------------
 def signup_view(request):
     """
     Handles new user signup.
-    Phone number (account_number) is REQUIRED because it is the withdrawal destination.
-    After saving → user inactive → send OTP → move to verify page.
+    - Phone number is REQUIRED
+    - Invitation code MUST exist
+    - User becomes active immediately
+    - Auto-login after signup
     """
 
     if request.method == "POST":
@@ -65,10 +61,14 @@ def signup_view(request):
             inviter_code = form.cleaned_data.get("invitation_code")
             inviter = User.objects.filter(invitation_code=inviter_code).first()
 
-            # Create user but DO NOT save yet
+            if not inviter:
+                messages.error(request, "Invalid invitation code.")
+                return render(request, "signup.html", {"form": form})
+
+            # Create user instance (not saved yet)
             user = form.save(commit=False)
 
-            # 🚨 HARD SAFETY CHECK (PREVENTS RENDER CRASH)
+            # HARD SAFETY CHECK
             if not user.account_number:
                 messages.error(
                     request,
@@ -77,39 +77,21 @@ def signup_view(request):
                 return render(request, "signup.html", {"form": form})
 
             user.set_password(form.cleaned_data["password"])
-            user.is_active = False
+            user.is_active = True
             user.invited_by = inviter
             user.subscription_status = "inactive"
 
-            # Save user ONLY after phone exists
             user.save()
 
-            # ---------------------------------
-            # Create OTP
-            # ---------------------------------
-            otp_code = generate_otp()
+            # Assign invitation code AFTER save
+            user.assign_invitation_code()
+            user.save(update_fields=["invitation_code"])
 
-            EmailOTP.objects.create(
-                email=user.email,
-                otp=otp_code,
-                created_at=timezone.now()
-            )
+            # Auto-login user
+            login(request, user)
 
-            # Send OTP email
-            send_mail(
-                subject="RENOCORP Account Verification Code",
-                message=(
-                    f"Your RENOCORP verification code is {otp_code}. "
-                    f"It expires in 10 minutes."
-                ),
-                from_email=settings.DEFAULT_FROM_EMAIL,
-                recipient_list=[user.email],
-                fail_silently=True,
-            )
-
-            request.session["verify_email"] = user.email
-            messages.info(request, "OTP has been sent to your email.")
-            return redirect("accounts:verify_otp")
+            messages.success(request, "Account created successfully.")
+            return redirect("accounts:signup_success")
 
     else:
         form = SignupForm()
@@ -118,65 +100,10 @@ def signup_view(request):
 
 
 # ---------------------------------------------------
-# OTP VERIFICATION VIEW
+# SIGNUP SUCCESS PAGE
 # ---------------------------------------------------
-def verify_otp_view(request):
-    email = request.session.get("verify_email")
-
-    if not email:
-        messages.error(request, "Session expired. Please sign up again.")
-        return redirect("accounts:signup")
-
-    if request.method == "POST":
-        form = OTPVerificationForm(request.POST)
-
-        if form.is_valid():
-            otp_entered = form.cleaned_data["otp"]
-
-            try:
-                otp_record = EmailOTP.objects.get(
-                    email=email,
-                    otp=otp_entered,
-                    verified=False
-                )
-            except EmailOTP.DoesNotExist:
-                messages.error(request, "Invalid or incorrect OTP.")
-                return redirect("accounts:verify_otp")
-
-            # ---------------------------------
-            # 10 MINUTE EXPIRY CHECK
-            # ---------------------------------
-            expiry_time = otp_record.created_at + datetime.timedelta(minutes=10)
-            if timezone.now() > expiry_time:
-                otp_record.delete()
-                messages.error(request, "OTP expired. Please sign up again.")
-                return redirect("accounts:signup")
-
-            # Mark OTP as verified
-            otp_record.verified = True
-            otp_record.save()
-
-            # Activate user & assign invitation code
-            user = User.objects.filter(email=email).first()
-            if user:
-                user.is_active = True
-                user.assign_invitation_code()
-                user.save(update_fields=["is_active", "invitation_code"])
-
-            messages.success(
-                request,
-                "Account verified successfully. You may now log in."
-            )
-            return redirect("accounts:login")
-
-    else:
-        form = OTPVerificationForm()
-
-    return render(
-        request,
-        "verify_otp.html",
-        {
-            "form": form,
-            "email": email
-        }
-            )
+def signup_success_view(request):
+    """
+    Simple success page before dashboard redirect.
+    """
+    return render(request, "signup_success.html")
