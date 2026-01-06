@@ -78,7 +78,7 @@ def signup_view(request):
 
             user.set_password(form.cleaned_data["password"])
             user.is_active = True
-            user.invited_by = inviter
+            user.invited_by = invited_by 
             user.subscription_status = "inactive"
 
             user.save()
