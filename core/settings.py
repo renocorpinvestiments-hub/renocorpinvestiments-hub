@@ -9,6 +9,10 @@ from celery.schedules import crontab
 import environ
 import dj_database_url
 
+if os.getenv("DISABLE_CELERY") == "true":
+    CELERY_TASK_ALWAYS_EAGER = True
+    CELERY_TASK_EAGER_PROPAGATES = True
+
 # -----------------------------------------------------------------------------
 # BASE DIRECTORY
 # -----------------------------------------------------------------------------
