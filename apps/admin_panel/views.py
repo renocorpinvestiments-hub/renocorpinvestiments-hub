@@ -8,7 +8,6 @@ from django.contrib.auth.decorators import login_required
 from django.contrib.admin.views.decorators import staff_member_required
 from django.utils import timezone
 from django.db.models import Sum, Count
-from django.core.exceptions import ObjectDoesNotExist
 from .models import AdminNotification
 from .forms import PendingManualUserForm, GiftOfferForm, AdminSettingsForm
 
