@@ -1,4 +1,5 @@
-
+from django.db import transaction
+import re
 from datetime import timedelta
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib import messages
@@ -9,16 +10,10 @@ from django.utils import timezone
 from django.db.models import Sum, Count
 from django.core.exceptions import ObjectDoesNotExist
 from .models import AdminNotification
-from .forms import (
-    PendingManualUserForm,
-    ManualUserOTPForm,
-    GiftOfferForm,
-    AdminSettingsForm,
-)
+from .forms import PendingManualUserForm, GiftOfferForm, AdminSettingsForm
 
 from .models import (
     PendingManualUser,
-    ManualUserOTP,
     GiftOffer,
     PayrollEntry,
     AdminSettings,
@@ -64,11 +59,7 @@ def admin_logout(request):
 def admin_dashboard(request):
     users = User.objects.all()
     total_balance = UserProfile.objects.aggregate(total=Sum("balance"))["total"] or 0
-
-    # 🧠 Fetch recent OTP/email failures
-    otp_failures = AdminNotification.objects.filter(
-        category="email_error"
-    ).order_by("-created_at")[:5]
+    
 
     return render(request, "users.html", {
         "users": users,
@@ -215,8 +206,8 @@ def manual_login_view(request):
 
     if request.method == "POST" and form.is_valid():
         pending = PendingManualUser.objects.filter(
-            email__iexact=form.cleaned_data["email"], verified=False
-        ).first()
+    email__iexact=form.cleaned_data["email"]
+).first()
 
         if pending:
             for field in ["name", "age", "gender", "account_number"]:
