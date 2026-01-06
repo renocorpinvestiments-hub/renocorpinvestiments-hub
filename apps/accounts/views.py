@@ -58,13 +58,12 @@ def signup_view(request):
         form = SignupForm(request.POST)
 
         if form.is_valid():
-            inviter_code = form.cleaned_data.get("invitation_code")
-            inviter = User.objects.filter(invitation_code=inviter_code).first()
+            invited_by = form.cleaned_data.get("invitation_code")
+            invited_by = User.objects.filter(invitation_code=invited_by).first()
 
-            if not inviter:
-                messages.error(request, "Invalid invitation code.")
-                return render(request, "signup.html", {"form": form})
-
+            if not invited_by:
+               messages.error(request, "Invalid invitation code.")
+               return render(request, "signup.html", {"form": form})
             # Create user instance (not saved yet)
             user = form.save(commit=False)
 
