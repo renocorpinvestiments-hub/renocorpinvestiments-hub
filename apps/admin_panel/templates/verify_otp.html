@@ -2,7 +2,7 @@
 <html>
 <head>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Verify OTP</title>
+<title>Confirm Admin Password</title>
 
 <style>
 body {
@@ -25,30 +25,47 @@ input {
   padding:0.8rem;
   margin-top:1rem;
   font-size:1rem;
+  box-sizing: border-box;
 }
 
 button {
   margin-top:1rem;
   width:100%;
   padding:0.8rem;
+  font-size:1rem;
+  cursor: pointer;
 }
 
 .spinner {
   display:none;
   margin-top:1rem;
 }
+
+.toggle-btn {
+  margin-top:0.5rem;
+  background:#252c37;
+  border:none;
+  color:#e6edf3;
+  cursor:pointer;
+  font-size:0.9rem;
+  padding:0.5rem;
+  border-radius:6px;
+}
 </style>
 </head>
 
 <body>
 <div class="card">
-  <h2>Verify OTP</h2>
+  <h2>Confirm Admin Password</h2>
+  <p style="color:#ff4d4f;">This confirms your identity. New user credentials will be generated after confirmation.</p>
 
   <form method="post" onsubmit="showSpinner()">
     {% csrf_token %}
-    <input type="text" name="otp_code" placeholder="Enter OTP" required>
-    <button type="submit">Verify</button>
+    <input type="password" name="password" placeholder="Enter your admin password" required id="adminPassword" autofocus>
+    <button type="submit">Confirm</button>
   </form>
+
+  <button type="button" class="toggle-btn" onclick="togglePassword()">Show / Hide Password</button>
 
   <div class="spinner" id="spinner">⏳ Verifying...</div>
 </div>
@@ -56,6 +73,15 @@ button {
 <script>
 function showSpinner() {
   document.getElementById("spinner").style.display = "block";
+}
+
+function togglePassword() {
+  const pwdField = document.getElementById("adminPassword");
+  if (pwdField.type === "password") {
+    pwdField.type = "text";
+  } else {
+    pwdField.type = "password";
+  }
 }
 </script>
 </body>
