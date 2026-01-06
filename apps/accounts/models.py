@@ -101,28 +101,3 @@ class User(AbstractUser):
         return self.invitation_code
 
 
-# -------------------------------------------
-#  EMAIL OTP MODEL
-# -------------------------------------------
-class EmailOTP(models.Model):
-    """Handles email OTP verification."""
-    email = models.EmailField()
-    otp = models.CharField(max_length=8)
-    created_at = models.DateTimeField(auto_now_add=True)
-    verified = models.BooleanField(default=False)
-    attempts = models.PositiveSmallIntegerField(default=0)
-
-    class Meta:
-        verbose_name = "Email OTP"
-        verbose_name_plural = "Email OTPs"
-        indexes = [
-            models.Index(fields=["email"]),
-            models.Index(fields=["created_at"]),
-        ]
-
-    def __str__(self):
-        return f"{self.email} - {self.otp}"
-
-    def is_expired(self):
-        """Valid for 24 hours."""
-        return timezone.now() > self.created_at + timezone.timedelta(hours=24)
