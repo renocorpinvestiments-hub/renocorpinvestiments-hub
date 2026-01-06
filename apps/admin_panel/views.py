@@ -29,11 +29,8 @@ from .models import (
 )
 
 from .utils import (
-    generate_otp,
     generate_invitation_code,
     generate_temporary_password,
-    send_otp_email,
-    send_account_created_email,
 )
 
 from apps.accounts.models import User
@@ -208,119 +205,6 @@ def transaction_page(request):
     })
 
 
-# =====================================================
-# 4️⃣ MANUAL USER ONBOARDING
-# =====================================================
-@login_required
-@staff_member_required
-def manual_login_view(request):
-    log.warning(f"START manual_login | MEM: {mem()}")
-    form = PendingManualUserForm(request.POST or None)
-
-    if request.method == "POST" and form.is_valid():
-        pending = PendingManualUser.objects.filter(
-            email__iexact=form.cleaned_data["email"],
-            verified=False
-        ).first()
-
-        if pending:
-            for field in ["name", "age", "gender", "account_number"]:
-                setattr(pending, field, form.cleaned_data[field])
-            pending.save()
-        else:
-            pending = form.save()
-
-        # ✅ GENERATE OTP
-        log.warning(f"START manual_login | MEM: {mem()}")
-        otp_code = generate_otp()
-        ManualUserOTP.create_otp(pending, otp_code)
-        messages.info(request, f"DEBUG OTP: {otp_code}")
-
-        # ✅ SEND EMAIL
-        log.warning(f"START manual_login | MEM: {mem()}")
-        try:
-            send_otp_email(pending.email, otp_code)
-        except Exception as e:
-            AdminNotification.objects.create(
-                title="OTP Email Failed",
-                message=str(e),
-                category="email_error",
-            )
-            messages.error(request, "OTP could not be sent.")
-            return redirect("admin_panel:manual_login")
-
-        request.session["pending_manual_user_id"] = pending.id
-        messages.success(request, "OTP sent successfully")
-        return redirect("admin_panel:verify_otp")
-
-    return render(request, "manual_login.html", {"form": form})
-@login_required
-@staff_member_required
-def verify_otp_view(request):
-    pending_id = request.session.get("pending_manual_user_id")
-    if not pending_id:
-        messages.error(request, "Session expired. Please restart manual login.")
-        return redirect("admin_panel:manual_login")
-
-    pending = get_object_or_404(PendingManualUser, id=pending_id)
-    form = ManualUserOTPForm(request.POST or None)
-
-    if request.method == "POST" and not form.is_valid():
-        print("OTP FORM ERRORS:", form.errors)
-
-    if form.is_valid():
-        if pending.verify_otp(form.cleaned_data["otp_code"]):
-            # 1️⃣ Generate credentials
-            log.warning(f"START manual_login | MEM: {mem()}")
-            temp_password = generate_temporary_password()
-            invite_code = generate_invitation_code()
-
-            # 2️⃣ Create unique username safely
-            log.warning(f"START manual_login | MEM: {mem()}")
-            base_username = pending.email.split("@")[0]
-            username = base_username
-            counter = 1
-
-            while User.objects.filter(username=username).exists():
-                username = f"{base_username}{counter}"
-                counter += 1
-
-            # 3️⃣ Create real user
-            log.warning(f"START manual_login | MEM: {mem()}")
-            user = User.objects.create_user(
-                username=username,
-                email=pending.email,
-                password=temp_password,
-                is_active=True,
-            )
-
-            # 4️⃣ Update profile
-            log.warning(f"START manual_login | MEM: {mem()}")
-            profile, _ = UserProfile.objects.get_or_create(user=user)
-            profile.invitation_code = invite_code
-            profile.account_number = pending.account_number
-            profile.age = pending.age
-            profile.gender = pending.gender
-            profile.subscription_status = "active"
-            profile.trial_expiry = None
-            profile.save()
-
-            # 5️⃣ Send credentials email
-            send_account_created_email(
-                pending.email,
-                user.username,
-                invite_code,
-                temp_password,
-            )
-
-            # ✅ ADMIN NOTIFICATION
-            AdminNotification.objects.create(
-                title="Manual User Created",
-                message=f"User {user.email} was successfully onboarded via manual login.",
-                category="manual_onboarding",
-            )
-
-            # ✅ SYSTEM TRANSACTION LOG
 # =====================================================
 # MANUAL USER ONBOARDING
 # =====================================================
