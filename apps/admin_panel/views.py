@@ -55,6 +55,8 @@ def admin_logout(request):
 # =====================================================
 # 1️⃣ USERS DASHBOARD
 # =====================================================
+@login_required
+@staff_member_required
 def admin_dashboard(request):
     users = User.objects.all()
     total_balance = UserProfile.objects.aggregate(total=Sum("balance"))["total"] or 0
