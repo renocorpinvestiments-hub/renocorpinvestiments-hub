@@ -10,7 +10,7 @@ from django.utils import timezone
 from django.db.models import Sum, Count
 from .models import AdminNotification
 from .forms import PendingManualUserForm, GiftOfferForm, AdminSettingsForm
-
+from django.utils.timezone import now
 from .models import (
     PendingManualUser,
     GiftOffer,
@@ -331,10 +331,85 @@ def admin_settings_view(request):
 @login_required
 @staff_member_required
 def gift_upload_view(request):
-    form = GiftOfferForm(request.POST or None, request.FILES or None)
+    if request.method == "POST":
+        try:
+            with transaction.atomic():
 
-    if form.is_valid():
-        form.save()
-        messages.success(request, "Gift uploaded")
+                # =========================
+                # 1️⃣ CREATE GIFT OFFER
+                # =========================
+                description = request.POST.get("description", "").strip()
+                reward_amount = request.POST.get("reward", 0)
+                required_invites = request.POST.get("invites_required", 0)
+                extra_videos = request.POST.get("extra_videos", 0)
+                earning_per_video = request.POST.get("earning_per_video", 0)
 
-    return render(request, "gift_upload.html", {"form": form})
+                if not description:
+                    messages.error(request, "Gift description is required.")
+                    return redirect("admin_panel:gift_upload")
+
+                gift = GiftOffer.objects.create(
+                    title=f"Gift-{now().strftime('%Y%m%d%H%M%S')}",
+                    description=description,
+                    reward_amount=reward_amount,
+                    required_invites=required_invites,
+                    extra_video_count=extra_videos,
+                    earning_per_extra_video=earning_per_video,
+                    active=True,
+                )
+
+                # =========================
+                # 2️⃣ UPDATE TASK CONTROL
+                # =========================
+                videos_number = request.POST.get("videos_number", 0)
+                video_earning = request.POST.get("video_earning", 0)
+
+                surveys_number = request.POST.get("surveys_number", 0)
+                survey_earning = request.POST.get("survey_earning", 0)
+
+                app_tests_number = request.POST.get("app_tests_number", 0)
+                app_test_earning = request.POST.get("app_test_earning", 0)
+
+                invite_reward = request.POST.get("invite_reward", 0)
+
+                task_control, _ = TaskControl.objects.get_or_create(id=1)
+
+                task_control.videos_count = videos_number
+                task_control.video_earning = video_earning
+
+                task_control.surveys_count = surveys_number
+                task_control.survey_earning = survey_earning
+
+                task_control.app_tests_count = app_tests_number
+                task_control.app_test_earning = app_test_earning
+
+                task_control.invite_cost = invite_reward
+                task_control.save()
+
+                # =========================
+                # 3️⃣ AUDIT LOG
+                # =========================
+                AdminNotification.objects.create(
+                    title="Gift & Task Control Updated",
+                    message=f"Gift '{gift.title}' uploaded by {request.user.username}",
+                    category="gift_upload",
+                )
+
+                messages.success(request, "Gift and task settings saved successfully.")
+                return redirect("admin_panel:gift_upload")
+
+        except Exception as e:
+            messages.error(request, f"Error saving gift: {str(e)}")
+
+    # =========================
+    # GET REQUEST
+    # =========================
+    task_control = TaskControl.objects.first()
+
+    return render(
+        request,
+        "gift_upload.html",
+        {
+            "task_control": task_control,
+        }
+                )
