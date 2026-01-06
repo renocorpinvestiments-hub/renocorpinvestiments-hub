@@ -129,11 +129,18 @@ class PendingManualUserForm(forms.ModelForm):
             'account_number': forms.TextInput(attrs={'class': 'form-control'}),
             'email': forms.EmailInput(attrs={'class': 'form-control'}),
         }
-class ManualUserOTPForm(forms.ModelForm):
-    class Meta:
-        model = ManualUserOTP
-        fields = ['otp_code']  # removed 'pending'
-        widgets = {
-            'otp_code': forms.TextInput(attrs={'class': 'form-control'}),
-       
-        }
+class AdminPasswordConfirmForm(forms.Form):
+    password = forms.CharField(
+        label="Confirm your password",
+        widget=forms.PasswordInput(attrs={'class': 'form-control'}),
+    )
+
+    def __init__(self, user, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.user = user
+
+    def clean_password(self):
+        password = self.cleaned_data.get("password")
+        if not self.user.check_password(password):
+            raise ValidationError("Incorrect admin password.")
+        return password
