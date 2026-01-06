@@ -1,1 +1,113 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>User Created Successfully</title>
+<style>
+body {
+  background:#0d1117;
+  color:#e6edf3;
+  font-family:Inter,sans-serif;
+}
 
+.card {
+  max-width:500px;
+  margin:5rem auto;
+  background:#161b22;
+  padding:2rem;
+  border-radius:12px;
+  text-align:center;
+}
+
+h2 {
+  margin-bottom:1rem;
+}
+
+.credentials {
+  background:#0b1117;
+  padding:1rem;
+  margin:1rem 0;
+  border-radius:8px;
+  font-family:monospace;
+  text-align:left;
+  white-space:pre-wrap;
+  word-break:break-word;
+}
+
+button {
+  margin-top:0.5rem;
+  margin-right:0.5rem;
+  padding:0.8rem 1.2rem;
+  font-size:1rem;
+  cursor:pointer;
+  border:none;
+  border-radius:8px;
+  background:#238636;
+  color:#e6edf3;
+}
+
+button:hover {
+  background:#2ea043;
+}
+
+.spinner {
+  display:none;
+  margin-top:1rem;
+}
+
+.info {
+  font-size:0.9rem;
+  margin-top:1rem;
+  color:#a6adba;
+}
+</style>
+</head>
+<body>
+<div class="card">
+  <h2>User Created Successfully 🎉</h2>
+  <p>Here are the credentials for the new user. Copy or share them safely. They are visible only once.</p>
+
+  <div class="credentials" id="creds">
+Username: {{ creds.username }}
+Password: {{ creds.password }}
+Invitation Code: {{ creds.invitation }}
+  </div>
+
+  <div>
+    <button onclick="copyCreds()">📋 Copy Credentials</button>
+    <button onclick="shareCreds()">🔗 Share Credentials</button>
+  </div>
+
+  <div class="info">
+    Please change your password after first login. Enjoy your free tier!
+  </div>
+
+  <div class="spinner" id="spinner">⏳ Processing...</div>
+</div>
+
+<script>
+function copyCreds() {
+  const text = document.getElementById("creds").innerText;
+  navigator.clipboard.writeText(text).then(() => {
+    alert("Credentials copied to clipboard!");
+  });
+}
+
+function shareCreds() {
+  const text = `Hello! Your account has been created.\nUsername: {{ creds.username }}\nPassword: {{ creds.password }}\nInvitation Code: {{ creds.invitation }}\n\nPlease change your password when you login. Enjoy your free tier! 🎉`;
+  
+  if (navigator.share) {
+    navigator.share({
+      title: "Your New Account Credentials",
+      text: text
+    }).catch(err => console.log("Share cancelled or failed", err));
+  } else {
+    // fallback: copy to clipboard if native share not supported
+    navigator.clipboard.writeText(text).then(() => {
+      alert("Share text copied to clipboard!");
+    });
+  }
+}
+</script>
+</body>
+  </html>
