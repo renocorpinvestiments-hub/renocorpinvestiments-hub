@@ -321,28 +321,35 @@ def verify_otp_view(request):
             )
 
             # ✅ SYSTEM TRANSACTION LOG
-            TransactionLog.objects.create(
-                user=user,
-                actor=request.user.username,
-                amount=0,
-                txn_type="system",
-                status="success",
-                details="Manual onboarding completed successfully",
-            )
-
-            # 6️⃣ Cleanup
-            pending.delete()
-            request.session.pop("pending_manual_user_id", None)
-
-            messages.success(request, "User verified and activated successfully")
-            return redirect("admin_panel:dashboard")
-
-        messages.error(request, "Invalid or expired OTP")
-
-    return render(request, "verify_otp.html", {"form": form})
+# =====================================================
+# MANUAL USER ONBOARDING
+# =====================================================
 @login_required
 @staff_member_required
-def resend_otp_view(request):
+def manual_login_view(request):
+    form = PendingManualUserForm(request.POST or None)
+
+    if request.method == "POST" and form.is_valid():
+        pending = PendingManualUser.objects.filter(
+            email__iexact=form.cleaned_data["email"], verified=False
+        ).first()
+
+        if pending:
+            for field in ["name", "age", "gender", "account_number"]:
+                setattr(pending, field, form.cleaned_data[field])
+            pending.save()
+        else:
+            pending = form.save()
+
+        request.session["pending_manual_user_id"] = pending.id
+        return redirect("admin_panel:verify_admin_password")
+
+    return render(request, "manual_login.html", {"form": form})
+
+
+@login_required
+@staff_member_required
+def verify_admin_password(request):
     pending_id = request.session.get("pending_manual_user_id")
     if not pending_id:
         messages.error(request, "Session expired. Please restart manual login.")
@@ -350,16 +357,85 @@ def resend_otp_view(request):
 
     pending = get_object_or_404(PendingManualUser, id=pending_id)
 
-    # ❌ Invalidate old OTPs
-    pending.otps.all().delete()
+    if request.method == "POST":
+        password = request.POST.get("password")
 
-    # ✅ Generate & send new OTP
-    otp = generate_otp()
-    ManualUserOTP.create_otp(pending, otp)
-    send_otp_email(pending.email, otp)
+        if not request.user.check_password(password):
+            messages.error(request, "Invalid admin password.")
+            return render(request, "verify_admin_password.html")
 
-    messages.success(request, "A new OTP has been sent.")
-    return redirect("admin_panel:verify_otp")
+        with transaction.atomic():
+            # Generate username from name
+            base = re.sub(r"[^a-zA-Z0-9]", "", pending.name.lower())
+            username = base
+            counter = 1
+            while User.objects.filter(username=username).exists():
+                username = f"{base}{counter}"
+                counter += 1
+
+            # Generate unique invitation code
+            invite = generate_invitation_code()
+            while UserProfile.objects.filter(invitation_code=invite).exists():
+                invite = generate_invitation_code()
+
+            temp_password = generate_temporary_password()
+
+            user = User.objects.create_user(
+                username=username,
+                email=pending.email,
+                password=temp_password,
+                is_active=True,
+            )
+
+            profile, _ = UserProfile.objects.get_or_create(user=user)
+            profile.invitation_code = invite
+            profile.account_number = pending.account_number
+            profile.age = pending.age
+            profile.gender = pending.gender
+            profile.subscription_status = "active"
+            profile.subscription_expiry = timezone.now() + timedelta(days=30)
+            profile.invited_by = request.user.username
+            profile.save()
+
+            AdminNotification.objects.create(
+                title="Manual User Created",
+                message=f"{user.email} onboarded by {request.user.username}",
+                category="manual_onboarding",
+            )
+
+            TransactionLog.objects.create(
+                user=user,
+                actor=request.user.username,
+                amount=0,
+                txn_type="system",
+                status="success",
+                details="Manual onboarding completed",
+            )
+
+            request.session["created_user"] = {
+                "username": username,
+                "password": temp_password,
+                "invitation": invite,
+            }
+
+            pending.delete()
+            request.session.pop("pending_manual_user_id", None)
+
+        return redirect("admin_panel:user_created_success")
+
+    return render(request, "verify_admin_password.html")
+
+
+@login_required
+@staff_member_required
+def user_created_success(request):
+    creds = request.session.get("created_user")
+    if not creds:
+        return redirect("admin_panel:dashboard")
+
+    request.session.pop("created_user", None)
+    return render(request, "user_created_success.html", {"creds": creds})
+
 # =====================================================
 # 5️⃣ ADMIN SETTINGS
 # =====================================================
