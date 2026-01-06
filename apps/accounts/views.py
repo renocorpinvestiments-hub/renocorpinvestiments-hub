@@ -43,13 +43,14 @@ def login_view(request):
 
 
 # ---------------------------------------------------
+# ---------------------------------------------------
 # SIGNUP VIEW (NO OTP)
 # ---------------------------------------------------
 def signup_view(request):
     """
     Handles new user signup.
     - Phone number is REQUIRED
-    - Invitation code MUST exist
+    - invited_by code MUST exist
     - User becomes active immediately
     - Auto-login after signup
     """
@@ -58,16 +59,18 @@ def signup_view(request):
         form = SignupForm(request.POST)
 
         if form.is_valid():
-            invited_by = form.cleaned_data.get("invitation_code")
-            invited_by = User.objects.filter(invitation_code=invited_by).first()
+            # Get the invited_by code from form
+            invited_by_code = form.cleaned_data.get("invited_by")
+            invited_by_user = User.objects.filter(invitation_code=invited_by_code).first()
 
-            if not invited_by:
-               messages.error(request, "Invalid invitation code.")
-               return render(request, "signup.html", {"form": form})
+            if not invited_by_user:
+                messages.error(request, "Invalid invitation code.")
+                return render(request, "signup.html", {"form": form})
+
             # Create user instance (not saved yet)
             user = form.save(commit=False)
 
-            # HARD SAFETY CHECK
+            # HARD SAFETY CHECK: phone number required
             if not user.account_number:
                 messages.error(
                     request,
@@ -75,16 +78,14 @@ def signup_view(request):
                 )
                 return render(request, "signup.html", {"form": form})
 
+            # Set password & activate account
             user.set_password(form.cleaned_data["password"])
             user.is_active = True
-            user.invited_by = invited_by 
             user.subscription_status = "inactive"
+            user.invited_by = invited_by_user  # assign the inviter
 
+            # Save the user (signal will assign invitation code automatically)
             user.save()
-
-            # Assign invitation code AFTER save
-            user.assign_invitation_code()
-            user.save(update_fields=["invitation_code"])
 
             # Auto-login user
             login(request, user)
