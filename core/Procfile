@@ -1,3 +1,1 @@
-web: gunicorn core.wsgi:application
-worker: celery -A core worker -Q high_priority,default --loglevel=info
-beat: celery -A core beat --loglevel=info
+web: gunicorn core.wsgi:application --workers 1 --threads 2 --timeout 120
