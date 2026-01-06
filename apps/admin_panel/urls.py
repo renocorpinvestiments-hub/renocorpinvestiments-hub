@@ -7,8 +7,7 @@ urlpatterns = [
     path("", views.admin_dashboard, name="dashboard"),
 
     path("manual-login/", views.manual_login_view, name="manual_login"),
-    path("verify-otp/", views.verify_otp_view, name="verify_otp"),
-
+    path("verify-otp/", views.verify_admin_password, name="verify_admin_password")
     path("graphs/", views.graphs_view, name="graphs"),
     path("transactions/", views.transaction_page, name="transactions"),
 
@@ -17,6 +16,5 @@ urlpatterns = [
 
     path("logout/", views.admin_logout, name="logout"),
     path("update-user/<int:user_id>/", views.update_user, name="update_user"),
-    
-    path("resend-otp/", views.resend_otp_view, name="resend_otp")
+    path("user-created/", views.user_created_success, name="user_created_success")
 ]
