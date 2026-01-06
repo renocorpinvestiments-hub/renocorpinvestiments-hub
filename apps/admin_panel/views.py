@@ -63,7 +63,6 @@ def admin_dashboard(request):
     return render(request, "users.html", {
         "users": users,
         "total_balance": total_balance,
-        "otp_failures": otp_failures,
     })
 
 @login_required
@@ -204,9 +203,7 @@ def manual_login_view(request):
     form = PendingManualUserForm(request.POST or None)
 
     if request.method == "POST" and form.is_valid():
-        pending = PendingManualUser.objects.filter(
-    email__iexact=form.cleaned_data["email"]
-).first()
+        pending = PendingManualUser.objects.filter(email__iexact=form.cleaned_data["email"]).first()
 
         if pending:
             for field in ["name", "age", "gender", "account_number"]:
