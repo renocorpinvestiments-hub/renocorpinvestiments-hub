@@ -1,3 +1,4 @@
+
 from datetime import timedelta
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib import messages
@@ -36,6 +37,13 @@ from .utils import (
 )
 
 from apps.accounts.models import User
+import resource
+import logging
+
+log = logging.getLogger(__name__)
+
+def mem():
+    return resource.getrusage(resource.RUSAGE_SELF).ru_maxrss
 
 
 # =====================================================
@@ -206,6 +214,7 @@ def transaction_page(request):
 @login_required
 @staff_member_required
 def manual_login_view(request):
+    log.warning(f"START manual_login | MEM: {mem()}")
     form = PendingManualUserForm(request.POST or None)
 
     if request.method == "POST" and form.is_valid():
@@ -222,11 +231,13 @@ def manual_login_view(request):
             pending = form.save()
 
         # ✅ GENERATE OTP
+        log.warning(f"START manual_login | MEM: {mem()}")
         otp_code = generate_otp()
         ManualUserOTP.create_otp(pending, otp_code)
         messages.info(request, f"DEBUG OTP: {otp_code}")
 
         # ✅ SEND EMAIL
+        log.warning(f"START manual_login | MEM: {mem()}")
         try:
             send_otp_email(pending.email, otp_code)
         except Exception as e:
@@ -260,10 +271,12 @@ def verify_otp_view(request):
     if form.is_valid():
         if pending.verify_otp(form.cleaned_data["otp_code"]):
             # 1️⃣ Generate credentials
+            log.warning(f"START manual_login | MEM: {mem()}")
             temp_password = generate_temporary_password()
             invite_code = generate_invitation_code()
 
             # 2️⃣ Create unique username safely
+            log.warning(f"START manual_login | MEM: {mem()}")
             base_username = pending.email.split("@")[0]
             username = base_username
             counter = 1
@@ -273,6 +286,7 @@ def verify_otp_view(request):
                 counter += 1
 
             # 3️⃣ Create real user
+            log.warning(f"START manual_login | MEM: {mem()}")
             user = User.objects.create_user(
                 username=username,
                 email=pending.email,
@@ -281,6 +295,7 @@ def verify_otp_view(request):
             )
 
             # 4️⃣ Update profile
+            log.warning(f"START manual_login | MEM: {mem()}")
             profile, _ = UserProfile.objects.get_or_create(user=user)
             profile.invitation_code = invite_code
             profile.account_number = pending.account_number
