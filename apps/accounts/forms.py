@@ -1,8 +1,6 @@
 from django import forms
 from django.contrib.auth.forms import AuthenticationForm
 from django.apps import apps
-import random
-import string
 
 
 # -------------------------------------------------
@@ -12,8 +10,8 @@ def normalize_phone(phone: str, default_country_code="256"):
     """
     Normalize phone number to international format.
     Examples:
-    0700123456   -> +256700123456
-    700123456    -> +256700123456
+    0700123456    -> +256700123456
+    700123456     -> +256700123456
     +256700123456 -> +256700123456
     """
     if not phone:
@@ -21,17 +19,12 @@ def normalize_phone(phone: str, default_country_code="256"):
 
     phone = phone.strip().replace(" ", "")
 
-    # Already international
     if phone.startswith("+"):
         digits = phone[1:]
     else:
         digits = phone
-
-        # Remove leading zero
         if digits.startswith("0"):
             digits = digits[1:]
-
-        # Prepend country code
         digits = default_country_code + digits
 
     if not digits.isdigit():
@@ -45,13 +38,6 @@ def normalize_phone(phone: str, default_country_code="256"):
 
 def get_user_model():
     return apps.get_model("accounts", "User")
-
-
-# -------------------------------------------------
-# OTP GENERATOR
-# -------------------------------------------------
-def generate_otp(length=6):
-    return "".join(random.choices(string.digits, k=length))
 
 
 # -------------------------------------------------
@@ -73,7 +59,7 @@ class LoginForm(AuthenticationForm):
 
 
 # -------------------------------------------------
-# SIGNUP FORM
+# SIGNUP FORM (NO OTP)
 # -------------------------------------------------
 class SignupForm(forms.ModelForm):
     password = forms.CharField(
@@ -167,8 +153,7 @@ class SignupForm(forms.ModelForm):
             raise forms.ValidationError("Invitation code is required.")
 
         User = get_user_model()
-        inviter = User.objects.filter(invitation_code=code).first()
-        if inviter is None:
+        if not User.objects.filter(invitation_code=code).exists():
             raise forms.ValidationError("Invalid invitation code.")
 
         return code
@@ -182,17 +167,3 @@ class SignupForm(forms.ModelForm):
             raise forms.ValidationError("Passwords do not match.")
 
         return cleaned_data
-
-
-# -------------------------------------------------
-# OTP VERIFICATION FORM
-# -------------------------------------------------
-class OTPVerificationForm(forms.Form):
-    otp = forms.CharField(
-        max_length=6,
-        label="OTP",
-        widget=forms.TextInput(attrs={
-            "class": "form-control",
-            "placeholder": "Enter OTP",
-        }),
-    )
