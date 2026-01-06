@@ -95,7 +95,7 @@ class SignupForm(forms.ModelForm):
             "age",
             "account_number",
             "email",
-            "invitation_code",
+            "invited_by",
         ]
         widgets = {
             "username": forms.TextInput(attrs={
@@ -111,7 +111,7 @@ class SignupForm(forms.ModelForm):
                 "class": "form-control",
                 "placeholder": "Email address",
             }),
-            "invitation_code": forms.TextInput(attrs={
+            "invited_by": forms.TextInput(attrs={
                 "class": "form-control",
                 "placeholder": "Invitation code (required)",
             }),
@@ -146,8 +146,8 @@ class SignupForm(forms.ModelForm):
 
         return phone
 
-    def clean_invitation_code(self):
-        code = self.cleaned_data.get("invitation_code")
+    def clean_invited_by (self):
+        code = self.cleaned_data.get("invited_by")
 
         if not code:
             raise forms.ValidationError("Invitation code is required.")
