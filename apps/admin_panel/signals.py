@@ -33,24 +33,6 @@ def create_user_profile(sender, instance, created, **kwargs):
 
 
 # --------------------------------------------------
-# Automatically create OTP for PendingManualUser
-# --------------------------------------------------
-@receiver(post_save, sender=PendingManualUser)
-def create_initial_otp(sender, instance, created, **kwargs):
-    if created:
-        try:
-            otp_code = generate_otp()
-            ManualUserOTP.create_otp(instance, otp_code, ttl_minutes=15)
-            logger.info(
-                f"AdminPanel: OTP created for pending user {instance.email}"
-            )
-        except Exception as e:
-            logger.exception(
-                f"AdminPanel: Failed to create OTP for pending user {instance.email}: {e}"
-            )
-
-
-# --------------------------------------------------
 # Reset trial status if expired
 # --------------------------------------------------
 @receiver(pre_save, sender=UserProfile)
