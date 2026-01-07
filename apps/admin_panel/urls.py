@@ -12,7 +12,7 @@ urlpatterns = [
     path("transactions/", views.transaction_page, name="transactions"),
 
     path("settings/", views.admin_settings_view, name="settings"),
-    path("gifts-upload/", views.gift_upload_view, name="gift_upload"),
+    path("gift-upload/", views.gift_upload_view, name="gift_upload"),
 
     path("logout/", views.admin_logout, name="logout"),
     path("update-user/<int:user_id>/", views.update_user, name="update_user"),
