@@ -195,18 +195,6 @@
 <div class="container">
   <h1>Users</h1>
 
-  <!-- Alerts -->
-  {% if otp_failures %}
-  <div class="alert-box alert-error">
-    <strong>⚠ Recent OTP / Email Failures</strong>
-    <ul style="margin-top:0.5rem;">
-      {% for alert in otp_failures %}
-        <li style="font-size:0.85rem;">{{ alert.message }} — {{ alert.created_at|date:"M d, H:i" }}</li>
-      {% endfor %}
-    </ul>
-  </div>
-  {% endif %}
-
   <!-- Top Ribbon -->
   <div class="top-ribbon">
     <span>Users: {{ users|length }}</span>
