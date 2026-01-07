@@ -230,26 +230,27 @@ def manual_login_view(request):
         phone_number = form.cleaned_data.get("account_number")
         email = form.cleaned_data.get("email")
 
-        # Check if phone number already exists in any profile
-        if User.objects.filter(account_number=pending.account_number).exists():
-              messages.error(request, "Phone number already exists.")
-              return redirect("admin_panel:manual_login")
+        # ✅ Check if phone number already exists in any user profile
+        if User.objects.filter(account_number=phone_number).exists():
+            messages.error(request, "Phone number already exists in the system.")
+            return redirect("admin_panel:manual_login")
 
-        # Either update existing pending or create new
+        # Check if a pending user with this email already exists
         pending = PendingManualUser.objects.filter(email__iexact=email).first()
         if pending:
+            # Update existing pending user
             for field in ["name", "age", "gender", "account_number"]:
                 setattr(pending, field, form.cleaned_data[field])
             pending.save()
         else:
+            # Create new pending user
             pending = form.save()
 
-        # Save pending user in session
+        # Save pending user ID in session for verification step
         request.session["pending_manual_user_id"] = pending.id
         return redirect("admin_panel:verify_admin_password")
 
     return render(request, "manual_login.html", {"form": form})
-
 @login_required
 @staff_member_required
 def delete_all_pending_users(request):
