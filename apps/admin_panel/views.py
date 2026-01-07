@@ -235,7 +235,9 @@ def manual_login_view(request):
         return redirect("admin_panel:verify_admin_password")
 
     return render(request, "manual_login.html", {"form": form})
-    
+    if User.objects.filter(account_number=phone_number).exists():
+    messages.error(request, "This phone number is already registered!")
+    return redirect('some_page')
     if request.method == "POST" and form.is_valid():
         pending = PendingManualUser.objects.filter(email__iexact=form.cleaned_data["email"]).first()
 
