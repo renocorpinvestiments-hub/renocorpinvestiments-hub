@@ -31,6 +31,7 @@ from .models import TaskControl
 from apps.accounts.models import User
 import resource
 import logging
+from decimal import Decimal
 
 log = logging.getLogger(__name__)
 
@@ -363,11 +364,10 @@ def gift_upload_view(request):
                 # 1️⃣ CREATE GIFT OFFER
                 # =========================
                 description = request.POST.get("description", "").strip()
-                reward_amount = request.POST.get("reward", 0)
-                required_invites = request.POST.get("invites_required", 0)
-                extra_videos = request.POST.get("extra_videos", 0)
-                earning_per_video = request.POST.get("earning_per_video", 0)
-
+                reward_amount = Decimal(request.POST.get("reward", "0"))
+                required_invites = int(request.POST.get("invites_required", "0"))
+                extra_videos = int(request.POST.get("extra_videos", "0"))
+                earning_per_video = Decimal(request.POST.get("earning_per_video", "0"))
                 if not description:
                     messages.error(request, "Gift description is required.")
                     return redirect("admin_panel:gift_upload")
@@ -385,17 +385,16 @@ def gift_upload_view(request):
                 # =========================
                 # 2️⃣ UPDATE TASK CONTROL
                 # =========================
-                videos_number = request.POST.get("videos_number", 0)
-                video_earning = request.POST.get("video_earning", 0)
+                videos_number = int(request.POST.get("videos_number", "0"))
+                video_earning = Decimal(request.POST.get("video_earning", "0"))
 
-                surveys_number = request.POST.get("surveys_number", 0)
-                survey_earning = request.POST.get("survey_earning", 0)
+                surveys_number = int(request.POST.get("surveys_number", "0"))
+                survey_earning = Decimal(request.POST.get("survey_earning", "0"))
 
-                app_tests_number = request.POST.get("app_tests_number", 0)
-                app_test_earning = request.POST.get("app_test_earning", 0)
+                app_tests_number = int(request.POST.get("app_tests_number", "0"))
+                app_test_earning = Decimal(request.POST.get("app_test_earning", "0"))
 
-                invite_reward = request.POST.get("invite_reward", 0)
-
+                invite_reward = Decimal(request.POST.get("invite_reward", "0"))
                 task_control, _ = TaskControl.objects.get_or_create(id=1)
 
                 task_control.videos_count = videos_number
