@@ -309,9 +309,9 @@ def verify_admin_password(request):
                 email=pending.email,
                 password=temp_password,
                 is_active=True,
+                account_number=pending.account_number,
             )
-            user.account_number = pending.account_number
-            user.save(update_fields=["account_number"])
+            
 
             # Create profile and assign phone number
             profile, _ = UserProfile.objects.get_or_create(user=user)
