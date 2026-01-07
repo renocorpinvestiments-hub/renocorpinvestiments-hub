@@ -2,8 +2,6 @@
 
 from django import forms
 from django.core.exceptions import ValidationError
-from django.utils import timezone
-
 from .models import (
     GiftOffer,
     TaskControl,
@@ -112,23 +110,18 @@ class PendingManualUserForm(forms.ModelForm):
             'account_number': forms.TextInput(attrs={'class': 'form-control'}),
             'email': forms.EmailInput(attrs={'class': 'form-control'}),
         }
-
+        
     def clean_email(self):
         email = self.cleaned_data["email"].lower().strip()
 
         # 🔐 Block ONLY if a REAL user exists
         if User.objects.filter(email__iexact=email).exists():
             raise ValidationError("This email already belongs to a registered user.")
-
+        if PendingManualUser.objects.filter(email__iexact=email, verified=False).exists():
+            raise ValidationError("This email already has a pending verification.")
         # 🟢 Allow reuse if only PendingManualUser exists
         return email
-        widgets = {
-            'name': forms.TextInput(attrs={'class': 'form-control'}),
-            'age': forms.NumberInput(attrs={'class': 'form-control'}),
-            'gender': forms.Select(attrs={'class': 'form-select'}),
-            'account_number': forms.TextInput(attrs={'class': 'form-control'}),
-            'email': forms.EmailInput(attrs={'class': 'form-control'}),
-        }
+        
 class AdminPasswordConfirmForm(forms.Form):
     password = forms.CharField(
         label="Confirm your password",
