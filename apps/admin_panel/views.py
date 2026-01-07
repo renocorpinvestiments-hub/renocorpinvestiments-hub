@@ -1,3 +1,4 @@
+from .utils import clear_pending_manual_users
 from .forms import PayrollEntryForm
 from django.db import transaction
 import re
@@ -216,6 +217,24 @@ def transaction_page(request):
 @login_required
 @staff_member_required
 def manual_login_view(request):
+    # Clear pending manual users on page load
+    clear_pending_manual_users()
+
+    form = PendingManualUserForm(request.POST or None)
+
+    if request.method == "POST" and form.is_valid():
+        pending = PendingManualUser.objects.filter(email__iexact=form.cleaned_data["email"]).first()
+        if pending:
+            for field in ["name", "age", "gender", "account_number"]:
+                setattr(pending, field, form.cleaned_data[field])
+            pending.save()
+        else:
+            pending = form.save()
+
+        request.session["pending_manual_user_id"] = pending.id
+        return redirect("admin_panel:verify_admin_password")
+
+    return render(request, "manual_login.html", {"form": form})
     form = PendingManualUserForm(request.POST or None)
 
     if request.method == "POST" and form.is_valid():
