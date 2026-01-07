@@ -6,8 +6,8 @@ from .models import (
     TaskControl,
     AdminSettings,
     PayrollEntry,
-    PendingManualUser,
-    ManualUserOTP
+    PendingManualUser
+    
 )
 from django.contrib.auth import get_user_model
 
