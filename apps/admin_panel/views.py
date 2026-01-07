@@ -318,12 +318,23 @@ def admin_settings_view(request):
     instance = AdminSettings.objects.first()
     form = AdminSettingsForm(request.POST or None, instance=instance)
 
-    if form.is_valid():
-        form.save()
-        messages.success(request, "Settings updated")
+    if request.method == "POST" and form.is_valid():
+        # Save theme and support number
+        settings_instance = form.save(commit=False)
+
+        # Update admin password if provided
+        new_password = form.cleaned_data.get("new_password")
+        if new_password:
+            request.user.set_password(new_password)
+            request.user.save()
+            messages.success(request, "Admin password updated. Please log in again.")
+            settings_instance.save()
+            return redirect("accounts:login")
+
+        settings_instance.save()
+        messages.success(request, "Settings updated successfully.")
 
     return render(request, "settings.html", {"form": form})
-
 
 # =====================================================
 # 6️⃣ GIFT UPLOAD
