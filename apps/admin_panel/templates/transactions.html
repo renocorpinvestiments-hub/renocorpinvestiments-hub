@@ -334,7 +334,7 @@
   <div class="swiper-pagination"></div>
 </div>
 
-<!-- BOTTOM NAV -->
+<!-- Bottom Navigation -->
 <nav class="bottom-nav">
   <a href="{% url 'admin_panel:dashboard' %}">
     <i class="bi bi-people"></i>Users
@@ -342,7 +342,7 @@
   <a href="{% url 'admin_panel:graphs' %}">
     <i class="bi bi-graph-up"></i>Graphs
   </a>
-  <a href="{% url 'admin_panel:manual_login' %}">
+  <a href="{% url 'admin_panel:manual_login' %}" class="active">
     <i class="bi bi-person-plus"></i>Login
   </a>
   <a href="{% url 'admin_panel:gift_upload' %}">
@@ -351,7 +351,7 @@
   <a href="{% url 'admin_panel:settings' %}">
     <i class="bi bi-gear"></i>Settings
   </a>
-  <a href="{% url 'admin_panel:transactions' %}" class="active">
+  <a href="{% url 'admin_panel:transactions' %}">
     <i class="bi bi-cash-stack"></i>Trans
   </a>
 </nav>
