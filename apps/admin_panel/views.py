@@ -251,7 +251,15 @@ def manual_login_view(request):
 
     return render(request, "manual_login.html", {"form": form})
 
-
+@login_required
+@staff_member_required
+def delete_all_pending_users(request):
+    try:
+        count, _ = PendingManualUser.objects.all().delete()
+        messages.success(request, f"Deleted {count} pending manual users.")
+    except Exception as e:
+        messages.error(request, f"Error deleting pending users: {str(e)}")
+    return redirect("admin_panel:manual_login")
 @login_required
 @staff_member_required
 def verify_admin_password(request):
