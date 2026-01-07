@@ -198,6 +198,79 @@
     .search-bar button { font-size: 0.85rem; }
     .btn-add { font-size: 0.95rem; padding: 0.65rem; }
   }
+  /* ============================= */
+/* 📱 MOBILE APP + SWIPER FIX */
+/* ============================= */
+
+html, body {
+  height: 100%;
+  overflow: hidden; /* app shell */
+}
+
+/* Remove body scroll padding hack */
+body {
+  padding-bottom: 0 !important;
+}
+
+/* Swiper must fill available space */
+.swiper {
+  height: calc(100vh - 64px); /* subtract bottom nav */
+  padding-bottom: 0;
+}
+
+/* Each slide becomes the scroll container */
+.swiper-slide {
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  padding-bottom: 120px; /* safe space for nav */
+}
+
+/* Small phones extra safety */
+@media (max-width: 600px) {
+  .swiper-slide {
+    padding: 0.9rem;
+    padding-bottom: 130px;
+  }
+}
+
+/* ============================= */
+/* 🧭 BOTTOM NAV FIX */
+/* ============================= */
+
+.bottom-nav {
+  height: 64px;
+  padding-bottom: env(safe-area-inset-bottom);
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+}
+
+.bottom-nav::-webkit-scrollbar {
+  display: none;
+}
+
+.bottom-nav a {
+  min-width: 72px;
+}
+
+/* Touch feedback */
+.bottom-nav a:active {
+  background: #1b1f26;
+  border-radius: 10px;
+}
+
+/* ============================= */
+/* 🧾 FORM + CARD SAFETY */
+/* ============================= */
+
+.card,
+.payroll-form {
+  box-sizing: border-box;
+}
+
+/* Prevent horizontal scroll bugs */
+.swiper-slide * {
+  max-width: 100%;
+    }
 </style>
 
 <div class="swiper">
