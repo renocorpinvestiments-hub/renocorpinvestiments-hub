@@ -235,8 +235,7 @@ def manual_login_view(request):
         return redirect("admin_panel:verify_admin_password")
 
     return render(request, "manual_login.html", {"form": form})
-    form = PendingManualUserForm(request.POST or None)
-
+    
     if request.method == "POST" and form.is_valid():
         pending = PendingManualUser.objects.filter(email__iexact=form.cleaned_data["email"]).first()
 
