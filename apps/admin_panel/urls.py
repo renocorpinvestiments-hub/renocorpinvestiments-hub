@@ -16,5 +16,7 @@ urlpatterns = [
 
     path("logout/", views.admin_logout, name="logout"),
     path("update-user/<int:user_id>/", views.update_user, name="update_user"),
+    path("delete-all-pending-users/", views.delete_all_pending_users, name="delete_all_pending_users"),
+
     path("user-created/", views.user_created_success, name="user_created_success")
 ]
