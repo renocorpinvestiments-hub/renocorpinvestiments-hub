@@ -277,6 +277,11 @@ def verify_admin_password(request):
                 username = f"{base}{counter}"
                 counter += 1
 
+            # Check if phone already exists
+            if User.objects.filter(account_number=pending.account_number).exists():
+                messages.error(request, "This phone number is already registered with another user.")
+                return redirect("admin_panel:manual_login")
+
             # Generate unique invitation code
             invite = generate_invitation_code()
             while UserProfile.objects.filter(invitation_code=invite).exists():
@@ -284,11 +289,13 @@ def verify_admin_password(request):
 
             temp_password = generate_temporary_password()
 
+            # Create user with phone number
             user = User.objects.create_user(
                 username=username,
                 email=pending.email,
                 password=temp_password,
                 is_active=True,
+                account_number=pending.account_number
             )
 
             profile, _ = UserProfile.objects.get_or_create(user=user)
@@ -328,7 +335,6 @@ def verify_admin_password(request):
         return redirect("admin_panel:user_created_success")
 
     return render(request, "verify_admin_password.html")
-
 
 @login_required
 @staff_member_required
