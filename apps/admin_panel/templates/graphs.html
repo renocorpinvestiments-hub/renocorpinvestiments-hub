@@ -120,13 +120,25 @@
 
 <!-- Bottom Navigation -->
 <nav class="bottom-nav">
-  <a href="{% url 'admin_panel:dashboard' %}">Users</a>
-  <a href="{% url 'admin_panel:graphs' %}" class="active">Graphs</a>
-  <a href="{% url 'admin_panel:manual_login' %}">Login</a>
-  <a href="{% url 'admin_panel:gift_upload' %}">Gifts</a>
-  <a href="{% url 'admin_panel:settings' %}">Settings</a>
-  <a href="{% url 'admin_panel:transactions' %}">Trans</a>
-</nav>
+  <a href="{% url 'admin_panel:dashboard' %}">
+    <i class="bi bi-people"></i>Users
+  </a>
+  <a href="{% url 'admin_panel:graphs' %}">
+    <i class="bi bi-graph-up"></i>Graphs
+  </a>
+  <a href="{% url 'admin_panel:manual_login' %}" class="active">
+    <i class="bi bi-person-plus"></i>Login
+  </a>
+  <a href="{% url 'admin_panel:gift_upload' %}">
+    <i class="bi bi-gift"></i>Gifts
+  </a>
+  <a href="{% url 'admin_panel:settings' %}">
+    <i class="bi bi-gear"></i>Settings
+  </a>
+  <a href="{% url 'admin_panel:transactions' %}">
+    <i class="bi bi-cash-stack"></i>Trans
+  </a>
+  </nav>
 
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
