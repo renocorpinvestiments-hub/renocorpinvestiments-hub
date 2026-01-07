@@ -255,39 +255,6 @@ class PendingManualUser(models.Model):
     
 
 
-    def verify_otp(self, code):
-        otp = self.otps.filter(
-            otp_code=code,
-            expires_at__gte=timezone.now()
-        ).order_by('-created_at').first()
-
-        if otp:
-            self.verified = True
-            self.save(update_fields=["verified"])
-            otp.delete()  # single-use OTP
-            return True
-        return False
-
-    def __str__(self):
-        return f"PendingUser({self.email})"
-
-
-class ManualUserOTP(models.Model):
-    pending_user = models.ForeignKey(PendingManualUser, on_delete=models.CASCADE, related_name="otps")
-    otp_code = models.CharField(max_length=8)
-    created_at = models.DateTimeField(auto_now_add=True)
-    expires_at = models.DateTimeField()
-
-    def is_valid(self):
-        return timezone.now() <= self.expires_at
-
-    @classmethod
-    def create_otp(cls, pending_user, code, ttl_minutes=15):
-        return cls.objects.create(
-            pending_user=pending_user,
-            otp_code=code,
-            expires_at=timezone.now() + timedelta(minutes=ttl_minutes),
-    )
 
 class Notification(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="notifications")
