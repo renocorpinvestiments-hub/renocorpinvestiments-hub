@@ -166,7 +166,10 @@
         {% endfor %}
       </div>
     {% endif %}
-
+<form method="post" action="{% url 'admin_panel:delete_all_pending_users' %}">
+    {% csrf_token %}
+    <button type="submit" class="btn btn-danger">Delete All Pending Users</button>
+</form>
     <!-- ✅ FORM -->
     <form method="post">
   {% csrf_token %}
