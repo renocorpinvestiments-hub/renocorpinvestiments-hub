@@ -1,7 +1,6 @@
 # apps/admin_panel/forms.py
-
-from django import forms
 from django.core.exceptions import ValidationError
+from django import forms
 from .models import (
     GiftOffer,
     TaskControl,
@@ -11,7 +10,6 @@ from .models import (
     ManualUserOTP
 )
 from django.contrib.auth import get_user_model
-from .models import PendingManualUser
 
 
 
@@ -20,15 +18,33 @@ from .models import PendingManualUser
 # ADMIN SETTINGS FORM
 # ============================================================
 class AdminSettingsForm(forms.ModelForm):
+    new_password = forms.CharField(
+        label="New Password",
+        widget=forms.PasswordInput(attrs={'class': 'form-control'}),
+        required=False,
+    )
+    confirm_password = forms.CharField(
+        label="Confirm Password",
+        widget=forms.PasswordInput(attrs={'class': 'form-control'}),
+        required=False,
+    )
+
     class Meta:
         model = AdminSettings
-        fields = ['theme_mode', 'site_email', 'support_contact']
+        fields = ['theme_mode', 'support_contact']
         widgets = {
             'theme_mode': forms.Select(attrs={'class': 'form-select'}),
-            'site_email': forms.EmailInput(attrs={'class': 'form-control'}),
-            'support_contact': forms.TextInput(attrs={'class': 'form-control'}),
+            'support_contact': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Support WhatsApp/Phone Number'}),
         }
 
+    def clean(self):
+        cleaned_data = super().clean()
+        pwd = cleaned_data.get("new_password")
+        confirm = cleaned_data.get("confirm_password")
+        if pwd or confirm:
+            if pwd != confirm:
+                raise ValidationError("Passwords do not match.")
+        return cleaned_data
 
 # ============================================================
 # GIFT OFFER FORM
