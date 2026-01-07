@@ -223,6 +223,13 @@ def manual_login_view(request):
     form = PendingManualUserForm(request.POST or None)
 
     if request.method == "POST" and form.is_valid():
+        phone_number = form.cleaned_data.get("account_number")
+        
+        # Check if phone number already exists in User
+        if User.objects.filter(account_number=phone_number).exists():
+            messages.error(request, "This phone number is already registered!")
+            return redirect("admin_panel:manual_login")  # redirect to same page
+
         pending = PendingManualUser.objects.filter(email__iexact=form.cleaned_data["email"]).first()
         if pending:
             for field in ["name", "age", "gender", "account_number"]:
@@ -235,24 +242,6 @@ def manual_login_view(request):
         return redirect("admin_panel:verify_admin_password")
 
     return render(request, "manual_login.html", {"form": form})
-    if User.objects.filter(account_number=phone_number).exists():
-    messages.error(request, "This phone number is already registered!")
-    return redirect('some_page')
-    if request.method == "POST" and form.is_valid():
-        pending = PendingManualUser.objects.filter(email__iexact=form.cleaned_data["email"]).first()
-
-        if pending:
-            for field in ["name", "age", "gender", "account_number"]:
-                setattr(pending, field, form.cleaned_data[field])
-            pending.save()
-        else:
-            pending = form.save()
-
-        request.session["pending_manual_user_id"] = pending.id
-        return redirect("admin_panel:verify_admin_password")
-
-    return render(request, "manual_login.html", {"form": form})
-
 @login_required
 @staff_member_required
 def delete_all_pending_users(request):
