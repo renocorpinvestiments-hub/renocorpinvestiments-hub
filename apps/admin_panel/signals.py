@@ -6,8 +6,7 @@ from django.dispatch import receiver
 from django.utils import timezone
 from django.contrib.auth import get_user_model
 
-from .models import UserProfile, PendingManualUser, ManualUserOTP
-from .utils import generate_otp
+from .models import UserProfile, PendingManualUser
 
 # ✅ DEFINE LOGGER ONCE
 logger = logging.getLogger("admin_panel.signals")
