@@ -106,4 +106,4 @@ def signup_success_view(request):
     """
     Simple success page before dashboard redirect.
     """
-    return render(request, "signup_success.html")
+    return render(request, "dashboard/success.html")
