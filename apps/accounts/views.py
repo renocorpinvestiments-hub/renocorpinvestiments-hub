@@ -91,7 +91,7 @@ def signup_view(request):
             login(request, user)
 
             messages.success(request, "Account created successfully.")
-            return redirect("accounts:signup_success")
+            return redirect("accounts:success")
 
     else:
         form = SignupForm()
@@ -106,4 +106,4 @@ def signup_success_view(request):
     """
     Simple success page before dashboard redirect.
     """
-    return render(request, "dashboard/success.html")
+    return render(request, "success.html")
