@@ -185,6 +185,17 @@ def graphs_view(request):
 @login_required
 @staff_member_required
 def transaction_page(request):
+    if request.method == "POST":
+        form = PayrollEntryForm(request.POST)
+        if form.is_valid():
+            form.save()
+            messages.success(request, "Payroll entry added successfully.")
+            return redirect("admin_panel:transactions")
+        else:
+            messages.error(request, "Please correct the payroll form errors.")
+    else:
+        form = PayrollEntryForm()
+
     transactions = TransactionLog.objects.select_related("user").all()
     system_logs = TransactionLog.objects.filter(txn_type="system")
     payrolls = PayrollEntry.objects.all()
@@ -193,6 +204,7 @@ def transaction_page(request):
         "transactions": transactions,
         "system_logs": system_logs,
         "payrolls": payrolls,
+        "form": form,   # ✅ THIS WAS MISSING
     })
 
 
