@@ -191,6 +191,84 @@
     .expanded input { font-size: 0.9rem; }
     .save-btn { font-size: 0.9rem; padding: 0.65rem; }
   }
+  /* ============================= */
+/* 📱 MOBILE APP LAYOUT FIX */
+/* ============================= */
+
+html, body {
+  height: 100%;
+  overflow: hidden; /* app-like behavior */
+}
+
+/* Make main content scrollable */
+.container {
+  max-width: 100%;
+  width: 100%;
+  margin: 0;
+  padding: 1rem;
+  padding-bottom: 120px; /* space for bottom nav */
+  overflow-y: auto;
+  height: calc(100vh - 60px);
+  box-sizing: border-box;
+}
+
+/* Improve spacing on very small phones */
+@media (max-width: 600px) {
+  .container {
+    padding: 0.75rem;
+    padding-bottom: 130px;
+  }
+
+  .top-ribbon {
+    flex-direction: column;
+    gap: 0.3rem;
+    text-align: center;
+  }
+
+  .user-summary {
+    flex-direction: column;
+    gap: 0.4rem;
+  }
+}
+
+/* ============================= */
+/* 🧭 APP-LIKE BOTTOM NAV */
+/* ============================= */
+
+.bottom-nav {
+  height: 64px;
+  padding-bottom: env(safe-area-inset-bottom);
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none; /* Firefox */
+}
+
+.bottom-nav::-webkit-scrollbar {
+  display: none; /* Chrome/Safari */
+}
+
+.bottom-nav a {
+  min-width: 72px;
+  padding: 0.5rem 0.75rem;
+}
+
+/* Active nav tap feedback */
+.bottom-nav a:active {
+  background: #1b1f26;
+  border-radius: 10px;
+}
+
+/* ============================= */
+/* 🧾 CARD SAFETY */
+/* ============================= */
+
+.user-card {
+  box-sizing: border-box;
+}
+
+/* Prevent form overflow on small screens */
+.expanded {
+  overflow-x: hidden;
+    }
 </style>
 
 <div class="container">
