@@ -231,9 +231,9 @@ def manual_login_view(request):
         email = form.cleaned_data.get("email")
 
         # Check if phone number already exists in any profile
-        if UserProfile.objects.filter(account_number=phone_number).exists():
-            messages.error(request, "This phone number is already registered!")
-            return redirect("admin_panel:manual_login")
+        if User.objects.filter(account_number=pending.account_number).exists():
+              messages.error(request, "Phone number already exists.")
+              return redirect("admin_panel:manual_login")
 
         # Either update existing pending or create new
         pending = PendingManualUser.objects.filter(email__iexact=email).first()
@@ -292,10 +292,9 @@ def verify_admin_password(request):
                 counter += 1
 
             # Ensure phone number is still unique in UserProfile
-            if UserProfile.objects.filter(account_number=pending.account_number).exists():
-                messages.error(request, "This phone number is already registered with another user.")
-                return redirect("admin_panel:manual_login")
-
+            if User.objects.filter(account_number=pending.account_number).exists():
+                 messages.error(request, "Phone number already exists.")
+                 return redirect("admin_panel:manual_login")
             # Generate unique invitation code
             invite = generate_invitation_code()
             while UserProfile.objects.filter(invitation_code=invite).exists():
@@ -310,6 +309,8 @@ def verify_admin_password(request):
                 password=temp_password,
                 is_active=True,
             )
+            user.account_number = pending.account_number
+            user.save(update_fields=["account_number"])
 
             # Create profile and assign phone number
             profile, _ = UserProfile.objects.get_or_create(user=user)
