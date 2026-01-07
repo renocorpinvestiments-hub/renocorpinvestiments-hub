@@ -36,8 +36,8 @@ class User(AbstractUser):
     account_number = models.CharField(
     max_length=15,
     unique=True,
-    null=False,
-    blank=False,
+    null=True,
+    blank=True,
     help_text="User phone number for withdrawals"
     )
     temp_flag = models.BooleanField(default=False)
