@@ -217,20 +217,26 @@ def transaction_page(request):
 @login_required
 @staff_member_required
 def manual_login_view(request):
-    # Clear pending manual users on page load
+    """
+    Step 1: Admin fills pending manual user form.
+    Checks for duplicate phone numbers in UserProfile.
+    """
+    # Clear old pending manual users
     clear_pending_manual_users()
 
     form = PendingManualUserForm(request.POST or None)
 
     if request.method == "POST" and form.is_valid():
         phone_number = form.cleaned_data.get("account_number")
-        
-        # Check if phone number already exists in User
-        if User.objects.filter(account_number=phone_number).exists():
-            messages.error(request, "This phone number is already registered!")
-            return redirect("admin_panel:manual_login")  # redirect to same page
+        email = form.cleaned_data.get("email")
 
-        pending = PendingManualUser.objects.filter(email__iexact=form.cleaned_data["email"]).first()
+        # Check if phone number already exists in any profile
+        if UserProfile.objects.filter(account_number=phone_number).exists():
+            messages.error(request, "This phone number is already registered!")
+            return redirect("admin_panel:manual_login")
+
+        # Either update existing pending or create new
+        pending = PendingManualUser.objects.filter(email__iexact=email).first()
         if pending:
             for field in ["name", "age", "gender", "account_number"]:
                 setattr(pending, field, form.cleaned_data[field])
@@ -238,22 +244,20 @@ def manual_login_view(request):
         else:
             pending = form.save()
 
+        # Save pending user in session
         request.session["pending_manual_user_id"] = pending.id
         return redirect("admin_panel:verify_admin_password")
 
     return render(request, "manual_login.html", {"form": form})
-@login_required
-@staff_member_required
-def delete_all_pending_users(request):
-    try:
-        count, _ = PendingManualUser.objects.all().delete()
-        messages.success(request, f"Deleted {count} pending manual users.")
-    except Exception as e:
-        messages.error(request, f"Error deleting pending users: {str(e)}")
-    return redirect("admin_panel:manual_login")
+
+
 @login_required
 @staff_member_required
 def verify_admin_password(request):
+    """
+    Step 2: Admin verifies their password to confirm onboarding.
+    Creates actual User and UserProfile.
+    """
     pending_id = request.session.get("pending_manual_user_id")
     if not pending_id:
         messages.error(request, "Session expired. Please restart manual login.")
@@ -263,13 +267,12 @@ def verify_admin_password(request):
 
     if request.method == "POST":
         password = request.POST.get("password")
-
         if not request.user.check_password(password):
             messages.error(request, "Invalid admin password.")
             return render(request, "verify_admin_password.html")
 
         with transaction.atomic():
-            # Generate username from name
+            # Generate a unique username from name
             base = re.sub(r"[^a-zA-Z0-9]", "", pending.name.lower())
             username = base
             counter = 1
@@ -277,8 +280,8 @@ def verify_admin_password(request):
                 username = f"{base}{counter}"
                 counter += 1
 
-            # Check if phone already exists
-            if User.objects.filter(account_number=pending.account_number).exists():
+            # Ensure phone number is still unique in UserProfile
+            if UserProfile.objects.filter(account_number=pending.account_number).exists():
                 messages.error(request, "This phone number is already registered with another user.")
                 return redirect("admin_panel:manual_login")
 
@@ -289,18 +292,18 @@ def verify_admin_password(request):
 
             temp_password = generate_temporary_password()
 
-            # Create user with phone number
+            # Create the user (do NOT pass account_number here)
             user = User.objects.create_user(
                 username=username,
                 email=pending.email,
                 password=temp_password,
                 is_active=True,
-                account_number=pending.account_number
             )
 
+            # Create profile and assign phone number
             profile, _ = UserProfile.objects.get_or_create(user=user)
-            profile.invitation_code = invite
             profile.account_number = pending.account_number
+            profile.invitation_code = invite
             profile.age = pending.age
             profile.gender = pending.gender
             profile.subscription_status = "active"
@@ -308,12 +311,14 @@ def verify_admin_password(request):
             profile.invited_by = request.user.username
             profile.save()
 
+            # Log admin notification
             AdminNotification.objects.create(
                 title="Manual User Created",
                 message=f"{user.email} onboarded by {request.user.username}",
                 category="manual_onboarding",
             )
 
+            # Log system transaction
             TransactionLog.objects.create(
                 user=user,
                 actor=request.user.username,
@@ -323,19 +328,20 @@ def verify_admin_password(request):
                 details="Manual onboarding completed",
             )
 
+            # Save credentials in session for success page
             request.session["created_user"] = {
                 "username": username,
                 "password": temp_password,
                 "invitation": invite,
             }
 
+            # Delete pending user and clear session
             pending.delete()
             request.session.pop("pending_manual_user_id", None)
 
         return redirect("admin_panel:user_created_success")
 
     return render(request, "verify_admin_password.html")
-
 @login_required
 @staff_member_required
 def user_created_success(request):
