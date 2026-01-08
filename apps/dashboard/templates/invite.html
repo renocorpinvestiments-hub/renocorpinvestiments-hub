@@ -1,0 +1,38 @@
+{% load static %}
+<!DOCTYPE html>
+<html>
+<head>
+<title>Invite & Earn</title>
+<style>
+body{background:#0b0f13;color:#fff;font-family:Inter;padding:20px}
+.box{background:#0f161b;border-radius:12px;padding:20px}
+input{width:100%;padding:12px;border-radius:8px;border:none;background:#121a21;color:#fff}
+button{margin-top:10px;width:100%;padding:12px;border:none;border-radius:10px;background:#1db954;font-weight:700}
+</style>
+</head>
+<body>
+
+<div class="box">
+<h2>Invite Friends</h2>
+<p>Earn commission when your friends join and complete tasks.</p>
+
+<label>Your Referral Link</label>
+<input id="link" value="{{ referral_link }}" readonly>
+
+<button onclick="copyLink()">Copy Invite Link</button>
+
+<br><br>
+
+<label>Your Invitation Code</label>
+<input value="{{ invitation_code }}" readonly>
+</div>
+
+<script>
+function copyLink(){
+  navigator.clipboard.writeText(document.getElementById("link").value);
+  alert("Copied!");
+}
+</script>
+
+</body>
+  </html>
