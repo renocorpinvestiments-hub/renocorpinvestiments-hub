@@ -19,5 +19,5 @@ urlpatterns = [
     path('account/withdraw/', views.withdraw_view, name='withdraw'),
     path('account/invite/', views.invite_view, name='invite'),
     path('account/change_password/', views.change_password_view, name='change_password'),
-    path("invite/", views.invite_view, name="invite_page"),
+    
 ]
