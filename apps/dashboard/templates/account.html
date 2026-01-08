@@ -93,7 +93,7 @@
   </div>
 
   <!-- ACTION BUTTONS -->
-  <div class="btn-block" onclick="window.location.href='{% url 'invite_page' %}'">Invite</div>
+  <div class="btn-block" onclick="openInvite()">Invite</div>
   <div class="btn-block">
     {% if subscription_active %}
       Time remaining: {{ subscription_remaining }}
@@ -135,6 +135,27 @@
     <button class="close-btn" onclick="closePassword()">Close</button>
   </div>
 </div>
+<!-- INVITE POPUP -->
+<div class="popup" id="invitePopup">
+  <div class="popup-box">
+
+    <h3>Invite Friends</h3>
+    <p>Earn commission when your friends join and complete tasks.</p>
+
+    <label>Your Referral Link</label>
+    <input id="inviteLink" value="{{ referral_link }}" readonly>
+
+    <button onclick="copyInvite()">Copy Invite Link</button>
+
+    <br>
+
+    <label>Your Invitation Code</label>
+    <input value="{{ invitation_code }}" readonly>
+
+    <button class="close-btn" onclick="closeInvite()">Back</button>
+
+  </div>
+</div>  
 
 <!-- BOTTOM NAVIGATION -->
 <div class="navbar">
