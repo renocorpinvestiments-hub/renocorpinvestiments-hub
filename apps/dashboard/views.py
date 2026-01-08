@@ -29,10 +29,6 @@ from .models import (
     LedgerEntry,
     CompletedTask,
 )
-
-@login_required
-def invite_view(request):
-    return render(request, "invite.html")
 User = get_user_model()
 
 
@@ -301,16 +297,21 @@ def account_view(request):
 
     transactions = Transaction.objects.filter(user=user).order_by("-created_at")[:12]
 
+    referral_link = f"{request.scheme}://{request.get_host()}/accounts/signup/?ref={user.invitation_code}"
+
     context = {
         "profile": profile,
         "transactions": transactions,
         "withdraw_enabled": is_withdraw_enabled(),
         "support_number": getattr(settings, "SUPPORT_WHATSAPP_NUMBER", ""),
         "current_page": "account",
+
+        # Invite system
+        "referral_link": referral_link,
+        "invitation_code": user.invitation_code,
     }
+
     return render(request, "account.html", context)
-
-
 # ===========================
 # SUBSCRIBE
 # ===========================
