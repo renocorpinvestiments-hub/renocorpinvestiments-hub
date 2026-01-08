@@ -29,8 +29,10 @@ from .models import (
     LedgerEntry,
     CompletedTask,
 )
-from apps.admin_panel.models import AdminSettings, TaskControl
 
+@login_required
+def invite_view(request):
+    return render(request, "invite.html")
 User = get_user_model()
 
 
