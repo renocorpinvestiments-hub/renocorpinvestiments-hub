@@ -305,24 +305,26 @@ def verify_admin_password(request):
 
             # Create the user (do NOT pass account_number here)
             user = User.objects.create_user(
-                username=username,
-                email=pending.email,
-                password=temp_password,
-                is_active=True,
-                account_number=pending.account_number,
+              username=username,
+              email=pending.email,
+              password=temp_password,
+              is_active=True,
+              account_number=pending.account_number,
+              invitation_code=invite,  # ⭐ ENFORCES THE RULE
             )
             
 
             # Create profile and assign phone number
             profile, _ = UserProfile.objects.get_or_create(user=user)
             profile.account_number = pending.account_number
-            profile.invitation_code = invite
             profile.age = pending.age
             profile.gender = pending.gender
             profile.subscription_status = "active"
             profile.subscription_expiry = timezone.now() + timedelta(days=30)
             profile.invited_by = request.user.username
             profile.save()
+            profile.invitation_code = user.invitation_code
+            profile.save(update_fields=["invitation_code"])
 
             # Log admin notification
             AdminNotification.objects.create(
@@ -343,9 +345,9 @@ def verify_admin_password(request):
 
             # Save credentials in session for success page
             request.session["created_user"] = {
-                "username": username,
-                "password": temp_password,
-                "invitation": invite,
+               "username": username,
+               "password": temp_password,
+               "invitation": user.invitation_code,  # ⭐ REAL SOURCE OF TRUTH
             }
 
             # Delete pending user and clear session
