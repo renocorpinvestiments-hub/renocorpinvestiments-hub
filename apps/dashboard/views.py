@@ -83,7 +83,7 @@ def logout_view(request):
     Logs out the user and redirects to login page.
     """
     logout(request)
-    return redirect("apps/accounts/login")
+    return redirect("accounts:login")
 # ===========================
 # TASKS
 # ===========================
