@@ -68,7 +68,12 @@
       {% csrf_token %}
       <input type="file" id="photoInput" name="profile_picture" accept="image/*">
     </form>
-    <img src="{{ profile.profile_picture.url }}" class="profile-photo" id="profilePhoto">
+    <img
+  src="{% if profile.profile_picture %}{{ profile.profile_picture.url }}{% else %}https://ui-avatars.com/api/?name={{ user.username|urlencode }}&background=0b0f13&color=ffffff&rounded=true&size=80{% endif %}"
+  class="profile-photo"
+  id="profilePhoto"
+  alt="Profile Photo"
+    >
     <div class="profile-name">Welcome {{ user.username }}</div>
   </div>
 
