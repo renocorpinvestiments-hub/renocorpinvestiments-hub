@@ -77,7 +77,12 @@ def home_view(request):
     }
     return render(request, "home.html", context)
 
-
+def logout_view(request):
+    """
+    Logs out the user and redirects to login page.
+    """
+    logout(request)
+    return redirect("apps/accounts/login")
 # ===========================
 # TASKS
 # ===========================
