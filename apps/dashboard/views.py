@@ -455,13 +455,27 @@ def change_password_view(request):
         return redirect("dashboard:account")
 
     user = request.user
-    if not user.check_password(request.POST.get("old_password")):
-        messages.error(request, "Wrong password")
+
+    old_password = request.POST.get("old_password")
+    new_password = request.POST.get("new_password")
+    confirm_password = request.POST.get("confirm_password")
+
+    # 1️⃣ Check old password
+    if not user.check_password(old_password):
+        messages.error(request, "Wrong current password")
         return redirect("dashboard:account")
 
-    user.set_password(request.POST.get("new_password1"))
+    # 2️⃣ Check new passwords match
+    if new_password != confirm_password:
+        messages.error(request, "Passwords do not match")
+        return redirect("dashboard:account")
+
+    # 3️⃣ Set new password
+    user.set_password(new_password)
     user.save(update_fields=["password"])
+
+    # 4️⃣ Keep user logged in
     update_session_auth_hash(request, user)
 
-    messages.success(request, "Password updated")
+    messages.success(request, "Password updated successfully")
     return redirect("dashboard:account")
