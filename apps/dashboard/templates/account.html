@@ -200,9 +200,34 @@
   }
 
   /* SUBSCRIBE */
-  function subscribe(){
-    window.location.href = "{% url 'dashboard:subscribe' %}";
+  
+  async function subscribe() {
+    const password = prompt("Enter your password to subscribe:");
+    if (!password) return;
+
+    const csrftoken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+
+    try {
+      const resp = await fetch("{% url 'dashboard:subscribe' %}", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "X-CSRFToken": csrftoken
+        },
+        body: JSON.stringify({ password })
+      });
+      const data = await resp.json();
+
+      if (data.ok && data.payment_url) {
+        window.location.href = data.payment_url;
+      } else {
+        alert(data.message || "Subscription failed");
+      }
+    } catch (e) {
+      alert("Request failed. Try again.");
+    }
   }
+
 
 </script>
 </body>
