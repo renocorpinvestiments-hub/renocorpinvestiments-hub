@@ -217,12 +217,12 @@
   </div>
 </div>
 
-<!-- Bottom navbar -->
+<!-- BOTTOM NAVIGATION -->
 <div class="navbar">
-  <a href="{% url 'dashboard:home' %}" class="nav-item {% if current_page=='home' %}active{% endif %}">Home</a>
-  <a href="{% url 'dashboard:gifts' %}" class="nav-item {% if current_page=='gifts' %}active{% endif %}">Gifts</a>
-  <a href="{% url 'dashboard:tasks' %}" class="nav-item {% if current_page=='tasks' %}active{% endif %}">Tasks</a>
-  <a href="{% url 'dashboard:account' %}" class="nav-item {% if current_page=='account' %}active{% endif %}">Account</a>
+  <a href="{% url 'dashboard:home' %}" class="nav-item">Home</a>
+  <a href="{% url 'dashboard:tasks' %}" class="nav-item">Tasks</a>
+  <a href="{% url 'dashboard:gifts' %}" class="nav-item active">Gifts</a>
+  <a href="{% url 'dashboard:account' %}" class="nav-item ">Account</a>
 </div>
 
 <script src="{% static 'js/gifts_player.js' %}"></script>
