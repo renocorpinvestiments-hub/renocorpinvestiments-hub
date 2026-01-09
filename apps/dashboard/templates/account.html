@@ -182,6 +182,28 @@
   /* PASSWORD POPUP */
   function openPassword(){document.getElementById("passwordPopup").style.display="flex";}
   function closePassword(){document.getElementById("passwordPopup").style.display="none";}
+  
+  /* INVITE POPUP */
+  function openInvite(){
+    document.getElementById("invitePopup").style.display = "flex";
+  }
+  function closeInvite(){
+    document.getElementById("invitePopup").style.display = "none";
+  }
+
+  function copyInvite(){
+    const input = document.getElementById("inviteLink");
+    input.select();
+    input.setSelectionRange(0, 99999);
+    navigator.clipboard.writeText(input.value);
+    alert("Invite link copied!");
+  }
+
+  /* SUBSCRIBE */
+  function subscribe(){
+    window.location.href = "{% url 'dashboard:subscribe' %}";
+  }
+
 </script>
 </body>
 </html>
