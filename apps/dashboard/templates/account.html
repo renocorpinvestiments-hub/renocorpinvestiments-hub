@@ -103,7 +103,10 @@
   </div>
   <div class="btn-block {% if not withdraw_enabled %}disabled{% endif %}" {% if withdraw_enabled %}onclick="openWithdraw()"{% endif %}>Withdraw</div>
   <div class="btn-block" onclick="openPassword()">Change Password</div>
-  <div class="btn-block logout-btn" onclick="window.location.href='{% url 'logout' %}'">Log Out</div>
+  <div class="btn-block logout-btn"
+     onclick="window.location.href='{% url 'dashboard:logout' %}'">
+  Log Out
+  </div>
 
 </div>
 
