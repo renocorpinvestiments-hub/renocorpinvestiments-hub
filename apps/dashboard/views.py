@@ -1,3 +1,4 @@
+from apps.admin_panel.models import TaskControl 
 from django.contrib.auth import logout
 from apps.ai_core.models import Offerwall
 from django.shortcuts import render, redirect
