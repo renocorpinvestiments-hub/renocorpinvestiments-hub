@@ -183,10 +183,11 @@
   </div>
 </div>
 
+<!-- NAVIGATION -->
 <div class="navbar">
-  <a class="nav-item" href="{% url 'dashboard:home' %}">Home</a>
+  <a class="nav-item active" href="{% url 'dashboard:home' %}">Home</a>
+  <a class="nav-item" href="{% url 'dashboard:tasks' %} active ">Tasks</a>
   <a class="nav-item" href="{% url 'dashboard:gifts' %}">Gifts</a>
-  <a class="nav-item active" href="{% url 'dashboard:tasks' %}">Tasks</a>
   <a class="nav-item" href="{% url 'dashboard:account' %}">Account</a>
 </div>
 
