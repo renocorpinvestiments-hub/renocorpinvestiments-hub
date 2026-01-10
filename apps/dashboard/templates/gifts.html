@@ -239,18 +239,24 @@
 <script>
   // Invite button logic
   const inviteBtn = document.getElementById('inviteBtn');
-  inviteBtn.addEventListener('click', () => {
-    const code = "{{ request.user.invitation_code }}";
+inviteBtn.addEventListener('click', () => {
+    const code = "{{ user_profile.invitation_code|escapejs }}";  // <-- use profile
+    if (!code) {
+        alert("No invitation code found for your account.");
+        return;
+    }
     const signupPath = "{% url 'accounts:signup' %}";
     const url = window.location.origin + signupPath + '?invite=' + encodeURIComponent(code);
     const text = `Join Renocorp using my invite code ${code}: ${url}`;
-    if(navigator.share){
-      navigator.share({title:'Join Renocorp', text, url}).catch(()=>navigator.clipboard.writeText(text));
+
+    if (navigator.share) {
+        navigator.share({title:'Join Renocorp', text, url})
+            .catch(() => navigator.clipboard.writeText(text));
     } else {
-      navigator.clipboard.writeText(text); 
-      alert('Invite link copied to clipboard');
+        navigator.clipboard.writeText(text);
+        alert('Invite link copied to clipboard');
     }
-  });
+});
 </script>
 </body>
 </html>
