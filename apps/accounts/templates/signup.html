@@ -191,8 +191,9 @@
             </div>
 
             <div class="form-group">
-                {{ form.password.label_tag }}
-                {{ form.password }}
+              {{ form.invited_by.label_tag }}
+              {{ form.invited_by }}
+            </div>
                 {% for error in form.password.errors %}
                     <div class="field-error">{{ error }}</div>
                 {% endfor %}
