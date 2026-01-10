@@ -18,10 +18,23 @@ if os.getenv("DISABLE_CELERY") == "true":
 # -----------------------------------------------------------------------------
 BASE_DIR = Path(__file__).resolve().parent.parent
 # settings.py
+CSP_DEFAULT_SRC = ("'self'",)
+
 CSP_IMG_SRC = (
     "'self'",
     "data:",
     "https://ui-avatars.com",
+)
+
+CSP_STYLE_SRC = (
+    "'self'",
+    "https:",
+    "'unsafe-inline'",
+)
+
+CSP_SCRIPT_SRC = (
+    "'self'",
+    "'unsafe-inline'",
 )
 # -----------------------------------------------------------------------------
 # ENVIRONMENT VARIABLES (.env)
