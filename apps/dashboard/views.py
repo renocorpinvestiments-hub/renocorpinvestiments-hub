@@ -439,7 +439,7 @@ def gifts_view(request):
 # ===========================
 @login_required
 def invite_view(request):
-    profile = get_or_create_profile(request.user)
+    profile = request.user.userprofile
     url = request.build_absolute_uri(
         reverse("accounts:signup") + f"?invite={profile.invitation_code}"
     )
