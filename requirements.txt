@@ -24,6 +24,7 @@ django-extensions==3.2.3
 sentry-sdk==2.19.0
 
 # --- Security & Deployment ---
+django-csp==3.8
 gunicorn==23.0.0
 setuptools==68.0.0
 
