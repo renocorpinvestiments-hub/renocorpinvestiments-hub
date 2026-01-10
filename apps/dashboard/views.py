@@ -421,17 +421,17 @@ def withdraw_view(request):
 # ===========================
 @login_required
 def gifts_view(request):
-    user = request.user
-    profile = get_or_create_profile(user)
-
-    offer = GiftOffer.objects.filter(active=True).order_by("-created_at").first()
-
+    user_profile = request.user
+    referral_link = request.build_absolute_uri(
+        reverse('accounts:signup') + f'?invite={user_profile.invitation_code}'
+    )
     context = {
-        "current_offer": offer,
-        "support_number": getattr(settings, "SUPPORT_WHATSAPP_NUMBER", ""),
-        "current_page": "gifts",
+        'user_profile': user_profile,
+        'referral_link': referral_link,
+        'current_offer': current_offer,
+        'extra_videos': extra_videos,
     }
-    return render(request, "gifts.html", context)
+    return render(request, 'gifts.html', context)
 
 
 # ===========================
