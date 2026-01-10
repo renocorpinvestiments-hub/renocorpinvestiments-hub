@@ -422,21 +422,28 @@ def withdraw_view(request):
 @login_required
 def gifts_view(request):
     user = request.user
-    profile = get_or_create_profile(user)  # ✅ ensures UserProfile exists
+    profile = get_or_create_profile(user)
 
-    # Referral link like account page
+    # Referral link
     referral_link = request.build_absolute_uri(
         reverse('accounts:signup') + f'?invite={profile.invitation_code}'
     )
 
-    context = {
-        'user_profile': profile,        # pass profile, not user
-        'referral_link': referral_link, # same as account page
-        'current_offer': current_offer, # ensure this is defined above
-        'extra_videos': extra_videos,   # ensure this is defined above
-    }
-    return render(request, 'gifts.html', context)
+    # 🎁 Get current gift offer (if any)
+    current_offer = GiftOffer.objects.filter(active=True).order_by('-created_at').first()
 
+    # 🎬 Extra bonus videos (not part of normal tasks)
+    extra_videos = VideoTask.objects.filter(active=True, is_bonus=True).order_by('-created_at')[:6]
+
+    context = {
+        'user_profile': profile,
+        'referral_link': referral_link,
+        'current_offer': current_offer,
+        'extra_videos': extra_videos,
+        'current_page': 'gifts',
+    }
+
+    return render(request, 'gifts.html', context)
 # ===========================
 # INVITE
 # ===========================
