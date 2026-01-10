@@ -421,18 +421,21 @@ def withdraw_view(request):
 # ===========================
 @login_required
 def gifts_view(request):
-    user_profile = request.user
+    user = request.user
+    profile = get_or_create_profile(user)  # ✅ ensures UserProfile exists
+
+    # Referral link like account page
     referral_link = request.build_absolute_uri(
-        reverse('accounts:signup') + f'?invite={user_profile.invitation_code}'
+        reverse('accounts:signup') + f'?invite={profile.invitation_code}'
     )
+
     context = {
-        'user_profile': user_profile,
-        'referral_link': referral_link,
-        'current_offer': current_offer,
-        'extra_videos': extra_videos,
+        'user_profile': profile,        # pass profile, not user
+        'referral_link': referral_link, # same as account page
+        'current_offer': current_offer, # ensure this is defined above
+        'extra_videos': extra_videos,   # ensure this is defined above
     }
     return render(request, 'gifts.html', context)
-
 
 # ===========================
 # INVITE
