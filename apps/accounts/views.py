@@ -59,32 +59,31 @@ def signup_view(request):
         form = SignupForm(request.POST)
 
         if form.is_valid():
-            # Get the invited_by code from form
+
             invited_by_code = form.cleaned_data.get("invited_by")
             invited_by_user = User.objects.filter(invitation_code=invited_by_code).first()
 
             if not invited_by_user:
                 messages.error(request, "Invalid invitation code.")
-                return render(request, "signup.html", {"form": form})
+                return redirect("accounts:signup")
 
             # Create user instance (not saved yet)
             user = form.save(commit=False)
 
-            # HARD SAFETY CHECK: phone number required
+            # HARD SAFETY CHECK
             if not user.account_number:
                 messages.error(
                     request,
                     "Phone number is required. It is used for withdrawals."
                 )
-                return render(request, "signup.html", {"form": form})
+                return redirect("accounts:signup")
 
             # Set password & activate account
             user.set_password(form.cleaned_data["password"])
             user.is_active = True
             user.subscription_status = "inactive"
-            user.invited_by = invited_by_user  # assign the inviter
+            user.invited_by = invited_by_user
 
-            # Save the user (signal will assign invitation code automatically)
             user.save()
 
             # Auto-login user
@@ -97,8 +96,6 @@ def signup_view(request):
         form = SignupForm()
 
     return render(request, "signup.html", {"form": form})
-
-
 # ---------------------------------------------------
 # SIGNUP SUCCESS PAGE
 # ---------------------------------------------------
