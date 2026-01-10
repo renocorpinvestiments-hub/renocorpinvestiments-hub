@@ -123,7 +123,7 @@
   <!-- PROFILE -->
   <div class="profile-section">
     <div class="avatar avatar-{{ user.username|first|lower }}{% if subscription_active %} avatar-gold {% endif %}">
-  {{ user.username|slice:":2"|upper }}"
+  {{ user.username|slice:":2"|upper }}
     </div>
 
     <div class="profile-name">Welcome {{ user.username }}</div>
