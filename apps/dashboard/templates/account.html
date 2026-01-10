@@ -83,19 +83,6 @@
   background: linear-gradient(135deg, #1db954, #14833b);
   border: 2px solid var(--outline);
   user-select: none;
-}
-  .avatar {
-  width: 80px;
-  height: 80px;
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-weight: 800;
-  font-size: 26px;
-  letter-spacing: 1px;
-  color: #ffffff;
-  border: 2px solid var(--outline);
   position: relative;
 }
 
@@ -135,7 +122,7 @@
 
   <!-- PROFILE -->
   <div class="profile-section">
-    <div class="avatar avatar-{{ user.username|first|lower }}{% if subscription_active %}avatar-gold{% endif %}">
+    <div class="avatar avatar-{{ user.username|first|lower }}{% if subscription_active %} avatar-gold {% endif %}">
   {{ user.username|slice:":2"|upper }}"
     </div>
 
