@@ -171,6 +171,8 @@
 <div class="screen" id="screen">
   <!-- Gifts offer header -->
   <div class="offer">
+    <!-- Referral Link Input (hidden, for JS copy) -->
+   <input type="text" id="inviteLink" value="{{ referral_link }}" readonly style="position:absolute; left:-9999px;">
     <h2>RENOCORP GIFTS</h2>
     <div class="meta">[Gift acquisition transmission]</div>
     <div class="stats">
@@ -237,24 +239,35 @@
 
 <script src="{% static 'js/gifts_player.js' %}"></script>
 <script>
-  // Invite button logic
-  const inviteBtn = document.getElementById('inviteBtn');
+  
+  // Invite button logic (robust)
+const inviteBtn = document.getElementById('inviteBtn');
 inviteBtn.addEventListener('click', () => {
-    const code = "{{ user_profile.invitation_code|escapejs }}";  // <-- use profile
-    if (!code) {
+    const code = "{{ user_profile.invitation_code|escapejs }}"; // safe access
+    const linkInput = document.getElementById('inviteLink');
+
+    if (!code || !linkInput.value) {
         alert("No invitation code found for your account.");
         return;
     }
-    const signupPath = "{% url 'accounts:signup' %}";
-    const url = window.location.origin + signupPath + '?invite=' + encodeURIComponent(code);
+
+    const signupPath = "{{ request.build_absolute_uri('/') }}accounts/signup/"; // fallback URL
+    const url = linkInput.value || (signupPath + '?invite=' + encodeURIComponent(code));
     const text = `Join Renocorp using my invite code ${code}: ${url}`;
 
+    // Use Web Share API if available
     if (navigator.share) {
-        navigator.share({title:'Join Renocorp', text, url})
-            .catch(() => navigator.clipboard.writeText(text));
+        navigator.share({ title: 'Join Renocorp', text, url })
+            .catch(() => {
+                navigator.clipboard.writeText(text)
+                    .then(() => alert('Invite link copied to clipboard'))
+                    .catch(() => alert('Failed to copy invite link'));
+            });
     } else {
-        navigator.clipboard.writeText(text);
-        alert('Invite link copied to clipboard');
+        // Fallback: copy to clipboard
+        navigator.clipboard.writeText(text)
+            .then(() => alert('Invite link copied to clipboard'))
+            .catch(() => alert('Failed to copy invite link'));
     }
 });
 </script>
