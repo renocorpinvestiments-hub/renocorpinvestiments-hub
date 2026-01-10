@@ -113,7 +113,7 @@ class SignupForm(forms.ModelForm):
             }),
             "invited_by": forms.TextInput(attrs={
                 "class": "form-control",
-                "placeholder": "Invitation code (required)",
+                "placeholder": "Enter invitation code of the person who invited you",
             }),
         }
 
