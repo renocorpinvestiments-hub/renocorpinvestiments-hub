@@ -126,6 +126,32 @@
             text-align: center;
             margin-bottom: 1rem;
         }
+        /* Force Django form fields to match design */
+.signup-container input,
+.signup-container select {
+    appearance: none;
+    -webkit-appearance: none;
+    width: 100%;
+    padding: 0.9rem;
+    border-radius: 12px;
+    background: #334155;
+    color: #f8fafc;
+    font-size: 1rem;
+    border: 1px solid rgba(255,255,255,0.08);
+}
+
+.signup-container select {
+    background-image: url("data:image/svg+xml,%3Csvg fill='white' height='20' viewBox='0 0 24 24' width='20' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M7 10l5 5 5-5z'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 1rem center;
+                  }
+        * {
+    box-sizing: border-box;
+            }
+        .signup-container {
+    width: 100%;
+    max-width: 420px;
+            }
     </style>
 </head>
 <body>
@@ -194,18 +220,15 @@
               {{ form.invited_by.label_tag }}
               {{ form.invited_by }}
             </div>
-                {% for error in form.password.errors %}
-                    <div class="field-error">{{ error }}</div>
-                {% endfor %}
-            </div>
 
             <div class="form-group">
-                {{ form.confirm_password.label_tag }}
-                {{ form.confirm_password }}
-                {% for error in form.confirm_password.errors %}
-                    <div class="field-error">{{ error }}</div>
-                {% endfor %}
+              {{ form.password.label_tag }}
+              {{ form.password }}
+              {% for error in form.password.errors %}
+            <div class="field-error">{{ error }}</div>
+             {% endfor %}
             </div>
+            
 
             <button type="submit" class="btn">Sign Up</button>
 
