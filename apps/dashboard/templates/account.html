@@ -49,6 +49,41 @@
   .navbar{position:fixed; bottom:0; left:0; right:0; height:62px; display:flex; justify-content:space-around; align-items:center; background:linear-gradient(180deg, rgba(7,10,12,0.98), rgba(7,10,12,0.96)); border-top:1px solid rgba(255,255,255,0.03); z-index:70;}
   .nav-item{color:var(--muted); text-decoration:none; font-size:14px; text-align:center;}
   .nav-item.active{color:var(--white); font-weight:700;}
+  .avatar-a, .avatar-b, .avatar-c, .avatar-d, .avatar-e {
+  background: linear-gradient(135deg, #ff6b6b, #c0392b);
+}
+
+.avatar-f, .avatar-g, .avatar-h, .avatar-i, .avatar-j {
+  background: linear-gradient(135deg, #6bc5ff, #1e90ff);
+}
+
+.avatar-k, .avatar-l, .avatar-m, .avatar-n, .avatar-o {
+  background: linear-gradient(135deg, #feca57, #f39c12);
+}
+
+.avatar-p, .avatar-q, .avatar-r, .avatar-s, .avatar-t {
+  background: linear-gradient(135deg, #9b59b6, #6c3483);
+}
+
+.avatar-u, .avatar-v, .avatar-w, .avatar-x, .avatar-y, .avatar-z {
+  background: linear-gradient(135deg, #1db954, #14833b);
+            }
+  /* Avatar (Pure CSS Initials) */
+.avatar {
+  width: 80px;
+  height: 80px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 800;
+  font-size: 26px;
+  letter-spacing: 1px;
+  color: #ffffff;
+  background: linear-gradient(135deg, #1db954, #14833b);
+  border: 2px solid var(--outline);
+  user-select: none;
+}
 </style>
 </head>
 <body>
@@ -64,16 +99,9 @@
 
   <!-- PROFILE -->
   <div class="profile-section">
-    <form id="photoForm" method="POST" enctype="multipart/form-data" style="display:none;">
-      {% csrf_token %}
-      <input type="file" id="photoInput" name="profile_picture" accept="image/*">
-    </form>
-    <img
-  src="{% if profile.profile_picture and profile.profile_picture.name %}{{ profile.profile_picture.url }}{% else %}https://ui-avatars.com/api/?name={{ user.username|urlencode }}&background=0b0f13&color=ffffff&rounded=true&size=80{% endif %}"
-  class="profile-photo"
-  id="profilePhoto"
-  alt="Profile Photo"
-    >
+    <div class="avatar avatar-{{ user.username|first|lower }}">
+  {{ user.username|slice:":2"|upper }}
+    </div>
     <div class="profile-name">Welcome {{ user.username }}</div>
   </div>
 
