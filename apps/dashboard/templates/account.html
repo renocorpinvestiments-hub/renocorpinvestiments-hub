@@ -84,6 +84,42 @@
   border: 2px solid var(--outline);
   user-select: none;
 }
+  .avatar {
+  width: 80px;
+  height: 80px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 800;
+  font-size: 26px;
+  letter-spacing: 1px;
+  color: #ffffff;
+  border: 2px solid var(--outline);
+  position: relative;
+}
+
+/* Gold subscription ring */
+.avatar-gold {
+  border: 2px solid transparent;
+  background-clip: padding-box;
+}
+
+.avatar-gold::after {
+  content: "";
+  position: absolute;
+  inset: -3px;
+  border-radius: 50%;
+  background: linear-gradient(
+    135deg,
+    #f5d76e,
+    #f1c40f,
+    #ffdd88,
+    #d4af37
+  );
+  z-index: -1;
+  box-shadow: 0 0 12px rgba(241, 196, 15, 0.6);
+          }
 </style>
 </head>
 <body>
@@ -99,9 +135,10 @@
 
   <!-- PROFILE -->
   <div class="profile-section">
-    <div class="avatar avatar-{{ user.username|first|lower }}">
-  {{ user.username|slice:":2"|upper }}
+    <div class="avatar avatar-{{ user.username|first|lower }}{% if subscription_active %}avatar-gold{% endif %}">
+  {{ user.username|slice:":2"|upper }}"
     </div>
+
     <div class="profile-name">Welcome {{ user.username }}</div>
   </div>
 
