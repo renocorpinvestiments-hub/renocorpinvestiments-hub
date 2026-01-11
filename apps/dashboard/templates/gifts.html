@@ -165,9 +165,52 @@
   margin-left: calc(-1 * ((100vw - 100%) / 2));
   border-radius: 0;
                   }
+  /* Add inside <style> */
+@keyframes shimmer {
+  0% { background-position: -500px 0; }
+  100% { background-position: 500px 0; }
+}
+
+#loadingSkeleton div {
+  background: linear-gradient(90deg, rgba(255,255,255,0.05) 25%, rgba(255,255,255,0.08) 50%, rgba(255,255,255,0.05) 75%);
+  background-size: 500px 100%;
+  animation: shimmer 1.2s infinite;
+  }
 </style>
 </head>
 <body>
+  <!-- Skeleton overlay -->
+  <div id="loadingSkeleton" style="
+    position:fixed;
+    inset:0;
+    background:var(--bg);
+    display:flex;
+    flex-direction:column;
+    gap:14px;
+    padding:14px;
+    z-index:1000;
+  ">
+    <!-- Skeleton for gift header -->
+    <div style="height:70px; background:rgba(255,255,255,0.05); border-radius:12px;"></div>
+    <div style="height:14px; width:60%; background:rgba(255,255,255,0.05); border-radius:6px;"></div>
+    <div style="height:20px; width:40%; background:rgba(255,255,255,0.05); border-radius:6px;"></div>
+    
+    <!-- Skeleton for progress bar -->
+    <div style="height:8px; width:100%; background:rgba(255,255,255,0.05); border-radius:999px;"></div>
+
+    <!-- Skeleton for extra videos grid -->
+    <div style="display:grid; grid-template-columns:repeat(2,1fr); gap:12px;">
+      <div style="height:160px; background:rgba(255,255,255,0.05); border-radius:12px;"></div>
+      <div style="height:160px; background:rgba(255,255,255,0.05); border-radius:12px;"></div>
+      <div style="height:160px; background:rgba(255,255,255,0.05); border-radius:12px;"></div>
+      <div style="height:160px; background:rgba(255,255,255,0.05); border-radius:12px;"></div>
+    </div>
+  </div>
+  
+  <!-- Your original .screen div here -->
+  <div class="screen" id="screen" style="opacity:0; transform:translateY(-40px); transition: all 0.6s ease;">
+    <!-- existing content -->
+  </div>
 <div class="screen" id="screen">
   <!-- Gifts offer header -->
   <div class="offer">
@@ -281,6 +324,15 @@ inviteBtn.addEventListener('click', () => {
 fetch("{% url 'dashboard:gifts_data_api' %}")
 .then(res => res.json())
 .then(data => {
+  const skeleton = document.getElementById("loadingSkeleton");
+  const screen = document.getElementById("screen");
+
+  // Hide skeleton
+  skeleton.style.display = "none";
+
+  // Slide in effect
+  screen.style.opacity = 1;
+  screen.style.transform = "translateY(0)";
 
   const title = document.getElementById("giftTitle");
   const desc = document.getElementById("giftDescription");
