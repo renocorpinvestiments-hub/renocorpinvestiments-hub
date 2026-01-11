@@ -17,7 +17,6 @@ urlpatterns = [
     # -----------------------------
     path('account/subscribe/', views.subscribe_view, name='subscribe'),
     path('account/withdraw/', views.withdraw_view, name='withdraw'),
-    path('account/invite/', views.invite_view, name='invite'),
     path('account/change_password/', views.change_password_view, name='change_password'),
     path("logout/", views.logout_view, name="logout"), 
 ]
