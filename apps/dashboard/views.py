@@ -431,10 +431,7 @@ def gifts_view(request):
     """
     profile = get_or_create_profile(request.user)
 
-    referral_link = request.build_absolute_uri(
-        reverse('accounts:signup') + f'?invite={profile.invitation_code}'
-    )
-
+    referral_link = build_referral_link(request, profile)
     context = {
         'user_profile': profile,
         'referral_link': referral_link,
