@@ -1,3 +1,4 @@
+from .views import gifts_data_api
 from django.urls import path
 from . import views
 
@@ -19,4 +20,5 @@ urlpatterns = [
     path('account/withdraw/', views.withdraw_view, name='withdraw'),
     path('account/change_password/', views.change_password_view, name='change_password'),
     path("logout/", views.logout_view, name="logout"), 
+    path("api/gifts/", gifts_data_api, name="gifts_data_api"),
 ]
