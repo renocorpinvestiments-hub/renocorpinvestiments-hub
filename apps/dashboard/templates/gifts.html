@@ -46,7 +46,9 @@
     width: 100vw;        /* take full viewport width */
     margin-left: calc(-1 * ((100vw - 100%) / 2)); /* correct for padding/margin of container */
     max-width: none;     /* remove any inherited max-width */
-    border-radius: 0;    /* optional, remove rounded corners for edge-to-edge */
+    border-radius: 12px;  /* optional, remove rounded corners for edge-to-edge */
+    border-bottom-left-radius:12px;  /* these control bottom curves */
+    border-bottom-right-radius:12px;
   }
   .offer h2{margin:0; font-size:18px; letter-spacing:0.6px;}
   .offer .meta{font-size:13px; color:var(--muted); margin-top:6px;}
