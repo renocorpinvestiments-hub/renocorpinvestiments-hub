@@ -199,13 +199,24 @@
     <div style="height:8px; width:100%; background:rgba(255,255,255,0.05); border-radius:999px;"></div>
 
     <!-- Skeleton for extra videos grid -->
-    <div style="display:grid; grid-template-columns:repeat(2,1fr); gap:12px;">
-      <div style="height:160px; background:rgba(255,255,255,0.05); border-radius:12px;"></div>
-      <div style="height:160px; background:rgba(255,255,255,0.05); border-radius:12px;"></div>
-      <div style="height:160px; background:rgba(255,255,255,0.05); border-radius:12px;"></div>
-      <div style="height:160px; background:rgba(255,255,255,0.05); border-radius:12px;"></div>
-    </div>
+<div class="videos-section">
+  <div style="display:flex; justify-content:space-between; align-items:center;">
+    <div style="font-weight:800; background:rgba(255,255,255,0.05); height:16px; width:100px; border-radius:6px;"></div>
+    <div style="font-size:12px; color:var(--muted); background:rgba(255,255,255,0.05); width:80px; height:12px; border-radius:6px;"></div>
   </div>
+
+  <div class="videos-grid" style="margin-top:10px;">
+    <!-- Repeat 6 skeleton cards -->
+    <div class="card-skeleton"></div>
+    <div class="card-skeleton"></div>
+    <div class="card-skeleton"></div>
+    <div class="card-skeleton"></div>
+    <div class="card-skeleton"></div>
+    <div class="card-skeleton"></div>
+    
+
+  </div>
+</div>
   
   <!-- Your original .screen div here -->
   <div class="screen" id="screen" style="opacity:0; transform:translateY(-40px); transition: all 0.6s ease;">
