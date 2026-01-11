@@ -173,11 +173,17 @@
   <div class="offer">
     <!-- Referral Link Input (hidden, for JS copy) -->
    <input type="text" id="inviteLink" value="{{ referral_link }}" readonly style="position:absolute; left:-9999px;">
-    <h2>RENOCORP GIFTS</h2>
-    <div class="meta">[Gift acquisition transmission]</div>
-    <div class="stats">
-      <div>Total invites required: {{ current_offer.invites_required|default:'----' }}</div>
-      <div>Invites done: {{ current_offer.invites_done|default:'----' }}</div>
+    <h2 id="giftTitle">Loading...</h2>
+<div class="meta" id="giftDescription"></div>
+
+<div class="stats" id="giftStats" style="display:none">
+  <div id="giftInviteCount"></div>
+  <div id="giftExpiry"></div>
+</div>
+
+<div style="margin-top:10px; background:rgba(255,255,255,0.06); border-radius:999px; height:8px; overflow:hidden; display:none" id="giftProgressBar">
+  <div id="giftProgressFill" style="height:100%; width:0%; background:var(--accent); transition:width 0.4s ease"></div>
+</div>
     </div>
     <button id="inviteBtn" class="invite-btn">Invite</button>
   </div>
@@ -271,5 +277,53 @@ inviteBtn.addEventListener('click', () => {
     }
 });
 </script>
+  <script>
+fetch("{% url 'dashboard:gifts_data_api' %}")
+.then(res => res.json())
+.then(data => {
+
+  const title = document.getElementById("giftTitle");
+  const desc = document.getElementById("giftDescription");
+  const stats = document.getElementById("giftStats");
+  const invites = document.getElementById("giftInviteCount");
+  const expiry = document.getElementById("giftExpiry");
+  const bar = document.getElementById("giftProgressBar");
+  const fill = document.getElementById("giftProgressFill");
+  const inviteBtn = document.getElementById("inviteBtn");
+
+  if (!data.gift) {
+    title.innerText = "No gifts present";
+    desc.innerText = "Check back later";
+    inviteBtn.style.display = "none";
+    return;
+  }
+
+  const g = data.gift;
+
+  title.innerText = g.title || "Gift";
+  desc.innerText = g.description || "";
+
+  stats.style.display = "flex";
+  bar.style.display = "block";
+
+  invites.innerText = `Invites: ${g.current_invites} / ${g.required_invites}`;
+
+  const end = new Date(g.expires_at);
+
+  setInterval(() => {
+    const diff = end - new Date();
+    if (diff <= 0) {
+      expiry.innerText = "Expired";
+      return;
+    }
+    const m = Math.floor(diff / 60000);
+    const s = Math.floor((diff % 60000) / 1000);
+    expiry.innerText = `Expires in ${m}m ${s}s`;
+  }, 1000);
+
+  const percent = Math.min(100, (g.current_invites / g.required_invites) * 100);
+  fill.style.width = percent + "%";
+});
+  </script>
 </body>
 </html>
