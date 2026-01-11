@@ -44,7 +44,10 @@ def get_or_create_profile(user: User) -> UserProfile:
     )
     return profile
 
-
+def build_referral_link(request, profile: UserProfile) -> str:
+    return request.build_absolute_uri(
+        reverse("accounts:signup") + f"?ref={profile.invitation_code}"
+                         )
 def json_error(message: str, status: int = 400) -> JsonResponse:
     return JsonResponse({"ok": False, "message": message}, status=status)
 
