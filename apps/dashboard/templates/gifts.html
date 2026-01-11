@@ -167,55 +167,11 @@
   margin-left: calc(-1 * ((100vw - 100%) / 2));
   border-radius: 0;
                   }
-  /* Add inside <style> */
-@keyframes shimmer {
-  0% { background-position: -500px 0; }
-  100% { background-position: 500px 0; }
-}
 
-#loadingSkeleton div {
-  background: linear-gradient(90deg, rgba(255,255,255,0.05) 25%, rgba(255,255,255,0.08) 50%, rgba(255,255,255,0.05) 75%);
-  background-size: 500px 100%;
-  animation: shimmer 1.2s infinite;
-  }
 </style>
 </head>
 <body>
-  <!-- Skeleton overlay -->
-  <div id="loadingSkeleton" style="
-    position:fixed;
-    inset:0;
-    background:var(--bg);
-    display:flex;
-    flex-direction:column;
-    gap:14px;
-    padding:14px;
-    z-index:1000;
-  ">
-    <!-- Skeleton for gift header -->
-    <div style="height:70px; background:rgba(255,255,255,0.05); border-radius:12px;"></div>
-    <div style="height:14px; width:60%; background:rgba(255,255,255,0.05); border-radius:6px;"></div>
-    <div style="height:20px; width:40%; background:rgba(255,255,255,0.05); border-radius:6px;"></div>
-    
-    <!-- Skeleton for progress bar -->
-    <div style="height:8px; width:100%; background:rgba(255,255,255,0.05); border-radius:999px;"></div>
-
-    <!-- Skeleton for extra videos grid -->
-<div class="videos-section">
-  <div style="display:flex; justify-content:space-between; align-items:center;">
-    <div style="font-weight:800; background:rgba(255,255,255,0.05); height:16px; width:100px; border-radius:6px;"></div>
-    <div style="font-size:12px; color:var(--muted); background:rgba(255,255,255,0.05); width:80px; height:12px; border-radius:6px;"></div>
-  </div>
-
-  <div class="videos-grid" style="margin-top:10px;">
-    <!-- Repeat 6 skeleton cards -->
-    <div class="card-skeleton"></div>
-    <div class="card-skeleton"></div>
-    <div class="card-skeleton"></div>
-    <div class="card-skeleton"></div>
-    <div class="card-skeleton"></div>
-    <div class="card-skeleton"></div>
-    
+  
 
   </div>
 </div>
