@@ -417,43 +417,80 @@ def withdraw_view(request):
 
 
 # ===========================
-# GIFTS
+# GIFTS  (FAST VERSION)
 # ===========================
+
 @login_required
 def gifts_view(request):
-    user = request.user
-    profile = get_or_create_profile(user)
+    """
+    Ultra-light initial page render.
+    No heavy queries here — data loads via AJAX for speed.
+    """
+    profile = get_or_create_profile(request.user)
 
-    # Referral link
     referral_link = request.build_absolute_uri(
         reverse('accounts:signup') + f'?invite={profile.invitation_code}'
     )
 
-    # 🎁 Get current gift offer (if any)
-    current_offer = GiftOffer.objects.filter(active=True).order_by('-created_at').first()
-
-    # 🎬 Extra bonus videos (not part of normal tasks)
-    extra_videos = VideoTask.objects.filter(active=True, is_bonus=True).order_by('-created_at')[:6]
-
     context = {
         'user_profile': profile,
         'referral_link': referral_link,
-        'current_offer': current_offer,
-        'extra_videos': extra_videos,
         'current_page': 'gifts',
     }
 
     return render(request, 'gifts.html', context)
-# ===========================
-# INVITE
-# ===========================
+
+
 @login_required
-def invite_view(request):
-    profile = request.user.userprofile
-    url = request.build_absolute_uri(
-        reverse("accounts:signup") + f"?invite={profile.invitation_code}"
-    )
-    return JsonResponse({"ok": True, "invite_code": profile.invitation_code, "signup_url": url})
+def gifts_data_api(request):
+    """
+    Fast async data loader for Gifts page.
+    """
+    user = request.user
+    profile = get_or_create_profile(user)
+    now = timezone.now()
+
+    data = {
+        "gift": None,
+        "progress": None,
+        "extra_videos": [],
+    }
+
+    # 🎁 Get active gift
+    gift = GiftOffer.objects.filter(active=True).order_by('-created_at').first()
+
+    if gift:
+        gift_end = gift.created_at + timezone.timedelta(hours=gift.time_limit_hours)
+
+        # 🧮 Invite counting (your exact rule)
+        invites_count = User.objects.filter(
+            userprofile__invited_by=profile.invitation_code,
+            userprofile__subscription_status="active",
+            date_joined__gte=gift.created_at,
+            date_joined__lte=gift_end,
+        ).count()
+
+        data["gift"] = {
+            "title": gift.title,
+            "description": gift.description,
+            "expires_at": gift_end.isoformat(),
+            "required_invites": gift.invites_required,
+            "current_invites": invites_count,
+        }
+
+    # 🎬 Extra bonus videos
+    videos = VideoTask.objects.filter(active=True, is_bonus=True)\
+                              .only("id", "title", "thumbnail")\
+                              .order_by('-created_at')[:4]
+
+    for v in videos:
+        data["extra_videos"].append({
+            "id": v.id,
+            "title": v.title,
+            "thumbnail": v.thumbnail.url if v.thumbnail else "",
+        })
+
+    return JsonResponse(data)
 
 
 # ===========================
