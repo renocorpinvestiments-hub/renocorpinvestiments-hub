@@ -307,7 +307,7 @@ def account_view(request):
 
     transactions = Transaction.objects.filter(user=user).order_by("-created_at")[:12]
 
-    referral_link = f"{request.scheme}://{request.get_host()}/accounts/signup/?ref={profile.invitation_code}"
+    referral_link = build_referral_link(request, profile)
     context = {
         "profile": profile,
         "transactions": transactions,
