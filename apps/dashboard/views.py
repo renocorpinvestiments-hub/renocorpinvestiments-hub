@@ -59,7 +59,23 @@ def is_withdraw_enabled() -> bool:
     except Exception:
         return False
 
+@login_required
+def gifts_data_api(request):
+    user = request.user
 
+    gift = getattr(request, "active_gift", None)
+
+    data = {
+        "has_gift": bool(gift),
+        "title": getattr(gift, "title", ""),
+        "description": getattr(gift, "description", ""),
+        "expires_at": gift.expires_at.isoformat() if gift and gift.expires_at else None,
+        "required_invites": getattr(gift, "required_invites", 0),
+        "current_invites": getattr(gift, "current_invites", 0),
+        "reward_amount": getattr(gift, "reward_amount", 0),
+    }
+
+    return JsonResponse(data)
 # ===========================
 # HOME
 # ===========================
