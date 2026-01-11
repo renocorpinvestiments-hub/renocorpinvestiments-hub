@@ -301,21 +301,28 @@
 
 <script src="{% static 'js/gifts_player.js' %}"></script>
 <script>
-  
-  // Invite button logic (robust)
-const inviteBtn = document.getElementById('inviteBtn');
-inviteBtn.addEventListener('click', () => {
-    const code = "{{ user_profile.invitation_code|escapejs }}"; // safe access
-    const linkInput = document.getElementById('inviteLink');
+const inviteBtn = document.getElementById("inviteBtn");
+const referralLink = "{{ referral_link|escapejs }}";
 
-    if (!code || !linkInput.value) {
-        alert("No invitation code found for your account.");
-        return;
+inviteBtn.addEventListener("click", async () => {
+  const text = "Earn money with me on Renocorp!";
+
+  try {
+    if (navigator.share) {
+      await navigator.share({
+        title: "Join Renocorp",
+        text: text,
+        url: referralLink
+      });
+    } else {
+      await navigator.clipboard.writeText(referralLink);
+      alert("Invite link copied");
     }
-
-    const signupPath = "{{ request.build_absolute_uri('/') }}accounts/signup/"; // fallback URL
-    const url = linkInput.value || (signupPath + '?invite=' + encodeURIComponent(code));
-    const text = `Join Renocorp using my invite code ${code}: ${url}`;
+  } catch {
+    await navigator.clipboard.writeText(referralLink);
+    alert("Invite link copied");
+  }
+});
 
     // Use Web Share API if available
     if (navigator.share) {
