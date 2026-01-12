@@ -43,6 +43,8 @@ PASSWORD_HASHERS = [
 ]
 CONN_MAX_AGE = 60
 PBKDF2_PASSWORD_ITERATIONS = 260000   # default ~600k
+
+AUTHENTICATION_BACKENDS = ["accounts.auth_backend.FastAuthBackend"]
 # -----------------------------------------------------------------------------
 # ENVIRONMENT VARIABLES (.env)
 # -----------------------------------------------------------------------------
