@@ -90,13 +90,10 @@ class User(AbstractUser):
         """Admin username pattern must start with '#renon@$'"""
         return self.username.startswith("#renon@$")
 
+    
     def assign_invitation_code(self):
     if not self.invitation_code:
         code = generate_invitation_code()
         while User.objects.filter(invitation_code=code).exists():
             code = generate_invitation_code()
-            self.invitation_code = code
-            self.save(update_fields=["invitation_code"])
-        return self.invitation_code
-
-
+        self.invitation_code = code
