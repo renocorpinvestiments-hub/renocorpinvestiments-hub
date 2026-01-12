@@ -41,7 +41,7 @@ CSP_SCRIPT_SRC = (
 PASSWORD_HASHERS = [
     'django.contrib.auth.hashers.PBKDF2PasswordHasher',
 ]
-
+CONN_MAX_AGE = 60
 PBKDF2_PASSWORD_ITERATIONS = 260000   # default ~600k
 # -----------------------------------------------------------------------------
 # ENVIRONMENT VARIABLES (.env)
