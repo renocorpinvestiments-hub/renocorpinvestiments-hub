@@ -2,7 +2,7 @@ import logging
 from django.contrib.auth import get_user_model
 from django.db import transaction
 from django.utils import timezone
-
+from django.db.models import F
 from .models import Invite, RewardLog
 from apps.admin_panel.models import TaskCategory, UserProfile
 from .notifications import notify_user, notify_admin  # updated import
@@ -14,106 +14,82 @@ logger = logging.getLogger(__name__)
 # ------------------------------------------------
 # Invitation linking
 # ------------------------------------------------
+
+
 def link_invitation(invitee: User, invite_code: str) -> bool:
     try:
-        inviter_profile = UserProfile.objects.filter(invitation_code=invite_code).first()
-        if not inviter_profile:
-            logger.warning(f"Invalid invite code used: {invite_code}")
-            return False
-
-        inviter = inviter_profile.user
-
-        if inviter == invitee:
-            logger.warning(f"User {invitee.username} attempted self-invite.")
+        inviter = User.objects.only("id").filter(invitation_code=invite_code).first()
+        if not inviter or inviter == invitee:
             return False
 
         with transaction.atomic():
             Invite.objects.get_or_create(inviter=inviter, invitee=invitee)
 
-            invitee_profile = UserProfile.objects.select_for_update().get(user=invitee)
-            invitee_profile.invited_by = inviter.username
-            invitee_profile.save(update_fields=["invited_by"])
+            User.objects.filter(pk=invitee.pk).update(invited_by=inviter)
 
-            # Notify user
-            notify_user(
-                user=inviter,
-                title="🎉 New Invite Joined!",
-                message=f"{invitee.username} joined using your invite link.",
-                category="invite"
-            )
+        notify_user(
+            user=inviter,
+            title="🎉 New Invite Joined!",
+            message=f"{invitee.username} joined using your invite link.",
+            category="invite"
+        )
 
-            # Notify admin
-            notify_admin(
-                title="Invitation Linked",
-                message=f"{invitee.username} linked to inviter {inviter.username}"
-            )
+        notify_admin(
+            title="Invitation Linked",
+            message=f"{invitee.username} linked to inviter {inviter.username}"
+        )
 
-        logger.info(f"Invite linked: {invitee.username} invited by {inviter.username}")
         return True
 
     except Exception as e:
         logger.error(f"Failed to link invitation: {e}")
         return False
-
-
 # ------------------------------------------------
 # Reward inviter on activation
 # ------------------------------------------------
+
 def reward_for_activation(user: User):
     try:
+        inviter_id = User.objects.filter(pk=user.pk).values_list("invited_by_id", flat=True).first()
+        if not inviter_id:
+            return
+
         with transaction.atomic():
-            user_profile = UserProfile.objects.select_for_update().get(user=user)
-            inviter_username = user_profile.invited_by
-            if not inviter_username:
-                return
+            inviter = User.objects.select_for_update().get(pk=inviter_id)
 
-            inviter_profile = UserProfile.objects.select_for_update().filter(
-                user__username=inviter_username
-            ).first()
-            if not inviter_profile:
-                return
-
-            inviter = inviter_profile.user
-
-            if inviter == user:
-                logger.warning(f"User {user.username} attempted self-reward.")
-                return
-
-            # Prevent duplicate reward
+            # Prevent double reward
             if RewardLog.objects.filter(
-                user=inviter,
+                user_id=inviter.id,
                 category="invite_activation",
-                task__isnull=True,
                 provider="system",
-                admin_reward_ugx__gt=0,
+                task__isnull=True,
+                reference=user.id
             ).exists():
-                logger.warning(f"Reward already issued for {user.username}")
                 return
 
-            # Pull reward from admin configuration
-            task_category = TaskCategory.objects.filter(code="other", active=True).first()
+            task_category = TaskCategory.objects.filter(code="other", active=True).only("reward_amount").first()
             if not task_category:
-                logger.warning("No active TaskCategory for invite rewards.")
                 return
 
             reward_ugx = int(task_category.reward_amount)
 
-            # Credit inviter balance
-            inviter_profile.balance += reward_ugx
-            inviter_profile.save(update_fields=["balance"])
+            # 💥 FAST COUNTER + BALANCE
+            User.objects.filter(pk=inviter.id).update(
+                balance=F("balance") + reward_ugx,
+                invites=F("invites") + 1
+            )
 
-            # Immutable ledger entry
             RewardLog.objects.create(
-                user=inviter,
+                user_id=inviter.id,
                 task=None,
                 provider="system",
                 category="invite_activation",
+                reference=user.id,  # 🔐 prevents duplicates
                 final_reward_ugx=reward_ugx,
                 provider_reward_ugx=0,
                 admin_reward_ugx=reward_ugx,
             )
 
-        # Notify user
         notify_user(
             user=inviter,
             title="💰 Referral Bonus Earned!",
@@ -121,18 +97,13 @@ def reward_for_activation(user: User):
             category="reward"
         )
 
-        # Notify admin
         notify_admin(
             title="Reward Processed",
             message=f"{reward_ugx} UGX rewarded to {inviter.username} for {user.username}'s activation"
         )
 
-        logger.info(f"Rewarded {reward_ugx} UGX to {inviter.username} for inviting {user.username}")
-
     except Exception as e:
-        logger.error(f"Error rewarding inviter for activation: {e}")
-
-
+        logger.error(f"Error rewarding inviter: {e}")
 # ------------------------------------------------
 # Repair missing invites
 # ------------------------------------------------
