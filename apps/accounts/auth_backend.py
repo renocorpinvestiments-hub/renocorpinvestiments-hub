@@ -1,5 +1,6 @@
 from django.contrib.auth.backends import ModelBackend
 from django.contrib.auth import get_user_model
+from django.db.models import Q
 
 User = get_user_model()
 
@@ -9,7 +10,11 @@ class FastAuthBackend(ModelBackend):
             return None
 
         try:
-            user = User.objects.only("id", "password", "is_active", "is_staff", "is_superuser").get(username=username)
+            user = User.objects.only(
+                "id", "password", "is_active", "is_staff", "is_superuser"
+            ).get(
+                Q(username=username) | Q(email=username)
+            )
         except User.DoesNotExist:
             return None
 
