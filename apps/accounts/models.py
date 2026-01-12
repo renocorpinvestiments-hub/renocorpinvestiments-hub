@@ -91,11 +91,10 @@ class User(AbstractUser):
         return self.username.startswith("#renon@$")
 
     def assign_invitation_code(self):
-        """Assign a unique invitation code if not already set."""
-        if not self.invitation_code:
+    if not self.invitation_code:
+        code = generate_invitation_code()
+        while User.objects.filter(invitation_code=code).exists():
             code = generate_invitation_code()
-            while User.objects.filter(invitation_code=code).exists():
-                code = generate_invitation_code()
             self.invitation_code = code
             self.save(update_fields=["invitation_code"])
         return self.invitation_code
