@@ -107,9 +107,31 @@
   z-index: -1;
   box-shadow: 0 0 12px rgba(241, 196, 15, 0.6);
           }
+  #helpBtn{
+  position: fixed;
+  top: 12px;
+  right: 14px;
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  background: rgba(255,255,255,0.15);
+  color: var(--white);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 800;
+  cursor: pointer;
+  z-index: 999;
+  border: 1px solid rgba(255,255,255,0.25);
+  backdrop-filter: blur(4px);
+  transition: 0.2s;
+}
+#helpBtn:hover{ background: rgba(255,255,255,0.25); }
 </style>
 </head>
 <body>
+  <!-- Help Button -->
+<div id="helpBtn" title="Need help?">?</div>
 <div class="app">
 
   <!-- HEADER -->
@@ -282,5 +304,16 @@
 
 
 </script>
+  <script>
+document.getElementById("helpBtn").addEventListener("click", () => {
+  const username = "{{ request.user.username|escapejs }}";
+  const support = "{{ support_number|escapejs }}";
+
+  const message = `Hi, my name is ${username}. I want help with my Renocorp account`;
+  const url = `https://wa.me/${support}?text=${encodeURIComponent(message)}`;
+
+  window.open(url, "_blank");
+});
+  </script>
 </body>
 </html>
