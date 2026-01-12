@@ -39,8 +39,8 @@ CSP_SCRIPT_SRC = (
 
 
 AUTHENTICATION_BACKENDS = [
-    "accounts.auth_backend.FastAuthBackend",
-    "django.contrib.auth.backends.ModelBackend",
+    'apps.accounts.auth_backend.FastAuthBackend',
+    'django.contrib.auth.backends.ModelBackend'
 ]
 
 SESSION_ENGINE = "django.contrib.sessions.backends.db"
