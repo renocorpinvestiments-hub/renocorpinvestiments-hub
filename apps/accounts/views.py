@@ -1,7 +1,8 @@
 from django.shortcuts import render, redirect
 from django.contrib.auth import authenticate, login
 from django.contrib import messages
-
+from django.views.decorators.cache import never_cache
+from .forms import LoginForm
 from .models import User
 from .forms import LoginForm, SignupForm
 
@@ -9,38 +10,27 @@ from .forms import LoginForm, SignupForm
 # ---------------------------------------------------
 # LOGIN VIEW
 # ---------------------------------------------------
+@never_cache
 def login_view(request):
-    """
-    Handles login for both admin and normal users.
-    Admin access is determined by real Django permissions.
-    """
-
-    form = LoginForm(request, data=request.POST or None)
-
     if request.method == "POST":
-        if form.is_valid():
-            username = form.cleaned_data.get("username")
-            password = form.cleaned_data.get("password")
+        form = LoginForm(request.POST)
 
-            user = authenticate(request, username=username, password=password)
+        if form.is_valid():
+            user = form.get_user()   # uses our FastAuthBackend
 
             if user:
                 login(request, user)
 
-                # -------------------------------
-                # ADMIN ACCESS CONTROL
-                # -------------------------------
-                if user.is_superuser or user.is_staff:
+                if user.is_staff or user.is_superuser:
                     return redirect("admin_panel:dashboard")
 
                 return redirect("dashboard:home")
 
-            messages.error(request, "Invalid username or password.")
-        else:
-            messages.error(request, "Please check your input fields.")
+        messages.error(request, "Invalid username or password.")
+    else:
+        form = LoginForm()
 
     return render(request, "login.html", {"form": form})
-
 
 # ---------------------------------------------------
 # ---------------------------------------------------
