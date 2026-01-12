@@ -4,7 +4,7 @@ import os
 
 def create_admin_user(apps, schema_editor):
     # ✅ CORRECT APP LABEL
-    User = apps.get_model("apps_accounts", "User")
+    User = apps.get_model("accounts", "User")
 
     username = os.getenv("ADMIN_USERNAME")
     password = os.getenv("ADMIN_PASSWORD")
