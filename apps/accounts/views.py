@@ -14,7 +14,8 @@ from .forms import LoginForm, SignupForm
 def login_view(request):
     if request.method == "POST":
         form = LoginForm(request, data=request.POST)
-
+        if not form.is_valid():
+            print(form.errors)
         if form.is_valid():
             user = form.get_user()   # uses our FastAuthBackend
 
