@@ -307,7 +307,7 @@
   <script>
 document.getElementById("helpBtn").addEventListener("click", () => {
   const username = "{{ request.user.username|escapejs }}";
-  const support = "{{ support_number|escapejs }}";
+  const support = "{{ support_number|escapejs }}";  // This comes from settings
 
   const message = `Hi, my name is ${username}. I want help with my Renocorp account`;
   const url = `https://wa.me/${support}?text=${encodeURIComponent(message)}`;
