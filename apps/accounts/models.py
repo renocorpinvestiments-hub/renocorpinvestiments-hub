@@ -73,6 +73,7 @@ class User(AbstractUser):
         blank=True,
         related_name="invited_users"
     )
+    successful_referrals = models.PositiveIntegerField(default=0, db_index=True)
 
     class Meta:
         verbose_name = "User"
