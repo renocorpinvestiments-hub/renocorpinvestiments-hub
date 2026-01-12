@@ -43,7 +43,7 @@ AUTHENTICATION_BACKENDS = [
     "django.contrib.auth.backends.ModelBackend",
 ]
 
-SESSION_ENGINE = "django.contrib.sessions.backends.cache"
+SESSION_ENGINE = "django.contrib.sessions.backends.db"
 SESSION_CACHE_ALIAS = "default"
 CONN_MAX_AGE = 60
 # -----------------------------------------------------------------------------
@@ -120,7 +120,7 @@ INSTALLED_APPS = [
 ]
 
 # Use the custom user model
-AUTH_USER_MODEL = "accounts.User"
+AUTH_USER_MODEL = "apps_accounts.User"
 # -----------------------------------------------------------------------------
 # MIDDLEWARE
 # -----------------------------------------------------------------------------
