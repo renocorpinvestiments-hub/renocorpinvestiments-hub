@@ -41,10 +41,13 @@ CSP_SCRIPT_SRC = (
 PASSWORD_HASHERS = [
     'django.contrib.auth.hashers.PBKDF2PasswordHasher',
 ]
-CONN_MAX_AGE = 60
 PBKDF2_PASSWORD_ITERATIONS = 260000   # default ~600k
 
 AUTHENTICATION_BACKENDS = ["accounts.auth_backend.FastAuthBackend"]
+
+SESSION_ENGINE = "django.contrib.sessions.backends.cache"
+SESSION_CACHE_ALIAS = "default"
+CONN_MAX_AGE = 60
 # -----------------------------------------------------------------------------
 # ENVIRONMENT VARIABLES (.env)
 # -----------------------------------------------------------------------------
