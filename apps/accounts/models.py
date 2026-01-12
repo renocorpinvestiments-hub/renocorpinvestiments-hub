@@ -92,8 +92,8 @@ class User(AbstractUser):
 
     
     def assign_invitation_code(self):
-    if not self.invitation_code:
-        code = generate_invitation_code()
-        while User.objects.filter(invitation_code=code).exists():
+        if not self.invitation_code:
             code = generate_invitation_code()
-        self.invitation_code = code
+            while User.objects.filter(invitation_code=code).exists():
+                code = generate_invitation_code()
+            self.invitation_code = code
