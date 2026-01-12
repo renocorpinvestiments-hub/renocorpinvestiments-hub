@@ -256,6 +256,7 @@ def account_view(request):
         "current_page": "account",
         "referral_link": referral_link,
         "invitation_code": profile.invitation_code,
+        "invites": user.invites,
     }
 
     cache.set(cache_key, data, 20)
