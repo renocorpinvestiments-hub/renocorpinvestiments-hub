@@ -36,6 +36,13 @@ CSP_SCRIPT_SRC = (
     "'self'",
     "'unsafe-inline'",
 )
+
+# settings.py
+PASSWORD_HASHERS = [
+    'django.contrib.auth.hashers.PBKDF2PasswordHasher',
+]
+
+PBKDF2_PASSWORD_ITERATIONS = 260000   # default ~600k
 # -----------------------------------------------------------------------------
 # ENVIRONMENT VARIABLES (.env)
 # -----------------------------------------------------------------------------
