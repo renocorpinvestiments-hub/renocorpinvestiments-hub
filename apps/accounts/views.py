@@ -13,7 +13,7 @@ from .forms import LoginForm, SignupForm
 @never_cache
 def login_view(request):
     if request.method == "POST":
-        form = LoginForm(request.POST)
+        form = LoginForm(request, data=request.POST)
 
         if form.is_valid():
             user = form.get_user()   # uses our FastAuthBackend
