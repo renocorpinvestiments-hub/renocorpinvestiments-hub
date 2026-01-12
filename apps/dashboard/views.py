@@ -1,3 +1,4 @@
+from django.core.cache import cache
 from apps.admin_panel.models import TaskControl 
 from django.contrib.auth import logout
 from apps.ai_core.models import Offerwall
@@ -82,48 +83,53 @@ def gifts_data_api(request):
 @login_required
 def home_view(request):
     user = request.user
+    cache_key = f"home_dashboard_{user.id}"
+
+    data = cache.get(cache_key)
+    if data:
+        return render(request, "home.html", data)
+
     profile = get_or_create_profile(user)
 
-    notifications = Notification.objects.filter(user=user).order_by("-created_at")[:8]
-    messages_list = [n.message for n in notifications]
-    Notification.objects.filter(id__in=[n.id for n in notifications]).update(is_read=True)
+    notifications = list(
+        Notification.objects.filter(user=user)
+        .order_by("-created_at")
+        .values_list("message", flat=True)[:8]
+    )
 
-    context = {
+    Notification.objects.filter(user=user, is_read=False).update(is_read=True)
+
+    data = {
         "today_earnings": profile.today_earnings,
         "balance": profile.balance,
         "commission": profile.commission,
         "invites": profile.invites,
-        "notifications": messages_list,
+        "notifications": notifications,
         "current_page": "home",
     }
-    return render(request, "home.html", context)
 
-def logout_view(request):
-    """
-    Logs out the user and redirects to login page.
-    """
-    logout(request)
-    return redirect("accounts:login")
+    cache.set(cache_key, data, 15)  # 15 seconds realtime
+    return render(request, "home.html", data)
 # ===========================
 # TASKS
 # ===========================
 @login_required
 def tasks_view(request):
     user = request.user
-    profile = get_or_create_profile(user)
     today = timezone.localdate()
+    cache_key = f"tasks_{user.id}_{today}"
 
-    # -----------------------------
-    # Fetch admin-controlled task limits
-    # -----------------------------
+    cached = cache.get(cache_key)
+    if cached:
+        return render(request, "tasks.html", cached)
+
+    profile = get_or_create_profile(user)
+
     task_control = TaskControl.objects.last()
     videos_limit = task_control.videos_count if task_control else 20
     surveys_limit = task_control.surveys_count if task_control else 6
     app_tests_limit = task_control.app_tests_count if task_control else 2
 
-    # -----------------------------
-    # Progress reset
-    # -----------------------------
     progress, _ = TaskProgress.objects.get_or_create(user=user)
     if progress.last_reset < today:
         progress.total_tasks = 0
@@ -132,54 +138,31 @@ def tasks_view(request):
         progress.last_reset = today
         progress.save()
 
-    # -----------------------------
-    # Completed tasks
-    # -----------------------------
     completed_ids = set(
-        CompletedTask.objects.filter(user=user).values_list("task_id", flat=True)
+        CompletedTask.objects.filter(user=user)
+        .values_list("task_id", flat=True)
     )
 
-    # -----------------------------
-    # Video Tasks
-    # -----------------------------
-    videos = [
-        {
-            "id": v.task_id,
-            "title": v.title,
-            "thumbnail": v.thumbnail,
-            "url": v.video_url,
-            "reward": float(v.reward),
-        }
-        for v in VideoTask.objects.filter(active=True)
+    videos = list(
+        VideoTask.objects.filter(active=True)
         .exclude(task_id__in=completed_ids)
-        .order_by("-reward", "-created_at")[:videos_limit]
-    ]
+        .order_by("-reward")[:videos_limit]
+        .values("task_id", "title", "thumbnail", "video_url", "reward")
+    )
 
-    # -----------------------------
-    # Surveys
-    # -----------------------------
-    surveys = [
-        {
-            "id": s.task_id,
-            "title": s.title,
-            "provider_url": s.iframe_url or s.provider_url,
-            "reward": float(s.reward),
-        }
-        for s in SurveyTask.objects.filter(active=True)
+    surveys = list(
+        SurveyTask.objects.filter(active=True)
         .exclude(task_id__in=completed_ids)
-        .order_by("-reward", "-created_at")[:surveys_limit]
-    ]
+        .order_by("-reward")[:surveys_limit]
+        .values("task_id", "title", "iframe_url", "provider_url", "reward")
+    )
 
-    # -----------------------------
-    # App Test
-    # -----------------------------
     app_test = None
     if app_tests_limit:
         app = AppTest.objects.filter(active=True)\
             .exclude(task_id__in=completed_ids)\
-            .order_by("-reward", "-created_at")\
+            .order_by("-reward")\
             .first()
-
         if app:
             app_test = {
                 "id": app.task_id,
@@ -189,18 +172,30 @@ def tasks_view(request):
                 "reward": float(app.reward),
             }
 
-    # -----------------------------
-    # Progress calculation
-    # -----------------------------
-    total_tasks = len(videos) + len(surveys) + (1 if app_test else 0)
     completed_today = CompletedTask.objects.filter(
         user=user, completed_at__date=today
     ).count()
 
-    progress.total_tasks = total_tasks
+    progress.total_tasks = len(videos) + len(surveys) + (1 if app_test else 0)
     progress.completed_tasks = completed_today
     progress.update_progress()
 
+    iframe_tasks = list(
+        Offerwall.objects.filter(is_active=True, mode="iframe")
+        .values("id", "provider", "iframe_url")
+    )
+
+    data = {
+        "videos": videos,
+        "surveys": surveys,
+        "app_test": app_test,
+        "iframe_tasks": iframe_tasks,
+        "progress": float(progress.progress),
+        "current_page": "tasks",
+    }
+
+    cache.set(cache_key, data, 30)  # 30 seconds cache
+    return render(request, "tasks.html", data)
     # -----------------------------
     # IFRAME OFFERWALLS ✅ FIXED
     # -----------------------------
@@ -239,24 +234,32 @@ def tasks_view(request):
 @login_required
 def account_view(request):
     user = request.user
-    profile = get_or_create_profile(user)
+    cache_key = f"account_{user.id}"
 
-    transactions = Transaction.objects.filter(user=user).order_by("-created_at")[:12]
+    cached = cache.get(cache_key)
+    if cached:
+        return render(request, "account.html", cached)
+
+    profile = get_or_create_profile(user)
+    transactions = list(
+        Transaction.objects.filter(user=user)
+        .order_by("-created_at")[:12]
+    )
 
     referral_link = build_referral_link(request, profile)
-    context = {
+
+    data = {
         "profile": profile,
         "transactions": transactions,
         "withdraw_enabled": is_withdraw_enabled(),
         "support_number": getattr(settings, "SUPPORT_WHATSAPP_NUMBER", ""),
         "current_page": "account",
-
-        # Invite system
         "referral_link": referral_link,
         "invitation_code": profile.invitation_code,
     }
 
-    return render(request, "account.html", context)
+    cache.set(cache_key, data, 20)
+    return render(request, "account.html", data)
 # ===========================
 # SUBSCRIBE
 # ===========================
@@ -354,7 +357,9 @@ def withdraw_view(request):
 
     return JsonResponse({"ok": True, "message": "Withdrawal processing"})
 
-
+cache.delete(f"home_dashboard_{user.id}")
+cache.delete(f"account_{user.id}")
+cache.delete(f"tasks_{user.id}_{timezone.localdate()}")
 # ===========================
 # GIFTS  (FAST VERSION)
 # ===========================
