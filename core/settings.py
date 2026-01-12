@@ -37,13 +37,11 @@ CSP_SCRIPT_SRC = (
     "'unsafe-inline'",
 )
 
-# settings.py
-PASSWORD_HASHERS = [
-    'django.contrib.auth.hashers.PBKDF2PasswordHasher',
-]
-PBKDF2_PASSWORD_ITERATIONS = 260000   # default ~600k
 
-AUTHENTICATION_BACKENDS = ["accounts.auth_backend.FastAuthBackend"]
+AUTHENTICATION_BACKENDS = [
+    "accounts.auth_backend.FastAuthBackend",
+    "django.contrib.auth.backends.ModelBackend",
+]
 
 SESSION_ENGINE = "django.contrib.sessions.backends.cache"
 SESSION_CACHE_ALIAS = "default"
