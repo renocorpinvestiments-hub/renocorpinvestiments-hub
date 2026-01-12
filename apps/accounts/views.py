@@ -73,6 +73,8 @@ def signup_view(request):
             user.is_active = True
             user.subscription_status = "inactive"
             user.invited_by = invited_by_user
+            # generate invitation code BEFORE saving
+            user.assign_invitation_code()
 
             user.save()
 
