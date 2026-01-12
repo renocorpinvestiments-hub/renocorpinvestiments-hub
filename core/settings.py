@@ -129,7 +129,7 @@ INSTALLED_APPS = [
     'apps.ai_core.apps.AiCoreConfig',
     'apps.accounts.apps.AccountsConfig',
 ]
-
+DATABASES["default"]["CONN_MAX_AGE"] = 60
 # Use the custom user model
 AUTH_USER_MODEL = "accounts.User"
 # -----------------------------------------------------------------------------
@@ -167,7 +167,12 @@ TEMPLATES = [{
         ],
     },
 }]
-
+TEMPLATES[0]["OPTIONS"]["loaders"] = [
+    ("django.template.loaders.cached.Loader", [
+        "django.template.loaders.filesystem.Loader",
+        "django.template.loaders.app_directories.Loader",
+    ]),
+]
 # -----------------------------------------------------------------------------
 # INTERNATIONALIZATION
 # -----------------------------------------------------------------------------
@@ -198,6 +203,9 @@ CACHES = {
 # -----------------------------------------------------------------------------
 # CELERY CONFIGURATION
 # -----------------------------------------------------------------------------
+export RUN_MAIN=true
+if os.getenv("RUN_MAIN") == "true":
+    from celery.schedules import crontab
 CELERY_BROKER_URL = env('REDIS_URL', default='redis://127.0.0.1:6379/0')
 CELERY_RESULT_BACKEND = 'django-db'
 CELERY_ACCEPT_CONTENT = ['json']
