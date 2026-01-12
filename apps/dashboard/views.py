@@ -103,7 +103,7 @@ def home_view(request):
         "today_earnings": profile.today_earnings,
         "balance": profile.balance,
         "commission": profile.commission,
-        "invites": profile.invites,
+        "invites": user.invites,
         "notifications": notifications,
         "current_page": "home",
     }
