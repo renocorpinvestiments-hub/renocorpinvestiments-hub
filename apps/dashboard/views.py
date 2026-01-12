@@ -384,11 +384,7 @@ def gifts_view(request):
 
 @login_required
 def gifts_data_api(request):
-    """
-    Fast async data loader for Gifts page.
-    """
     user = request.user
-    profile = get_or_create_profile(user)
     now = timezone.now()
 
     data = {
@@ -397,19 +393,20 @@ def gifts_data_api(request):
         "extra_videos": [],
     }
 
-    # 🎁 Get active gift
-    gift = GiftOffer.objects.filter(active=True).order_by('-created_at').first()
+    gift = GiftOffer.objects.filter(active=True).only(
+        "id", "title", "description", "created_at", "time_limit_hours", "invites_required"
+    ).order_by("-created_at").first()
 
     if gift:
         gift_end = gift.created_at + timezone.timedelta(hours=gift.time_limit_hours)
 
-        # 🧮 Invite counting (your exact rule)
-        invites_count = User.objects.filter(
-            userprofile__invited_by=profile.invitation_code,
-            userprofile__subscription_status="active",
-            date_joined__gte=gift.created_at,
-            date_joined__lte=gift_end,
-        ).count()
+        # 🚀 Ultra-fast referral count
+        cache_key = f"invites_{user.id}_{gift.id}"
+        invites_count = cache.get(cache_key)
+
+        if invites_count is None:
+            invites_count = user.invites   # O(1) indexed lookup
+            cache.set(cache_key, invites_count, 300)  # 5 min cache
 
         data["gift"] = {
             "title": gift.title,
@@ -419,17 +416,19 @@ def gifts_data_api(request):
             "current_invites": invites_count,
         }
 
-    # 🎬 Extra bonus videos
+    # 🎬 Bonus videos (lightweight query)
     videos = VideoTask.objects.filter(active=True, is_bonus=True)\
                               .only("id", "title", "thumbnail")\
-                              .order_by('-created_at')[:4]
+                              .order_by("-created_at")[:4]
 
-    for v in videos:
-        data["extra_videos"].append({
+    data["extra_videos"] = [
+        {
             "id": v.id,
             "title": v.title,
             "thumbnail": v.thumbnail.url if v.thumbnail else "",
-        })
+        }
+        for v in videos
+    ]
 
     return JsonResponse(data)
 
