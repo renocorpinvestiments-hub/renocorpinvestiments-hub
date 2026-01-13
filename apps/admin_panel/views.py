@@ -67,23 +67,24 @@ def admin_logout(request):
 # =====================================================
 # 1️⃣ USERS DASHBOARD
 # =====================================================
-@login_required
-@staff_member_required
 def admin_dashboard(request):
     users = (
-       User.objects
-       .select_related("profile")
-       .annotate(invites_count=Count("invites"))
+        User.objects
+        .select_related("profile")   # for balance, age, etc
+        .only(
+            "id", "username", "email",
+            "invites", "subscription_status",
+            "date_joined"
+        )
     )
+
     total_balance = UserProfile.objects.aggregate(total=Sum("balance"))["total"] or 0
-    
 
     return render(request, "users.html", {
         "users": users,
         "total_balance": total_balance,
         "safe": safe_profile_value,
     })
-
 @login_required
 @staff_member_required
 def update_user(request, user_id):
