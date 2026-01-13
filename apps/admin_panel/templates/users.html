@@ -296,9 +296,11 @@ html, body {
           <p>Username: {{ user.username }}</p>
         </div>
         <div>
-          <p><strong>Balance:</strong> {{ user.profile.balance }} UGX</p>
+          <p><strong>Balance:</strong> {{ safe(user, "balance")  }} UGX</p>
           <p><strong>Trial Expiry:</strong> {{ user.profile.trial_expiry|date:"M d, Y"|default:"—" }}</p>
+          <p><strong>Invites:</strong> {{ user.invites }}</p>
         </div>
+        
       </div>
 
       <div class="expanded">
