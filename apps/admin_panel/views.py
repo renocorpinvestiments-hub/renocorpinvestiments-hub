@@ -39,7 +39,16 @@ log = logging.getLogger(__name__)
 def mem():
     return resource.getrusage(resource.RUSAGE_SELF).ru_maxrss
 
+def safe_profile_value(user, field, default="—"):
+    """
+    If profile.field is empty, fall back to user.field
+    """
+    if hasattr(user, "profile"):
+        val = getattr(user.profile, field, None)
+        if val not in [None, "", 0]:
+            return val
 
+    return getattr(user, field, default)
 # =====================================================
 # AUTH
 # =====================================================
@@ -61,13 +70,18 @@ def admin_logout(request):
 @login_required
 @staff_member_required
 def admin_dashboard(request):
-    users = User.objects.all()
+    users = (
+       User.objects
+       .select_related("profile")
+       .annotate(invites_count=Count("invites"))
+    )
     total_balance = UserProfile.objects.aggregate(total=Sum("balance"))["total"] or 0
     
 
     return render(request, "users.html", {
         "users": users,
         "total_balance": total_balance,
+        "safe": safe_profile_value,
     })
 
 @login_required
