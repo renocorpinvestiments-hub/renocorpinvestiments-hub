@@ -308,8 +308,8 @@ body {
         {% for tx in transactions %}
         <div class="card" data-name="{{ tx.user.username|default:'system'|lower }}" data-type="{{ tx.txn_type|lower }}">
           <div class="card-header">
-            <div class="name">{{ tx.user.username|default:"SYSTEM" }}</div>
-            <div class="status {% if tx.status|lower == 'successful' %}success{% else %}failed{% endif %}">{{ tx.status|title }}</div>
+            <div class="name">{{ tx.user.username|default_if_none:"SYSTEM" }}</div>
+            <div class="status {% if tx.status|lower == 'success' %}success{% else %}failed{% endif %}">{{ tx.status|title }}</div>
           </div>
           <div class="details">
             <span>Type: {{ tx.txn_type|title }}</span>
