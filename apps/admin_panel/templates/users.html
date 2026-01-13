@@ -288,7 +288,9 @@ html, body {
   <!-- User List -->
   <div id="userList">
     {% for user in users %}
-    <div class="user-card" data-name="{{ user.name|lower }}" data-email="{{ user.email|lower }}">
+    <div class="user-card"
+      data-userid="{{ user.id }}"
+      data-name="{{ user.name|lower }}" data-email="{{ user.email|lower }}">
       <div class="user-summary">
         <div>
           <h3>{{ user.get_full_name|default:user.username }}</h3>
@@ -391,5 +393,25 @@ html, body {
           : 'none';
     });
   });
+  let startX = 0;
+
+document.querySelectorAll(".user-card").forEach(card => {
+  card.addEventListener("touchstart", e => {
+    startX = e.touches[0].clientX;
+  });
+
+  card.addEventListener("touchend", e => {
+    let endX = e.changedTouches[0].clientX;
+
+    if (startX - endX > 120) { // swipe left
+      const username = card.querySelector("h3").innerText;
+      const userId = card.dataset.userid;
+
+      if (confirm(`Are you sure you want to delete ${username}?`)) {
+        window.location.href = `/admin/delete-user/${userId}/`;
+      }
+    }
+  });
+});
 </script>
 {% endblock %}
