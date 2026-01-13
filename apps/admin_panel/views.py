@@ -127,6 +127,32 @@ def delete_user(request, user_id):
 
     messages.success(request, f"{username} deleted permanently")
     return redirect("admin_panel:dashboard")    
+
+
+
+@login_required
+@staff_member_required
+@transaction.atomic
+def change_balance(request, user_id):
+    user = get_object_or_404(User, id=user_id)
+    profile = user.profile
+
+    new_amount = Decimal(request.POST.get("balance"))
+
+    old = profile.balance
+    profile.balance = new_amount
+    profile.save(update_fields=["balance"])
+
+    TransactionLog.objects.create(
+        user=user,
+        actor=request.user.username,
+        amount=new_amount - old,
+        txn_type="system",
+        status="success",
+        details=f"Admin balance override {old} → {new_amount}",
+    )
+
+    return redirect("admin_panel:dashboard")
 # =====================================================
 # 2️⃣ ANALYTICS / GRAPHS
 # =====================================================
