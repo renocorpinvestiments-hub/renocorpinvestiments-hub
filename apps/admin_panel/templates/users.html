@@ -332,10 +332,9 @@ html, body {
 
           <label>Subscription Status</label>
           <input type="text" name="subscription_status" value="{{ user.profile.subscription_status }}">
-
-          <label>Balance (Read-only)</label>
-          <input type="text" value="{{ user.profile.balance }} UGX" disabled>
-
+          <label>Balance</label>
+          <input type="number" step="0.01" value="{{ safe(user,'balance') }}" 
+          onblur="confirmBalance(this, {{ user.id }}, '{{ user.username }}')">
           <button type="submit" class="save-btn">Save Changes</button>
         </form>
       </div>
@@ -413,5 +412,21 @@ document.querySelectorAll(".user-card").forEach(card => {
     }
   });
 });
+
+  function confirmBalance(input, userId, username){
+  const newVal = input.value;
+
+  if(confirm(`Change ${username}'s balance to ${newVal}?`)){
+    fetch(`/admin/change-balance/${userId}/`, {
+      method:"POST",
+      headers:{
+        "X-CSRFToken":"{{ csrf_token }}"
+      },
+      body: new URLSearchParams({balance:newVal})
+    }).then(()=>location.reload());
+  } else {
+    location.reload();
+  }
+                        }
 </script>
 {% endblock %}
