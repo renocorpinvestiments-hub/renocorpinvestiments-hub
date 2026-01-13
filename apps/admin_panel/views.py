@@ -258,7 +258,7 @@ def transaction_page(request):
 
     return render(request, "transactions.html", {
         "transactions": transactions,
-        "system_logs": system_logs,
+        "logs": system_logs,
         "payrolls": payrolls,
         "form": form,   # ✅ THIS WAS MISSING
     })
