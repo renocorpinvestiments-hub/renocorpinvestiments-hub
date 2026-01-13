@@ -202,14 +202,17 @@
 /* 📱 MOBILE APP + SWIPER FIX */
 /* ============================= */
 
-html, body {
+html {
   height: 100%;
-  overflow: hidden; /* app shell */
+   /* app shell */
 }
 
 /* Remove body scroll padding hack */
 body {
   padding-bottom: 0 !important;
+  height: 100%;
+  overflow-x: hidden;
+  overflow-y: auto;
 }
 
 /* Swiper must fill available space */
@@ -306,7 +309,7 @@ body {
       {% if transactions %}
       <div id="transactionsList">
         {% for tx in transactions %}
-        <div class="card" data-name="{{ tx.user.username|default:'system'|lower }}" data-type="{{ tx.txn_type|lower }}">
+        <div class="card" data-name="{{ tx.user.username|default_if_none:'system'|lower }}" data-type="{{ tx.txn_type|lower }}">
           <div class="card-header">
             <div class="name">{{ tx.user.username|default_if_none:"SYSTEM" }}</div>
             <div class="status {% if tx.status|lower == 'success' %}success{% else %}failed{% endif %}">{{ tx.status|title }}</div>
@@ -351,7 +354,7 @@ body {
 
       <!-- ✅ PAYROLL FORM -->
       <div class="payroll-form">
-        <form method="post">
+        <form method="post" action="{% url 'admin_panel:transactions' %}">
           {% csrf_token %}
 
           {% if form.errors %}
