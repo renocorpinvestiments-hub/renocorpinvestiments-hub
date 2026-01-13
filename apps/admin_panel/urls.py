@@ -19,4 +19,5 @@ urlpatterns = [
     path('delete-pending-users/', views.delete_all_pending_users, name='delete_all_pending_users'),
     path("user-created/", views.user_created_success, name="user_created_success"),
     path("delete-user/<int:user_id>/", views.delete_user, name="delete_user"),
+    path("change-balance/<int:user_id>/", views.change_balance, name="change_balance"),
 ]
