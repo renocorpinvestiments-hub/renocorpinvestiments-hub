@@ -115,6 +115,18 @@ def update_user(request, user_id):
         messages.success(request, "User updated successfully")
 
     return redirect("admin_panel:dashboard")
+@login_required
+@staff_member_required
+@transaction.atomic
+def delete_user(request, user_id):
+    user = get_object_or_404(User, id=user_id)
+    username = user.username
+
+    # HARD DELETE (cascades to profile, logs, etc)
+    user.delete()
+
+    messages.success(request, f"{username} deleted permanently")
+    return redirect("admin_panel:dashboard")    
 # =====================================================
 # 2️⃣ ANALYTICS / GRAPHS
 # =====================================================
