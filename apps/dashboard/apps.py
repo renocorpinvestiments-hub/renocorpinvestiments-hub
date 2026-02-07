@@ -1,4 +1,4 @@
-# dashboard/apps.py
+# apps/dashboard/apps.py
 
 from django.apps import AppConfig
 
