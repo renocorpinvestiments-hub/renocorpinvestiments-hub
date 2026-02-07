@@ -1,3 +1,4 @@
+# apps/accounts/models.py
 from django.contrib.auth.models import Group, Permission
 from django.db import models
 from django.contrib.auth.models import AbstractUser
