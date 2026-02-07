@@ -1,3 +1,4 @@
+# apps/ai_core/invitation_manager.py
 import logging
 from django.contrib.auth import get_user_model
 from django.db import transaction
