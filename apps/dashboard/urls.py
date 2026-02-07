@@ -1,3 +1,4 @@
+#apps/dashboard/urls.py
 from .views import gifts_data_api
 from django.urls import path
 from . import views
