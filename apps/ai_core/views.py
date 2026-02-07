@@ -1,3 +1,4 @@
+# apps/ai_core/views.py
 """
 views.py — AI Core (FINAL, CANONICAL, PRODUCTION-READY)
 """
