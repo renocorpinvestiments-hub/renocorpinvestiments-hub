@@ -1,3 +1,4 @@
+# apps/accounts/forms.py
 from django import forms
 from django.contrib.auth.forms import AuthenticationForm
 from django.apps import apps
