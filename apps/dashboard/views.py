@@ -1,3 +1,4 @@
+# apps/dashboard/views.py
 from django.core.cache import cache
 from apps.admin_panel.models import TaskControl 
 from django.contrib.auth import logout
