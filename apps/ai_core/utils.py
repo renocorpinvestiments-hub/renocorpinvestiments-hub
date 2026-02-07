@@ -1,3 +1,4 @@
+# apps/ai_core/utils.py
 """
 utils.py — AI Core / Offerwall Utilities (FINAL, CANONICAL)
 ========================================================
