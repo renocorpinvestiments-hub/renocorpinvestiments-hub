@@ -1,3 +1,4 @@
+# core/asgi.py
 """
 ASGI config for RENOCORP project.
 
