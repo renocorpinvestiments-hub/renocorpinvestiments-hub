@@ -1,4 +1,4 @@
-# ai_core/signals.py
+# apps/ai_core/signals.py
 
 import logging
 from django.db.models.signals import post_save, pre_save
