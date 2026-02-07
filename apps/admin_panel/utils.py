@@ -1,3 +1,4 @@
+# apps/admin_panel/utils.py
 import logging
 import random
 import string
