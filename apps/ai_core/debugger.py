@@ -1,4 +1,4 @@
-# ai_core/debugger.py
+# apps/ai_core/debugger.py
 
 import traceback
 import psutil
