@@ -1,3 +1,4 @@
+# apps/admin_panel/signals.py
 import logging
 from datetime import timedelta
 
