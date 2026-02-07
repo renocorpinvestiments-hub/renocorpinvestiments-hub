@@ -1,3 +1,4 @@
+#apps/dashboard/signals.py
 import logging
 from datetime import timedelta
 from django.db.models.signals import post_save, pre_save
