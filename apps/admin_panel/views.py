@@ -1,3 +1,4 @@
+# apps/admin_panel/views.py
 from .utils import clear_pending_manual_users
 from .forms import PayrollEntryForm
 from django.db import transaction
