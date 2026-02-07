@@ -1,3 +1,4 @@
+# apps/admin_panel/apps.py
 from django.apps import AppConfig
 
 class AdminPanelConfig(AppConfig):
