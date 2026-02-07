@@ -1,3 +1,4 @@
+# apps/ai_core/models.py
 # models.py — AI Core (Production‑Grade, Scalable, Robust)
 # ------------------------------------------------------------
 # Responsibilities:
