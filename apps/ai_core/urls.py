@@ -1,4 +1,4 @@
-# ai_core/urls.py
+# apps/ai_core/urls.py
 from django.urls import path
 from . import views
 
